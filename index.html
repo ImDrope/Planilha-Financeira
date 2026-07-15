@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Dashboard financeiro pessoal, privado e gamificado." />
+  <title>Finance Quest</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegação principal">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><span>F</span><span>Q</span></div>
+        <div>
+          <strong>Finance Quest</strong>
+          <span>Seu painel financeiro</span>
+        </div>
+      </div>
+
+      <nav class="nav-list">
+        <button class="nav-item active" data-section="dashboard">
+          <span class="nav-icon" aria-hidden="true">▦</span><span class="nav-label">Visão geral</span>
+        </button>
+        <button class="nav-item" data-section="movements">
+          <span class="nav-icon" aria-hidden="true">↔</span><span class="nav-label">Orçamento</span>
+        </button>
+        <button class="nav-item" data-section="investments">
+          <span class="nav-icon" aria-hidden="true">⌁</span><span class="nav-label">Patrimônio</span>
+        </button>
+        <button class="nav-item" data-section="goals">
+          <span class="nav-icon" aria-hidden="true">♜</span><span class="nav-label">Metas</span>
+        </button>
+        <button class="nav-item" data-section="settings">
+          <span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Dados</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="privacy-badge">
+          <span aria-hidden="true">●</span>
+          Dados salvos neste navegador
+        </div>
+        <button id="themeToggle" class="ghost-button full-width" type="button">Alternar tema</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="page-heading">
+          <p class="eyebrow">Finance Quest</p>
+          <h1 id="pageTitle">Visão geral</h1>
+        </div>
+        <div class="topbar-actions">
+          <div class="month-navigation" aria-label="Navegação entre meses">
+            <button id="previousMonth" class="month-arrow" type="button" aria-label="Mês anterior">‹</button>
+            <label class="month-picker">
+              <span class="sr-only">Mês analisado</span>
+              <strong id="monthDisplay">Mês atual</strong>
+              <input id="monthSelector" type="month" aria-label="Selecionar mês" />
+            </label>
+            <button id="nextMonth" class="month-arrow" type="button" aria-label="Próximo mês">›</button>
+          </div>
+          <button id="privacyToggle" class="icon-button privacy-toggle" type="button" aria-label="Ocultar valores" title="Ocultar valores">◉</button>
+          <button id="openTransactionModal" class="primary-button top-add-button" type="button">+ Nova movimentação</button>
+        </div>
+      </header>
+
+      <section id="dashboardSection" class="app-section active" aria-labelledby="pageTitle">
+        <div class="section-title-row dashboard-title-row">
+          <div>
+            <p class="eyebrow">Resumo financeiro</p>
+            <h2>Orçamento</h2>
+          </div>
+          <button id="openPlanModal" class="soft-action-button" type="button"><span aria-hidden="true">✎</span> Planejar mês</button>
+        </div>
+
+        <div class="overview-hero-grid">
+          <article class="wealth-card">
+            <div class="wealth-card-head">
+              <div>
+                <span>Patrimônio acompanhado</span>
+                <small>Investimentos informados + saldo positivo do mês</small>
+              </div>
+              <span class="wealth-badge">BRL</span>
+            </div>
+            <strong id="patrimonyMetric" class="money-value">R$ 0,00</strong>
+            <div class="wealth-card-footer">
+              <div>
+                <span>Investimentos atuais</span>
+                <strong id="patrimonyInvestmentMetric" class="money-value">R$ 0,00</strong>
+              </div>
+              <div>
+                <span>Liquidez do mês</span>
+                <strong id="patrimonyLiquidityMetric" class="money-value">R$ 0,00</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="score-summary-card">
+            <div class="score-mini-ring" id="dashboardScoreRing"><strong id="scoreMetric">0</strong><span>/100</span></div>
+            <div>
+              <span class="metric-label">Saúde financeira</span>
+              <h3 id="scoreDetail">Reorganizando</h3>
+              <p id="heroSubmessage">Cadastre sua renda, metas e movimentações.</p>
+            </div>
+          </article>
+        </div>
+
+        <div class="budget-summary-grid">
+          <article class="summary-card income">
+            <div class="summary-card-top"><span class="summary-icon">$</span><span class="metric-label">Receita</span></div>
+            <strong id="incomeMetric" class="money-value">R$ 0,00</strong>
+            <small id="incomeDetail">Renda principal + entradas extras</small>
+          </article>
+          <article class="summary-card investment">
+            <div class="summary-card-top"><span class="summary-icon">♙</span><span class="metric-label">Investir</span></div>
+            <strong id="investmentMetric" class="money-value">R$ 0,00</strong>
+            <small id="investmentDetail">Meta ainda não definida</small>
+          </article>
+          <article class="summary-card expense">
+            <div class="summary-card-top"><span class="summary-icon">▣</span><span class="metric-label">Despesas</span></div>
+            <strong id="expensesMetric" class="money-value">R$ 0,00</strong>
+            <small id="expenseDetail">Fixas, variáveis e recorrentes</small>
+          </article>
+          <article class="summary-card balance">
+            <div class="summary-card-top"><span class="summary-icon">✦</span><span class="metric-label">Saldo</span></div>
+            <strong id="balanceMetric" class="money-value">R$ 0,00</strong>
+            <small id="balanceDetail">Após gastos e investimentos</small>
+          </article>
+        </div>
+
+        <div class="dashboard-view-toggle" role="tablist" aria-label="Visualização do dashboard">
+          <button class="dashboard-view-button active" data-dashboard-view-button="table" type="button"><span aria-hidden="true">▦</span> Tabela</button>
+          <button class="dashboard-view-button" data-dashboard-view-button="charts" type="button"><span aria-hidden="true">◔</span> Gráficos</button>
+        </div>
+
+        <div id="dashboardTableView" class="dashboard-view active" data-dashboard-view="table">
+          <div class="transaction-tabs" role="tablist" aria-label="Filtrar registros rápidos">
+            <button class="transaction-tab" data-dashboard-filter="income" type="button">Receita</button>
+            <button class="transaction-tab active" data-dashboard-filter="fixed" type="button">Fixa</button>
+            <button class="transaction-tab" data-dashboard-filter="variable" type="button">Variável</button>
+          </div>
+
+          <article class="panel dashboard-table-panel">
+            <div class="panel-heading dashboard-table-heading">
+              <div>
+                <p class="eyebrow">Registros do mês</p>
+                <h3 id="dashboardTableTitle">Despesas fixas</h3>
+              </div>
+              <div class="panel-actions">
+                <button class="soft-action-button" data-section-link="movements" type="button"><span aria-hidden="true">☷</span> Filtros</button>
+                <button id="openTransactionModalDashboard" class="soft-action-button" type="button"><span aria-hidden="true">＋</span> Adicionar</button>
+              </div>
+            </div>
+            <div class="table-wrap dashboard-table-wrap">
+              <table class="dashboard-quick-table">
+                <thead><tr><th>Data</th><th>Nome</th><th class="align-right">Valor</th><th aria-label="Editar"></th></tr></thead>
+                <tbody id="dashboardTransactionRows"></tbody>
+              </table>
+            </div>
+            <p id="dashboardTransactionsEmpty" class="empty-state">Nenhum registro nesta categoria.</p>
+          </article>
+
+          <div class="dashboard-grid lower-grid reference-lower-grid">
+            <article class="panel">
+              <div class="panel-heading"><div><p class="eyebrow">Orçamento</p><h3>Progresso mensal</h3></div></div>
+              <div class="progress-group">
+                <div class="progress-row"><div><span>Gastos</span><strong id="budgetProgressText">R$ 0 de R$ 0</strong></div><div class="progress-track"><div id="budgetProgressBar" class="progress-fill"></div></div></div>
+                <div class="progress-row"><div><span>Investimentos</span><strong id="investmentProgressText">R$ 0 de R$ 0</strong></div><div class="progress-track"><div id="investmentProgressBar" class="progress-fill alt"></div></div></div>
+              </div>
+            </article>
+            <article class="panel">
+              <div class="panel-heading"><div><p class="eyebrow">Leitura automática</p><h3>Como está o mês</h3></div></div>
+              <div id="monthlyAnalysis" class="analysis-content"></div>
+            </article>
+            <article class="panel">
+              <div class="panel-heading"><div><p class="eyebrow">Gamificação</p><h3>Conquistas recentes</h3></div><button class="link-button" data-section-link="goals" type="button">Ver detalhes</button></div>
+              <div id="achievementPreview" class="achievement-preview"></div>
+            </article>
+          </div>
+        </div>
+
+        <div id="dashboardChartsView" class="dashboard-view" data-dashboard-view="charts">
+          <div class="dashboard-grid charts-reference-grid">
+            <article class="panel chart-panel wide">
+              <div class="panel-heading"><div><p class="eyebrow">Histórico</p><h3>Receitas, gastos e investimentos</h3></div><span class="legend-note">Últimos 6 meses</span></div>
+              <div class="chart-wrap"><canvas id="historyChart" aria-label="Gráfico do histórico mensal"></canvas><p id="historyChartEmpty" class="empty-state hidden">Adicione dados para visualizar o histórico.</p></div>
+            </article>
+            <article class="panel chart-panel">
+              <div class="panel-heading"><div><p class="eyebrow">Categorias</p><h3>Distribuição dos gastos</h3></div></div>
+              <div class="chart-wrap donut-wrap"><canvas id="categoryChart" aria-label="Gráfico de gastos por categoria"></canvas><div id="donutCenter" class="donut-center"><small>Total</small><strong>R$ 0</strong></div><p id="categoryChartEmpty" class="empty-state hidden">Nenhuma despesa neste mês.</p></div>
+              <div id="categoryLegend" class="category-legend"></div>
+            </article>
+            <article class="panel">
+              <div class="panel-heading"><div><p class="eyebrow">Últimos registros</p><h3>Movimentações recentes</h3></div><button class="link-button" data-section-link="movements" type="button">Ver todas</button></div>
+              <div id="recentTransactions" class="compact-list"></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="movementsSection" class="app-section">
+        <div class="section-title-row">
+          <div><p class="eyebrow">Planejamento mensal</p><h2>Orçamento</h2></div>
+          <button id="openPlanModalMovement" class="soft-action-button" type="button"><span aria-hidden="true">✎</span> Editar planejamento</button>
+        </div>
+
+        <div class="budget-summary-grid page-summary-grid">
+          <article class="summary-card income"><div class="summary-card-top"><span class="summary-icon">$</span><span class="metric-label">Receita</span></div><strong id="movementIncomeMetric" class="money-value">R$ 0,00</strong></article>
+          <article class="summary-card investment"><div class="summary-card-top"><span class="summary-icon">♙</span><span class="metric-label">Investir</span></div><strong id="movementInvestMetric" class="money-value">R$ 0,00</strong></article>
+          <article class="summary-card expense"><div class="summary-card-top"><span class="summary-icon">▣</span><span class="metric-label">Despesas</span></div><strong id="movementExpenseMetric" class="money-value">R$ 0,00</strong></article>
+          <article class="summary-card balance"><div class="summary-card-top"><span class="summary-icon">✦</span><span class="metric-label">Saldo</span></div><strong id="movementBalanceMetric" class="money-value">R$ 0,00</strong></article>
+        </div>
+
+        <div class="section-toolbar budget-toolbar">
+          <div class="filter-row">
+            <label><span>Buscar</span><input id="transactionSearch" type="search" placeholder="Descrição ou categoria" /></label>
+            <label><span>Tipo</span><select id="transactionTypeFilter"><option value="all">Todos</option><option value="income">Receitas</option><option value="expense">Despesas</option></select></label>
+            <label><span>Status</span><select id="transactionStatusFilter"><option value="all">Todos</option><option value="paid">Pago/recebido</option><option value="pending">Pendente</option></select></label>
+          </div>
+          <button class="soft-action-button" id="openTransactionModalSecondary" type="button"><span aria-hidden="true">＋</span> Adicionar</button>
+        </div>
+
+        <article class="panel table-panel reference-table-panel">
+          <div class="panel-heading table-card-heading"><div><p class="eyebrow">Todos os registros</p><h3>Movimentações do mês</h3></div><span class="legend-note">Edite ou remova pelos botões da última coluna</span></div>
+          <div class="table-wrap">
+            <table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Classificação</th><th>Status</th><th class="align-right">Valor</th><th aria-label="Ações"></th></tr></thead><tbody id="transactionsTableBody"></tbody></table>
+          </div>
+          <p id="transactionsEmpty" class="empty-state">Nenhuma movimentação encontrada.</p>
+        </article>
+      </section>
+
+      <section id="investmentsSection" class="app-section">
+        <div class="section-title-row">
+          <div><p class="eyebrow">Patrimônio manual</p><h2>Patrimônio</h2></div>
+          <button id="openInvestmentModal" class="soft-action-button" type="button"><span aria-hidden="true">＋</span> Novo investimento</button>
+        </div>
+
+        <article class="portfolio-hero-card">
+          <div><span>Patrimônio total informado</span><small>Valor atual de todos os investimentos cadastrados</small></div>
+          <strong id="portfolioHeroMetric" class="money-value">R$ 0,00</strong>
+          <span class="wealth-badge">BRL</span>
+        </article>
+
+        <div class="portfolio-card-grid">
+          <article class="portfolio-stat-card liquidity"><div class="portfolio-stat-title"><span class="portfolio-icon">▤</span><span>Liquidez do mês</span></div><strong id="portfolioLiquidityMetric" class="money-value">R$ 0,00</strong><small>Saldo positivo disponível</small></article>
+          <article class="portfolio-stat-card contributed"><div class="portfolio-stat-title"><span class="portfolio-icon">▥</span><span>Total aportado</span></div><strong id="investmentContributedTotal" class="money-value">R$ 0,00</strong><small>Histórico de aportes</small></article>
+          <article class="portfolio-stat-card investments"><div class="portfolio-stat-title"><span class="portfolio-icon">⌁</span><span>Investimentos</span></div><strong id="investmentCurrentTotal" class="money-value">R$ 0,00</strong><small>Valor atual informado</small></article>
+          <article class="portfolio-stat-card result"><div class="portfolio-stat-title"><span class="portfolio-icon">▭</span><span>Resultado</span></div><strong id="investmentResultTotal" class="money-value">R$ 0,00</strong><small>Valor atual menos aportes</small></article>
+        </div>
+
+        <div class="investment-month-strip"><span>Aportes no mês selecionado</span><strong id="investmentMonthTotal" class="money-value">R$ 0,00</strong></div>
+
+        <article class="panel table-panel reference-table-panel">
+          <div class="panel-heading table-card-heading"><div><p class="eyebrow">Carteira cadastrada</p><h3>Investimentos</h3></div></div>
+          <div class="table-wrap"><table><thead><tr><th>Data</th><th>Investimento</th><th>Tipo</th><th>Instituição</th><th class="align-right">Aportado</th><th class="align-right">Valor atual</th><th class="align-right">Resultado</th><th aria-label="Ações"></th></tr></thead><tbody id="investmentsTableBody"></tbody></table></div>
+          <p id="investmentsEmpty" class="empty-state">Nenhum investimento cadastrado.</p>
+        </article>
+      </section>
+
+      <section id="goalsSection" class="app-section">
+        <div class="section-toolbar">
+          <div>
+            <p class="eyebrow">Evolução</p>
+            <h2>Metas e conquistas</h2>
+          </div>
+          <button id="openPlanModalSecondary" class="secondary-button" type="button">Editar metas do mês</button>
+        </div>
+
+        <div class="goals-layout">
+          <article class="panel score-panel">
+            <div class="score-ring" id="scoreRing">
+              <div>
+                <strong id="scoreRingValue">0</strong>
+                <span>de 100</span>
+              </div>
+            </div>
+            <div>
+              <p class="eyebrow">Seu nível atual</p>
+              <h3 id="levelTitle">Reorganizando</h3>
+              <p id="levelDescription">Configure o mês e registre seus dados para começar a pontuar.</p>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Como sua pontuação foi calculada</p>
+                <h3>Desafios do mês</h3>
+              </div>
+            </div>
+            <div id="scoreBreakdown" class="challenge-list"></div>
+          </article>
+        </div>
+
+        <article class="panel achievement-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Marcos financeiros</p>
+              <h3>Galeria de conquistas</h3>
+            </div>
+          </div>
+          <div id="achievementGallery" class="achievement-grid"></div>
+        </article>
+      </section>
+
+      <section id="settingsSection" class="app-section">
+        <div class="section-toolbar">
+          <div>
+            <p class="eyebrow">Controle dos seus dados</p>
+            <h2>Dados e privacidade</h2>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <article class="panel">
+            <h3>Armazenamento local</h3>
+            <p>As informações ficam salvas apenas no navegador deste dispositivo. O projeto não envia dados para servidores externos.</p>
+            <div class="button-stack">
+              <button id="exportData" class="secondary-button" type="button">Exportar backup em JSON</button>
+              <label class="secondary-button file-button">
+                Importar backup
+                <input id="importData" type="file" accept="application/json" />
+              </label>
+            </div>
+          </article>
+
+          <article class="panel danger-panel">
+            <h3>Apagar dados</h3>
+            <p>Esta ação remove movimentações, investimentos, metas e configurações salvas neste navegador.</p>
+            <button id="clearData" class="danger-button" type="button">Apagar todos os dados</button>
+          </article>
+
+          <article class="panel">
+            <h3>Publicação no GitHub</h3>
+            <p>O site pode ser publicado com GitHub Pages. Os dados continuarão locais, mas o código e a página serão acessíveis conforme a visibilidade configurada no serviço.</p>
+            <p class="muted">Para autenticação real e sincronização entre dispositivos, será necessário adicionar um backend em uma próxima etapa.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="transactionModal" class="modal">
+    <form id="transactionForm" method="dialog" class="modal-card">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Novo registro</p>
+          <h2 id="transactionModalTitle">Adicionar movimentação</h2>
+        </div>
+        <button class="icon-button close-modal" type="button" aria-label="Fechar">×</button>
+      </div>
+
+      <input id="transactionId" type="hidden" />
+      <div class="form-grid">
+        <label>
+          <span>Tipo</span>
+          <select id="transactionType" required>
+            <option value="expense">Despesa</option>
+            <option value="income">Receita extra</option>
+          </select>
+        </label>
+        <label>
+          <span>Data</span>
+          <input id="transactionDate" type="date" required />
+        </label>
+        <label class="full-span">
+          <span>Descrição</span>
+          <input id="transactionDescription" type="text" maxlength="80" placeholder="Ex.: Supermercado" required />
+        </label>
+        <label>
+          <span>Valor</span>
+          <input id="transactionAmount" type="number" min="0" step="0.01" placeholder="0,00" required />
+        </label>
+        <label>
+          <span>Categoria</span>
+          <select id="transactionCategory" required></select>
+        </label>
+        <label id="expenseClassField">
+          <span>Classificação</span>
+          <select id="transactionExpenseClass">
+            <option value="fixed">Fixa</option>
+            <option value="variable">Variável</option>
+            <option value="recurring">Recorrente</option>
+          </select>
+        </label>
+        <label>
+          <span>Status</span>
+          <select id="transactionStatus">
+            <option value="paid">Pago/recebido</option>
+            <option value="pending">Pendente</option>
+          </select>
+        </label>
+        <label>
+          <span>Forma de pagamento</span>
+          <select id="transactionPaymentMethod">
+            <option value="pix">Pix</option>
+            <option value="debit">Débito</option>
+            <option value="credit">Crédito</option>
+            <option value="cash">Dinheiro</option>
+            <option value="transfer">Transferência</option>
+            <option value="other">Outro</option>
+          </select>
+        </label>
+        <label class="full-span">
+          <span>Observações</span>
+          <textarea id="transactionNotes" rows="3" maxlength="240" placeholder="Opcional"></textarea>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button class="ghost-button close-modal" type="button">Cancelar</button>
+        <button class="primary-button" type="submit">Salvar movimentação</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="investmentModal" class="modal">
+    <form id="investmentForm" method="dialog" class="modal-card">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Controle manual</p>
+          <h2 id="investmentModalTitle">Adicionar investimento</h2>
+        </div>
+        <button class="icon-button close-modal" type="button" aria-label="Fechar">×</button>
+      </div>
+
+      <input id="investmentId" type="hidden" />
+      <div class="form-grid">
+        <label>
+          <span>Data do aporte</span>
+          <input id="investmentDate" type="date" required />
+        </label>
+        <label>
+          <span>Tipo</span>
+          <select id="investmentType" required>
+            <option value="Reserva de emergência">Reserva de emergência</option>
+            <option value="Renda fixa">Renda fixa</option>
+            <option value="Ações">Ações</option>
+            <option value="FIIs">FIIs</option>
+            <option value="Criptomoedas">Criptomoedas</option>
+            <option value="Previdência">Previdência</option>
+            <option value="Outros">Outros</option>
+          </select>
+        </label>
+        <label class="full-span">
+          <span>Nome do investimento</span>
+          <input id="investmentName" type="text" maxlength="80" placeholder="Ex.: CDB Reserva" required />
+        </label>
+        <label>
+          <span>Instituição</span>
+          <input id="investmentInstitution" type="text" maxlength="60" placeholder="Ex.: Banco ou corretora" />
+        </label>
+        <label>
+          <span>Valor aportado</span>
+          <input id="investmentAmount" type="number" min="0" step="0.01" required />
+        </label>
+        <label>
+          <span>Valor atual informado</span>
+          <input id="investmentCurrentValue" type="number" min="0" step="0.01" />
+        </label>
+        <label class="full-span">
+          <span>Observações</span>
+          <textarea id="investmentNotes" rows="3" maxlength="240" placeholder="Opcional"></textarea>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button class="ghost-button close-modal" type="button">Cancelar</button>
+        <button class="primary-button" type="submit">Salvar investimento</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="planModal" class="modal">
+    <form id="planForm" method="dialog" class="modal-card small-modal">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Planejamento</p>
+          <h2>Configurar mês</h2>
+        </div>
+        <button class="icon-button close-modal" type="button" aria-label="Fechar">×</button>
+      </div>
+      <div class="form-grid one-column">
+        <label>
+          <span>Renda principal recebida</span>
+          <input id="planSalary" type="number" min="0" step="0.01" placeholder="0,00" />
+          <small>Salário ou renda principal. Entradas extras são registradas nas movimentações.</small>
+        </label>
+        <label>
+          <span>Limite total de gastos</span>
+          <input id="planBudget" type="number" min="0" step="0.01" placeholder="0,00" />
+        </label>
+        <label>
+          <span>Meta de investimento</span>
+          <input id="planInvestmentGoal" type="number" min="0" step="0.01" placeholder="0,00" />
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button class="ghost-button close-modal" type="button">Cancelar</button>
+        <button class="primary-button" type="submit">Salvar planejamento</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
