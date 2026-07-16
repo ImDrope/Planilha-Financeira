@@ -258,9 +258,12 @@
       <section id="investmentsSection" class="app-section">
         <div class="section-title-row">
           <div><p class="eyebrow">Patrimônio manual</p><h2>Investimentos</h2></div>
-          <div class="panel-actions">
-            <button id="openInvestmentEventModal" class="soft-action-button" type="button">＋ Registrar evento</button>
-            <button id="openInvestmentModal" class="primary-button" type="button"><span aria-hidden="true">＋</span> Novo investimento</button>
+          <div class="investment-header-actions">
+            <div class="panel-actions">
+              <button id="openInvestmentEventModal" class="soft-action-button" type="button">＋ Movimentar investimento</button>
+              <button id="openInvestmentModal" class="primary-button" type="button"><span aria-hidden="true">＋</span> Novo investimento</button>
+            </div>
+            <small id="investmentEventHint">Cadastre um investimento antes de registrar movimentações.</small>
           </div>
         </div>
 
@@ -287,6 +290,7 @@
         </div>
 
         <div class="investment-month-strip"><span>Aportes no mês selecionado</span><strong id="investmentMonthTotal" class="money-value">R$ 0,00</strong></div>
+        <div id="investmentValuationAlert" class="investment-valuation-alert hidden" role="status"></div>
 
         <article class="panel chart-panel wide">
           <div class="panel-heading"><div><p class="eyebrow">Evolução patrimonial</p><h3>Últimos 12 meses</h3></div></div>
@@ -607,15 +611,16 @@
 
   <dialog id="investmentEventModal" class="modal">
     <form id="investmentEventForm" method="dialog" class="modal-card small-modal">
-      <div class="modal-header"><div><p class="eyebrow">Histórico</p><h2>Registrar evento</h2></div><button class="icon-button close-modal" type="button" aria-label="Fechar">×</button></div>
+      <div class="modal-header"><div><p class="eyebrow">Histórico</p><h2>Movimentar investimento</h2></div><button class="icon-button close-modal" type="button" aria-label="Fechar">×</button></div>
       <div class="form-grid one-column">
         <label><span>Investimento</span><select id="investmentEventAsset" required></select></label>
         <label><span>Evento</span><select id="investmentEventType"><option value="contribution">Aporte</option><option value="withdrawal">Resgate</option><option value="income">Rendimento recebido</option><option value="valuation">Atualização do valor atual</option></select></label>
+        <p id="investmentEventHelp" class="investment-event-help">Aporte adiciona capital ao investimento e aumenta provisoriamente o valor atual.</p>
         <label><span>Data</span><input id="investmentEventDate" type="date" required /></label>
         <label><span>Valor</span><input id="investmentEventAmount" type="number" min="0" step="0.01" required /></label>
         <label><span>Observação</span><input id="investmentEventNotes" maxlength="120" /></label>
       </div>
-      <div class="modal-actions"><button class="ghost-button close-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Registrar evento</button></div>
+      <div class="modal-actions"><button class="ghost-button close-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Salvar movimentação</button></div>
     </form>
   </dialog>
 
