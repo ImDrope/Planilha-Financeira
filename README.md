@@ -1,12 +1,13 @@
 # Despesa Mensal — Dashboard Financeiro Pessoal
 
-Aplicação web pessoal para registrar receitas, despesas, cartões e investimentos, acompanhar o orçamento mensal e visualizar previsões, análises e conquistas.
+Aplicação web pessoal para registrar receitas, despesas, compras parceladas e investimentos, acompanhar o orçamento mensal e visualizar previsões, análises e conquistas.
 
 ## Funcionalidades
 
 - Recorrências mensais, semanais ou anuais, com período de vigência, geração automática e meses ignorados.
-- Cartões e faturas integrados à área de Despesas, com compras parceladas registradas pelo mesmo formulário das demais movimentações.
+- Compras parceladas integradas à área de Despesas, sem cadastro de cartão, distribuídas automaticamente nos meses futuros.
 - Indicadores separados de saldo atual e previsto, pagamentos, pendências, vencimentos e receitas esperadas.
+- Filtro rápido “Todos” no Dashboard e movimentações apresentadas como cards no celular.
 - Área de Investimentos com meta mensal, aportes, resgates, rendimentos, valor atual estimado, alertas de atualização, rentabilidade, objetivos e evolução histórica.
 - Orçamento geral e limites específicos por categoria.
 - Fechamento mensal permanente, comparação com o mês anterior, transferência de pendências e relatório em PDF.
