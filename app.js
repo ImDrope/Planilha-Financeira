@@ -2,7 +2,7 @@
   "use strict";
 
   const STORAGE_KEY = "financeQuestData_v1";
-  const DATA_VERSION = 4;
+  const DATA_VERSION = 5;
   const THEME_KEY = "financeQuestTheme";
   const PRIVACY_KEY = "financeQuestValuesHidden";
 
@@ -30,7 +30,7 @@
   let selectedMonth = currentMonthKey();
   let toastTimer = null;
   let dashboardView = "table";
-  let dashboardFilter = "fixed";
+  let dashboardFilter = "all";
   let valuesHidden = false;
 
   const $ = (selector) => document.querySelector(selector);
@@ -186,26 +186,20 @@
     return Number((plan.categoryBudgets || {})[category] || 0);
   }
 
-  function cardById(id) {
-    return state.cards.find((card) => card.id === id);
-  }
-
   function invoiceRows() {
     const totals = {};
-    state.transactions.filter((item) => item.cardId && item.installmentGroup).forEach((item) => {
-      const key = `${item.invoiceMonth || monthFromDate(item.date)}||${item.cardId}`;
-      totals[key] = (totals[key] || 0) + Number(item.amount || 0);
+    state.transactions.filter((item) => item.paymentMethod === "credit" && item.installmentGroup).forEach((item) => {
+      const month = item.invoiceMonth || monthFromDate(item.date);
+      totals[month] ||= { total: 0, count: 0 };
+      totals[month].total += Number(item.amount || 0);
+      totals[month].count += 1;
     });
-    return Object.entries(totals).map(([key, total]) => {
-      const splitAt = key.indexOf("||");
-      const month = key.slice(0, splitAt);
-      const cardId = key.slice(splitAt + 2);
-      const card = cardById(cardId);
-      return { month, cardId, card, total, commitment: card?.limit > 0 ? total / Number(card.limit) * 100 : 0 };
-    }).sort((a, b) => a.month.localeCompare(b.month));
+    return Object.entries(totals)
+      .map(([month, values]) => ({ month, ...values }))
+      .sort((a, b) => a.month.localeCompare(b.month));
   }
 
-  function futureCardCommitment(monthKey = selectedMonth) {
+  function futureCreditCommitment(monthKey = selectedMonth) {
     return invoiceRows().filter((row) => row.month > monthKey).reduce((sum, row) => sum + row.total, 0);
   }
 
@@ -450,12 +444,14 @@
 
   function renderDashboardQuickTable(stats) {
     const titleMap = {
+      all: "Todos os registros",
       income: "Receitas extras",
       fixed: "Despesas fixas",
       variable: "Variáveis e recorrentes"
     };
     const rows = stats.transactions
       .filter((item) => {
+        if (dashboardFilter === "all") return true;
         if (dashboardFilter === "income") return item.type === "income";
         if (dashboardFilter === "fixed") return item.type === "expense" && item.expenseClass === "fixed";
         return item.type === "expense" && ["variable", "recurring"].includes(item.expenseClass);
@@ -543,7 +539,7 @@
       ? `${stats.overdueCount} conta(s) vencida(s) · ${formatCurrency(stats.overdueTotal)}`
       : "Nenhuma conta vencida";
     $("#expectedIncomeMetric").textContent = formatCurrency(stats.expectedIncome);
-    const futureCommitment = futureCardCommitment();
+    const futureCommitment = futureCreditCommitment();
     $("#futureCommitmentMetric").textContent = futureCommitment > 0
       ? `${formatCurrency(futureCommitment)} em faturas futuras`
       : "Sem compromissos futuros";
@@ -795,8 +791,14 @@
     const stats = getMonthStats();
     $("#movementIncomeMetric").textContent = formatCurrency(stats.income);
     $("#movementExpenseMetric").textContent = formatCurrency(stats.totalExpenses);
+    $("#movementPendingMetric").textContent = formatCurrency(stats.pendingExpenses);
+    $("#movementOverdueDetail").textContent = stats.overdueCount
+      ? `${stats.overdueCount} conta(s) vencida(s) · ${formatCurrency(stats.overdueTotal)}`
+      : "Nenhuma conta vencida";
     $("#movementBalanceMetric").textContent = formatCurrency(stats.balance);
     $("#movementBalanceMetric").className = `money-value ${stats.balance >= 0 ? "amount-positive" : "amount-negative"}`;
+    $("#movementForecastMetric").textContent = formatCurrency(stats.forecastBalance);
+    $("#movementForecastMetric").className = `money-value ${stats.forecastBalance >= 0 ? "amount-positive" : "amount-negative"}`;
 
     const search = $("#transactionSearch").value.trim().toLowerCase();
     const typeFilter = $("#transactionTypeFilter").value;
@@ -829,6 +831,23 @@
         </td>
       </tr>
     `).join("");
+
+    $("#transactionsMobileList").innerHTML = rows.map((item) => `
+      <article class="transaction-mobile-card">
+        <div class="transaction-mobile-head">
+          <div><strong>${escapeHtml(item.description)}</strong><small>${formatDate(item.date)} · ${escapeHtml(item.category)}</small></div>
+          <strong class="money-value ${item.type === "income" ? "amount-positive" : "amount-negative"}">${item.type === "income" ? "+" : "−"}${formatCurrency(item.amount)}</strong>
+        </div>
+        <div class="transaction-mobile-meta">
+          <span class="${item.type === "expense" ? "class-badge" : "class-badge income-class"}">${item.type === "expense" ? classLabel(item.expenseClass) : "Receita extra"}</span>
+          <span class="status-badge ${item.status}">${item.status === "paid" ? "Pago/recebido" : "Pendente"}</span>
+        </div>
+        <div class="row-actions">
+          <button class="row-action" data-edit-transaction="${item.id}" type="button">Editar</button>
+          <button class="row-action" data-delete-transaction="${item.id}" type="button">Excluir</button>
+        </div>
+      </article>
+    `).join("");
   }
 
   function renderCategoryBudgets() {
@@ -844,23 +863,12 @@
     }).join("");
   }
 
-  function populateCardSelect() {
-    const options = state.cards.map((card) => `<option value="${card.id}">${escapeHtml(card.name)}</option>`).join("");
-    $("#transactionCard").innerHTML = options || '<option value="">Cadastre um cartão em Despesas</option>';
-  }
-
   function renderCards() {
-    populateCardSelect();
-    const currentRows = invoiceRows().filter((row) => row.month === selectedMonth);
-    $("#creditCardGrid").innerHTML = state.cards.length ? state.cards.map((card) => {
-      const invoice = currentRows.find((row) => row.cardId === card.id)?.total || 0;
-      const pct = card.limit > 0 ? invoice / Number(card.limit) * 100 : 0;
-      return `<article class="credit-card ${pct >= 90 ? "limit-warning" : ""}"><div><span>Cartão</span><strong>${escapeHtml(card.name)}</strong></div><div><small>Fatura de ${monthLabel(selectedMonth)}</small><strong class="money-value">${formatCurrency(invoice)}</strong></div><div class="progress-track"><div class="progress-fill" style="width:${Math.min(100, pct)}%"></div></div><small>${pct.toFixed(0)}% de ${formatCurrency(card.limit)} · fecha dia ${card.closingDay} · vence dia ${card.dueDay}</small><button class="row-action" data-delete-card="${card.id}" type="button">Excluir cartão</button></article>`;
-    }).join("") : '<p class="empty-state">Nenhum cartão cadastrado.</p>';
     const rows = invoiceRows().filter((row) => row.month >= selectedMonth).slice(0, 24);
     $("#invoiceEmpty").classList.toggle("hidden", rows.length > 0);
-    $("#invoiceTableBody").innerHTML = rows.map((row) => `<tr><td>${monthLabel(row.month)}</td><td>${escapeHtml(row.card?.name || "Cartão removido")}</td><td class="align-right money-value">${formatCurrency(row.total)}</td><td class="align-right ${row.commitment >= 90 ? "amount-negative" : ""}">${row.commitment.toFixed(0)}%</td></tr>`).join("");
-    $("#invoiceCommitment").textContent = `${formatCurrency(futureCardCommitment())} comprometidos após este mês`;
+    $("#invoiceTableBody").innerHTML = rows.map((row) => `<tr><td>${monthLabel(row.month)}</td><td class="align-right money-value">${formatCurrency(row.total)}</td><td class="align-right">${row.count}</td></tr>`).join("");
+    const future = futureCreditCommitment();
+    $("#invoiceCommitment").textContent = future > 0 ? `${formatCurrency(future)} em parcelas futuras` : "Sem parcelas futuras";
   }
 
   function renderRecurringList() {
@@ -1058,7 +1066,6 @@
 
   function openTransactionModal(id = null) {
     elements.transactionForm.reset();
-    populateCardSelect();
     $("#transactionId").value = "";
     $("#transactionDate").value = `${selectedMonth}-${selectedMonth === currentMonthKey() ? todayISO().slice(8, 10) : "01"}`;
     $("#transactionType").value = "expense";
@@ -1082,12 +1089,10 @@
       $("#transactionExpenseClass").value = item.expenseClass || "variable";
       $("#transactionStatus").value = item.status;
       $("#transactionPaymentMethod").value = item.paymentMethod || "other";
-      $("#transactionCard").value = item.cardId || "";
       $("#transactionInstallmentCount").value = item.installmentCount || 1;
       $("#transactionInstallmentCount").disabled = Boolean(item.installmentGroup);
       $("#transactionNotes").value = item.notes || "";
       toggleExpenseFields();
-      $("#transactionCard").value = item.cardId || "";
     }
 
     elements.transactionModal.showModal();
@@ -1135,7 +1140,6 @@
     const currentCategory = $("#transactionCategory").value;
     $("#expenseClassField").classList.toggle("hidden", !isExpense);
     $("#creditPurchaseFields").classList.toggle("hidden", !isCredit);
-    if (isCredit) populateCardSelect();
     populateCategories(isExpense ? "expense" : "income");
     if ([...$("#transactionCategory").options].some((option) => option.value === currentCategory)) $("#transactionCategory").value = currentCategory;
   }
@@ -1155,26 +1159,22 @@
     state.recurrences.push(item); generateRecurringTransactions(); saveState(); renderAll(); renderRecurringList(); $("#recurringForm").reset(); $("#recurringStart").value = todayISO(); showToast("Recorrência criada e lançamentos gerados.");
   }
 
-  function handleCardSubmit(event) {
-    event.preventDefault(); state.cards.push({ id: generateId("card"), name: $("#cardName").value.trim(), limit: Number($("#cardLimit").value), closingDay: Number($("#cardClosingDay").value), dueDay: Number($("#cardDueDay").value) }); saveState(); $("#cardModal").close(); renderAll(); showToast("Cartão cadastrado.");
-  }
-
-  function createCardPurchase({ card, purchaseDate, count, total, description, category, expenseClass, notes }) {
+  function createInstallmentPurchase({ purchaseDate, count, total, description, category, expenseClass, notes }) {
     const date = new Date(`${purchaseDate}T12:00:00`);
-    const base = date.getDate() > Number(card.closingDay) ? addMonths(date, 1) : new Date(date.getFullYear(), date.getMonth(), 1);
+    const base = new Date(date.getFullYear(), date.getMonth(), 1);
     const group = generateId("parcel");
     let allocated = 0;
     for (let index = 0; index < count; index += 1) {
       const month = addMonths(base, index);
       const amount = index === count - 1 ? Number((total - allocated).toFixed(2)) : Number((total / count).toFixed(2));
       allocated += amount;
-      const dueDate = safeDate(month.getFullYear(), month.getMonth(), card.dueDay);
+      const installmentDate = safeDate(month.getFullYear(), month.getMonth(), date.getDate());
       state.transactions.push({
-        id: generateId("tx"), type: "expense", date: toISO(dueDate), invoiceMonth: monthFromDate(toISO(dueDate)),
+        id: generateId("tx"), type: "expense", date: toISO(installmentDate), invoiceMonth: monthFromDate(toISO(installmentDate)),
         description: count > 1 ? `${description} (${index + 1}/${count})` : description,
-        amount, category, expenseClass, status: "pending", paymentMethod: "credit", cardId: card.id,
+        amount, category, expenseClass, status: "pending", paymentMethod: "credit",
         installmentGroup: group, installmentNumber: index + 1, installmentCount: count,
-        notes: notes || `${count > 1 ? "Compra parcelada" : "Compra"} em ${card.name}`
+        notes: notes || (count > 1 ? "Compra parcelada" : "Compra no crédito")
       });
     }
   }
@@ -1208,11 +1208,8 @@
     const type = $("#transactionType").value;
     const paymentMethod = $("#transactionPaymentMethod").value;
     if (!existingId && type === "expense" && paymentMethod === "credit") {
-      const card = cardById($("#transactionCard").value);
-      if (!card) return alert("Cadastre um cartão na seção Cartões e faturas antes de registrar a compra.");
       const count = Math.max(1, Number($("#transactionInstallmentCount").value || 1));
-      createCardPurchase({
-        card,
+      createInstallmentPurchase({
         purchaseDate: $("#transactionDate").value,
         count,
         total: Number($("#transactionAmount").value),
@@ -1244,7 +1241,6 @@
 
     if (existingItem?.installmentGroup && paymentMethod === "credit") {
       Object.assign(item, {
-        cardId: $("#transactionCard").value || existingItem.cardId,
         invoiceMonth: existingItem.invoiceMonth,
         installmentGroup: existingItem.installmentGroup,
         installmentNumber: existingItem.installmentNumber,
@@ -1433,9 +1429,15 @@
     $("#openTransactionModal").addEventListener("click", () => openTransactionModal());
     $("#openTransactionModalSecondary").addEventListener("click", () => openTransactionModal());
     $("#openTransactionModalDashboard").addEventListener("click", () => openTransactionModal());
+    $("#openInstallmentPurchase").addEventListener("click", () => {
+      openTransactionModal();
+      $("#transactionPaymentMethod").value = "credit";
+      $("#transactionExpenseClass").value = "variable";
+      $("#transactionStatus").value = "pending";
+      toggleExpenseFields();
+    });
     $("#openInvestmentModal").addEventListener("click", () => openInvestmentModal());
     $("#openRecurringModal").addEventListener("click", openRecurringModal);
-    $("#openCardModal").addEventListener("click", () => { $("#cardForm").reset(); $("#cardModal").showModal(); });
     $("#openInvestmentEventModal").addEventListener("click", () => {
       if (!state.investments.length) return;
       populateInvestmentEventAssets();
@@ -1461,7 +1463,6 @@
     elements.planForm.addEventListener("submit", handlePlanSubmit);
     $("#recurringForm").addEventListener("submit", handleRecurringSubmit);
     $("#recurringType").addEventListener("change", populateRecurringCategories);
-    $("#cardForm").addEventListener("submit", handleCardSubmit);
     $("#investmentEventForm").addEventListener("submit", handleInvestmentEventSubmit);
     $("#investmentEventType").addEventListener("change", updateInvestmentEventHelp);
     $("#onboardingForm").addEventListener("submit", handleOnboardingSubmit);
@@ -1478,6 +1479,7 @@
       if (remove) deleteTransaction(remove.dataset.deleteTransaction);
     };
     $("#transactionsTableBody").addEventListener("click", handleTransactionTableAction);
+    $("#transactionsMobileList").addEventListener("click", handleTransactionTableAction);
     $("#dashboardTransactionRows").addEventListener("click", handleTransactionTableAction);
 
     $("#investmentsTableBody").addEventListener("click", (event) => {
@@ -1489,10 +1491,9 @@
     $("#investmentEventsBody").addEventListener("click", (event) => { const remove = event.target.closest("[data-delete-investment-event]"); if (remove && confirm("Excluir este evento?")) { state.investmentEvents = state.investmentEvents.filter((item) => item.id !== remove.dataset.deleteInvestmentEvent); saveState(); renderAll(); } });
     $("#recurringList").addEventListener("click", (event) => {
       const skip = event.target.closest("[data-skip-recurrence]"); const remove = event.target.closest("[data-delete-recurrence]");
-      if (skip) { const item = state.recurrences.find((entry) => entry.id === skip.dataset.skipRecurrence); if (!item) return; item.skippedMonths ||= []; if (item.skippedMonths.includes(selectedMonth)) item.skippedMonths = item.skippedMonths.filter((month) => month !== selectedMonth); else { item.skippedMonths.push(selectedMonth); state.transactions = state.transactions.filter((tx) => !(tx.recurrenceId === item.id && monthFromDate(tx.date) === selectedMonth && tx.status === "pending")); } generateRecurringTransactions(); saveState(); renderAll(); renderRecurringList(); }
+      if (skip) { const item = state.recurrences.find((entry) => entry.id === skip.dataset.skipRecurrence); if (!item) return; item.skippedMonths ||= []; const wasSkipped = item.skippedMonths.includes(selectedMonth); if (wasSkipped) item.skippedMonths = item.skippedMonths.filter((month) => month !== selectedMonth); else { item.skippedMonths.push(selectedMonth); state.transactions = state.transactions.filter((tx) => !(tx.recurrenceId === item.id && monthFromDate(tx.date) === selectedMonth && tx.status === "pending")); } generateRecurringTransactions(); saveState(); renderAll(); renderRecurringList(); showToast(wasSkipped ? `Recorrência reativada em ${monthLabel(selectedMonth)}.` : `Recorrência ignorada em ${monthLabel(selectedMonth)}.`); }
       if (remove && confirm("Excluir esta recorrência e os lançamentos futuros pendentes?")) { const id = remove.dataset.deleteRecurrence; state.recurrences = state.recurrences.filter((item) => item.id !== id); state.transactions = state.transactions.filter((tx) => !(tx.recurrenceId === id && tx.status === "pending" && tx.date >= todayISO())); saveState(); renderAll(); renderRecurringList(); }
     });
-    $("#creditCardGrid").addEventListener("click", (event) => { const remove = event.target.closest("[data-delete-card]"); if (remove && confirm("Excluir este cartão? As parcelas existentes serão preservadas.")) { state.cards = state.cards.filter((card) => card.id !== remove.dataset.deleteCard); saveState(); renderAll(); } });
     $("#closureList").addEventListener("click", (event) => { const download = event.target.closest("[data-download-closure]"); if (download) downloadClosurePdf(download.dataset.downloadClosure); });
 
     $("#exportData").addEventListener("click", exportData);
@@ -1531,6 +1532,7 @@
     bindEvents();
     setDashboardView(dashboardView);
     setDashboardFilter(dashboardFilter);
+    if (window.matchMedia("(max-width: 760px)").matches) $("#forecastDisclosure").open = false;
     renderAll();
     if (!state.onboardingCompleted) setTimeout(() => $("#onboardingModal").showModal(), 250);
   }
