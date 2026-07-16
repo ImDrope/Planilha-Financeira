@@ -778,7 +778,6 @@
   function renderTransactions() {
     const stats = getMonthStats();
     $("#movementIncomeMetric").textContent = formatCurrency(stats.income);
-    $("#movementInvestMetric").textContent = formatCurrency(stats.invested);
     $("#movementExpenseMetric").textContent = formatCurrency(stats.totalExpenses);
     $("#movementBalanceMetric").textContent = formatCurrency(stats.balance);
     $("#movementBalanceMetric").className = `money-value ${stats.balance >= 0 ? "amount-positive" : "amount-negative"}`;
@@ -831,11 +830,7 @@
 
   function populateCardSelect() {
     const options = state.cards.map((card) => `<option value="${card.id}">${escapeHtml(card.name)}</option>`).join("");
-    $("#installmentCard").innerHTML = options || '<option value="">Cadastre um cartão primeiro</option>';
-  }
-
-  function populateInstallmentCategories() {
-    $("#installmentCategory").innerHTML = expenseCategories.map((category) => `<option value="${category}">${category}</option>`).join("");
+    $("#transactionCard").innerHTML = options || '<option value="">Cadastre um cartão em Despesas</option>';
   }
 
   function renderCards() {
@@ -1036,10 +1031,13 @@
 
   function openTransactionModal(id = null) {
     elements.transactionForm.reset();
+    populateCardSelect();
     $("#transactionId").value = "";
     $("#transactionDate").value = `${selectedMonth}-${selectedMonth === currentMonthKey() ? todayISO().slice(8, 10) : "01"}`;
     $("#transactionType").value = "expense";
     $("#transactionStatus").value = "paid";
+    $("#transactionInstallmentCount").value = "1";
+    $("#transactionInstallmentCount").disabled = false;
     $("#transactionModalTitle").textContent = id ? "Editar movimentação" : "Adicionar movimentação";
     populateCategories("expense");
     toggleExpenseFields();
@@ -1057,8 +1055,12 @@
       $("#transactionExpenseClass").value = item.expenseClass || "variable";
       $("#transactionStatus").value = item.status;
       $("#transactionPaymentMethod").value = item.paymentMethod || "other";
+      $("#transactionCard").value = item.cardId || "";
+      $("#transactionInstallmentCount").value = item.installmentCount || 1;
+      $("#transactionInstallmentCount").disabled = Boolean(item.installmentGroup);
       $("#transactionNotes").value = item.notes || "";
       toggleExpenseFields();
+      $("#transactionCard").value = item.cardId || "";
     }
 
     elements.transactionModal.showModal();
@@ -1102,8 +1104,13 @@
 
   function toggleExpenseFields() {
     const isExpense = $("#transactionType").value === "expense";
+    const isCredit = isExpense && $("#transactionPaymentMethod").value === "credit";
+    const currentCategory = $("#transactionCategory").value;
     $("#expenseClassField").classList.toggle("hidden", !isExpense);
+    $("#creditPurchaseFields").classList.toggle("hidden", !isCredit);
+    if (isCredit) populateCardSelect();
     populateCategories(isExpense ? "expense" : "income");
+    if ([...$("#transactionCategory").options].some((option) => option.value === currentCategory)) $("#transactionCategory").value = currentCategory;
   }
 
   function populateRecurringCategories() {
@@ -1125,11 +1132,24 @@
     event.preventDefault(); state.cards.push({ id: generateId("card"), name: $("#cardName").value.trim(), limit: Number($("#cardLimit").value), closingDay: Number($("#cardClosingDay").value), dueDay: Number($("#cardDueDay").value) }); saveState(); $("#cardModal").close(); renderAll(); showToast("Cartão cadastrado.");
   }
 
-  function handleInstallmentSubmit(event) {
-    event.preventDefault(); const card = cardById($("#installmentCard").value); if (!card) return alert("Cadastre um cartão primeiro.");
-    const purchaseDate = new Date(`${$("#installmentDate").value}T12:00:00`); const count = Number($("#installmentCount").value); const total = Number($("#installmentTotal").value); const base = purchaseDate.getDate() > Number(card.closingDay) ? addMonths(purchaseDate, 1) : new Date(purchaseDate.getFullYear(), purchaseDate.getMonth(), 1); const group = generateId("parcel"); let allocated = 0;
-    for (let index = 0; index < count; index += 1) { const month = addMonths(base, index); const amount = index === count - 1 ? Number((total - allocated).toFixed(2)) : Number((total / count).toFixed(2)); allocated += amount; const date = safeDate(month.getFullYear(), month.getMonth(), card.dueDay); state.transactions.push({ id: generateId("tx"), type: "expense", date: toISO(date), invoiceMonth: monthFromDate(toISO(date)), description: `${$("#installmentDescription").value.trim()} (${index + 1}/${count})`, amount, category: $("#installmentCategory").value, expenseClass: "variable", status: "pending", paymentMethod: "credit", cardId: card.id, installmentGroup: group, installmentNumber: index + 1, installmentCount: count, notes: `Compra parcelada em ${card.name}` }); }
-    saveState(); $("#installmentModal").close(); renderAll(); showToast(`${count} parcela(s) distribuída(s) nas faturas.`);
+  function createCardPurchase({ card, purchaseDate, count, total, description, category, expenseClass, notes }) {
+    const date = new Date(`${purchaseDate}T12:00:00`);
+    const base = date.getDate() > Number(card.closingDay) ? addMonths(date, 1) : new Date(date.getFullYear(), date.getMonth(), 1);
+    const group = generateId("parcel");
+    let allocated = 0;
+    for (let index = 0; index < count; index += 1) {
+      const month = addMonths(base, index);
+      const amount = index === count - 1 ? Number((total - allocated).toFixed(2)) : Number((total / count).toFixed(2));
+      allocated += amount;
+      const dueDate = safeDate(month.getFullYear(), month.getMonth(), card.dueDay);
+      state.transactions.push({
+        id: generateId("tx"), type: "expense", date: toISO(dueDate), invoiceMonth: monthFromDate(toISO(dueDate)),
+        description: count > 1 ? `${description} (${index + 1}/${count})` : description,
+        amount, category, expenseClass, status: "pending", paymentMethod: "credit", cardId: card.id,
+        installmentGroup: group, installmentNumber: index + 1, installmentCount: count,
+        notes: notes || `${count > 1 ? "Compra parcelada" : "Compra"} em ${card.name}`
+      });
+    }
   }
 
   function populateInvestmentEventAssets() {
@@ -1146,8 +1166,32 @@
 
   function handleTransactionSubmit(event) {
     event.preventDefault();
-    const id = $("#transactionId").value || generateId("tx");
+    const existingId = $("#transactionId").value;
+    const id = existingId || generateId("tx");
     const type = $("#transactionType").value;
+    const paymentMethod = $("#transactionPaymentMethod").value;
+    if (!existingId && type === "expense" && paymentMethod === "credit") {
+      const card = cardById($("#transactionCard").value);
+      if (!card) return alert("Cadastre um cartão na seção Cartões e faturas antes de registrar a compra.");
+      const count = Math.max(1, Number($("#transactionInstallmentCount").value || 1));
+      createCardPurchase({
+        card,
+        purchaseDate: $("#transactionDate").value,
+        count,
+        total: Number($("#transactionAmount").value),
+        description: $("#transactionDescription").value.trim(),
+        category: $("#transactionCategory").value,
+        expenseClass: $("#transactionExpenseClass").value,
+        notes: $("#transactionNotes").value.trim()
+      });
+      saveState();
+      elements.transactionModal.close();
+      renderAll();
+      showToast(count > 1 ? `${count} parcelas distribuídas nas faturas.` : "Compra adicionada à fatura.");
+      return;
+    }
+
+    const existingItem = state.transactions.find((entry) => entry.id === id);
     const item = {
       id,
       type,
@@ -1157,9 +1201,19 @@
       category: $("#transactionCategory").value,
       expenseClass: type === "expense" ? $("#transactionExpenseClass").value : null,
       status: $("#transactionStatus").value,
-      paymentMethod: $("#transactionPaymentMethod").value,
+      paymentMethod,
       notes: $("#transactionNotes").value.trim()
     };
+
+    if (existingItem?.installmentGroup && paymentMethod === "credit") {
+      Object.assign(item, {
+        cardId: $("#transactionCard").value || existingItem.cardId,
+        invoiceMonth: existingItem.invoiceMonth,
+        installmentGroup: existingItem.installmentGroup,
+        installmentNumber: existingItem.installmentNumber,
+        installmentCount: existingItem.installmentCount
+      });
+    }
 
     const existingIndex = state.transactions.findIndex((entry) => entry.id === id);
     if (existingIndex >= 0) state.transactions[existingIndex] = item;
@@ -1242,9 +1296,8 @@
   function navigate(section) {
     const titles = {
       dashboard: "Visão geral",
-      movements: "Orçamento",
-      cards: "Cartões e faturas",
-      investments: "Patrimônio",
+      movements: "Despesas",
+      investments: "Investimentos",
       goals: "Metas e conquistas",
       settings: "Dados e privacidade"
     };
@@ -1346,7 +1399,6 @@
     $("#openInvestmentModal").addEventListener("click", () => openInvestmentModal());
     $("#openRecurringModal").addEventListener("click", openRecurringModal);
     $("#openCardModal").addEventListener("click", () => { $("#cardForm").reset(); $("#cardModal").showModal(); });
-    $("#openInstallmentModal").addEventListener("click", () => { populateCardSelect(); populateInstallmentCategories(); $("#installmentForm").reset(); $("#installmentDate").value = todayISO(); populateCardSelect(); populateInstallmentCategories(); $("#installmentModal").showModal(); });
     $("#openInvestmentEventModal").addEventListener("click", () => { populateInvestmentEventAssets(); $("#investmentEventForm").reset(); $("#investmentEventDate").value = todayISO(); populateInvestmentEventAssets(); $("#investmentEventModal").showModal(); });
     $("#closeMonthButton").addEventListener("click", closeSelectedMonth);
     $("#openPlanModal").addEventListener("click", openPlanModal);
@@ -1355,13 +1407,16 @@
 
     $$(".close-modal").forEach((button) => button.addEventListener("click", () => button.closest("dialog").close()));
     $("#transactionType").addEventListener("change", toggleExpenseFields);
+    $("#transactionPaymentMethod").addEventListener("change", () => {
+      toggleExpenseFields();
+      if ($("#transactionType").value === "expense" && $("#transactionPaymentMethod").value === "credit") $("#transactionStatus").value = "pending";
+    });
     elements.transactionForm.addEventListener("submit", handleTransactionSubmit);
     elements.investmentForm.addEventListener("submit", handleInvestmentSubmit);
     elements.planForm.addEventListener("submit", handlePlanSubmit);
     $("#recurringForm").addEventListener("submit", handleRecurringSubmit);
     $("#recurringType").addEventListener("change", populateRecurringCategories);
     $("#cardForm").addEventListener("submit", handleCardSubmit);
-    $("#installmentForm").addEventListener("submit", handleInstallmentSubmit);
     $("#investmentEventForm").addEventListener("submit", handleInvestmentEventSubmit);
     $("#onboardingForm").addEventListener("submit", handleOnboardingSubmit);
     $("#skipOnboarding").addEventListener("click", () => { state.onboardingCompleted = true; saveState(); $("#onboardingModal").close(); });
@@ -1423,7 +1478,6 @@
     elements.monthSelector.value = selectedMonth;
     $("#transactionDate").value = todayISO();
     $("#investmentDate").value = todayISO();
-    $("#installmentDate").value = todayISO();
     $("#investmentEventDate").value = todayISO();
     $("#recurringStart").value = todayISO();
     applyTheme(localStorage.getItem(THEME_KEY) || "light");
