@@ -386,7 +386,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 
 .budget-summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
   margin-bottom: 28px;
 }
@@ -592,6 +592,11 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 32%, transpa
 .portfolio-stat-card.result .portfolio-icon { background: var(--red-soft); }
 .investment-month-strip { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 17px 21px; margin-bottom: 18px; color: var(--muted); }
 .investment-month-strip strong { color: var(--blue); font-size: 20px; }
+.investment-goal-panel { margin: 18px 0; }
+.investment-goal-panel .progress-row { margin-top: 16px; }
+.embedded-section-title { margin-top: 30px; padding-top: 26px; border-top: 1px solid var(--border); }
+.credit-purchase-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding: 16px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface-soft); }
+.credit-purchase-fields small { grid-column: 1 / -1; }
 
 /* Goals and achievements */
 .goals-layout, .settings-grid { display: grid; gap: 20px; }
@@ -764,6 +769,8 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 32%, transpa
   .investment-month-strip { align-items: flex-start; flex-direction: column; }
   .form-grid { grid-template-columns: 1fr; }
   .form-grid .full-span { grid-column: auto; }
+  .credit-purchase-fields { grid-template-columns: 1fr; }
+  .credit-purchase-fields small { grid-column: auto; }
   .score-panel { grid-template-columns: 1fr; justify-items: center; text-align: center; }
   .achievement-preview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
