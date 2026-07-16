@@ -767,3 +767,48 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 32%, transpa
   .score-panel { grid-template-columns: 1fr; justify-items: center; text-align: center; }
   .achievement-preview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Finance planning extensions */
+.forecast-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 16px 0 24px; }
+.forecast-card { padding: 18px; border: 1px solid var(--border); border-radius: 20px; background: var(--surface); box-shadow: var(--shadow-sm); }
+.forecast-card span, .forecast-card small { display: block; color: var(--muted); }
+.forecast-card strong { display: block; margin: 10px 0 6px; font-size: 23px; letter-spacing: -.03em; }
+.category-budget-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 10px; }
+.field-title { display: block; margin-bottom: 8px; font-weight: 700; }
+.category-budget-list { display: grid; gap: 12px; }
+.category-budget-row { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(160px, 2fr) 56px; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.category-budget-row:last-child { border-bottom: 0; }
+.category-budget-row small { display: block; margin-top: 4px; color: var(--muted); }
+.category-budget-row.attention .progress-fill { background: #d89a24; }
+.category-budget-row.warning .progress-fill, .category-budget-row.danger .progress-fill { background: var(--red); }
+.credit-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 22px; }
+.credit-card { min-height: 210px; padding: 22px; border-radius: 24px; color: #fff; background: linear-gradient(145deg, #202735, #44526d); box-shadow: var(--shadow-md); display: grid; gap: 16px; }
+.credit-card.limit-warning { background: linear-gradient(145deg, #672b35, #b54b5d); }
+.credit-card span, .credit-card small { color: rgba(255,255,255,.76); }
+.credit-card strong { display: block; margin-top: 4px; font-size: 22px; }
+.credit-card .progress-track { background: rgba(255,255,255,.22); }
+.credit-card .progress-fill { background: #fff; }
+.credit-card .row-action { color: #fff; border-color: rgba(255,255,255,.34); justify-self: start; }
+.management-list { display: grid; gap: 10px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+.management-item, .closure-item { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 12px; border-radius: 14px; background: var(--surface-muted); }
+.management-item small, .closure-item small { display: block; margin-top: 4px; color: var(--muted); }
+.closure-list { display: grid; gap: 10px; margin-top: 14px; }
+.onboarding-modal::backdrop { background: rgba(13, 20, 31, .72); backdrop-filter: blur(8px); }
+
+@media (max-width: 980px) {
+  .forecast-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  .category-budget-fields { grid-template-columns: 1fr; }
+  .category-budget-row { grid-template-columns: 1fr 52px; }
+  .category-budget-row .progress-track { grid-column: 1 / -1; grid-row: 2; }
+  .management-item, .closure-item { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 520px) {
+  .forecast-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .forecast-card { padding: 14px; border-radius: 17px; }
+  .forecast-card strong { font-size: 19px; }
+  .forecast-card small { font-size: 10px; }
+}

@@ -2,6 +2,7 @@
   "use strict";
 
   const STORAGE_KEY = "financeQuestData_v1";
+  const DATA_VERSION = 4;
   const THEME_KEY = "financeQuestTheme";
 
   const expenseCategories = [
@@ -13,10 +14,15 @@
   const categoryColors = ["#5f47ff", "#168c5b", "#d13c55", "#c27a0a", "#2675d8", "#8d57c8", "#33a6a6", "#d0652a", "#718096", "#d34fb8"];
 
   const defaultState = {
-    version: 1,
+    version: DATA_VERSION,
     plans: {},
     transactions: [],
-    investments: []
+    investments: [],
+    investmentEvents: [],
+    recurrences: [],
+    cards: [],
+    closures: {},
+    onboardingCompleted: false
   };
 
   let state = loadState();
@@ -46,12 +52,32 @@
       const saved = localStorage.getItem(STORAGE_KEY);
       if (!saved) return structuredClone(defaultState);
       const parsed = JSON.parse(saved);
+      const migratedInvestments = (Array.isArray(parsed.investments) ? parsed.investments : []).map((item) => ({
+        ...item,
+        objective: item.objective || "",
+        migratedLegacy: !item.migratedLegacy
+      }));
+      const investmentEvents = Array.isArray(parsed.investmentEvents) ? parsed.investmentEvents : [];
+      migratedInvestments.forEach((item) => {
+        if (!investmentEvents.some((event) => event.assetId === item.id) && Number(item.amount || 0) > 0) {
+          investmentEvents.push({ id: `evt_migrated_${item.id}`, assetId: item.id, type: "contribution", date: item.date, amount: Number(item.amount || 0), notes: "Aporte migrado da versão anterior" });
+        }
+        if (!investmentEvents.some((event) => event.assetId === item.id && event.type === "valuation")) {
+          investmentEvents.push({ id: `evt_value_${item.id}`, assetId: item.id, type: "valuation", date: item.date, amount: Number(item.currentValue ?? item.amount ?? 0), notes: "Valor atual migrado" });
+        }
+      });
       return {
         ...structuredClone(defaultState),
         ...parsed,
+        version: DATA_VERSION,
         plans: parsed.plans || {},
         transactions: Array.isArray(parsed.transactions) ? parsed.transactions : [],
-        investments: Array.isArray(parsed.investments) ? parsed.investments : []
+        investments: migratedInvestments,
+        investmentEvents,
+        recurrences: Array.isArray(parsed.recurrences) ? parsed.recurrences : [],
+        cards: Array.isArray(parsed.cards) ? parsed.cards : [],
+        closures: parsed.closures || {},
+        onboardingCompleted: Boolean(parsed.onboardingCompleted || Object.keys(parsed.plans || {}).length || (parsed.transactions || []).length)
       };
     } catch (error) {
       console.error("Falha ao carregar dados:", error);
@@ -101,6 +127,87 @@
     }).format(new Date(year, month - 1, 1));
   }
 
+  function addMonths(date, amount) {
+    const result = new Date(date.getFullYear(), date.getMonth() + amount, 1);
+    return result;
+  }
+
+  function safeDate(year, monthIndex, day) {
+    const lastDay = new Date(year, monthIndex + 1, 0).getDate();
+    return new Date(year, monthIndex, Math.min(Math.max(1, Number(day || 1)), lastDay));
+  }
+
+  function toISO(date) {
+    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 10);
+  }
+
+  function generateRecurringTransactions() {
+    const horizon = addMonths(new Date(), 18);
+    state.recurrences.filter((item) => item.active !== false).forEach((item) => {
+      const start = new Date(`${item.start}T12:00:00`);
+      const end = item.end ? new Date(`${item.end}T12:00:00`) : horizon;
+      let cursor = new Date(start);
+      let guard = 0;
+      while (cursor <= end && cursor <= horizon && guard < 800) {
+        let occurrenceDate;
+        if (item.frequency === "monthly") occurrenceDate = safeDate(cursor.getFullYear(), cursor.getMonth(), item.dueDay);
+        else if (item.frequency === "annual") occurrenceDate = safeDate(cursor.getFullYear(), start.getMonth(), item.dueDay || start.getDate());
+        else occurrenceDate = new Date(cursor);
+        const monthKey = monthFromDate(toISO(occurrenceDate));
+        const occurrenceKey = `${item.id}_${toISO(occurrenceDate)}`;
+        const skipped = (item.skippedMonths || []).includes(monthKey);
+        if (!skipped && occurrenceDate >= start && occurrenceDate <= end && !state.transactions.some((tx) => tx.occurrenceKey === occurrenceKey)) {
+          state.transactions.push({
+            id: generateId("tx"),
+            occurrenceKey,
+            recurrenceId: item.id,
+            type: item.type,
+            date: toISO(occurrenceDate),
+            description: item.description,
+            amount: Number(item.amount || 0),
+            category: item.category,
+            expenseClass: item.type === "expense" ? "recurring" : null,
+            status: item.status || "pending",
+            paymentMethod: "other",
+            notes: "Gerado automaticamente"
+          });
+        }
+        if (item.frequency === "weekly") cursor.setDate(cursor.getDate() + 7);
+        else if (item.frequency === "annual") cursor.setFullYear(cursor.getFullYear() + 1);
+        else cursor = addMonths(cursor, 1);
+        guard += 1;
+      }
+    });
+  }
+
+  function categoryBudgetFor(plan, category) {
+    return Number((plan.categoryBudgets || {})[category] || 0);
+  }
+
+  function cardById(id) {
+    return state.cards.find((card) => card.id === id);
+  }
+
+  function invoiceRows() {
+    const totals = {};
+    state.transactions.filter((item) => item.cardId && item.installmentGroup).forEach((item) => {
+      const key = `${item.invoiceMonth || monthFromDate(item.date)}||${item.cardId}`;
+      totals[key] = (totals[key] || 0) + Number(item.amount || 0);
+    });
+    return Object.entries(totals).map(([key, total]) => {
+      const splitAt = key.indexOf("||");
+      const month = key.slice(0, splitAt);
+      const cardId = key.slice(splitAt + 2);
+      const card = cardById(cardId);
+      return { month, cardId, card, total, commitment: card?.limit > 0 ? total / Number(card.limit) * 100 : 0 };
+    }).sort((a, b) => a.month.localeCompare(b.month));
+  }
+
+  function futureCardCommitment(monthKey = selectedMonth) {
+    return invoiceRows().filter((row) => row.month > monthKey).reduce((sum, row) => sum + row.total, 0);
+  }
+
   function escapeHtml(value) {
     return String(value ?? "")
       .replaceAll("&", "&amp;")
@@ -119,6 +226,7 @@
       salary: 0,
       budget: 0,
       investmentGoal: 0,
+      categoryBudgets: {},
       ...(state.plans[monthKey] || {})
     };
   }
@@ -128,7 +236,7 @@
   }
 
   function monthInvestments(monthKey = selectedMonth) {
-    return state.investments.filter((item) => monthFromDate(item.date) === monthKey);
+    return state.investmentEvents.filter((item) => item.type === "contribution" && monthFromDate(item.date) === monthKey);
   }
 
   function getMonthStats(monthKey = selectedMonth) {
@@ -136,6 +244,7 @@
     const transactions = monthTransactions(monthKey);
     const investments = monthInvestments(monthKey);
     const paid = transactions.filter((item) => item.status === "paid");
+    const pending = transactions.filter((item) => item.status === "pending");
     const extraIncome = paid
       .filter((item) => item.type === "income")
       .reduce((sum, item) => sum + Number(item.amount || 0), 0);
@@ -154,6 +263,11 @@
     const income = Number(plan.salary || 0) + extraIncome;
     const balance = income - totalExpenses - invested;
     const pendingCount = transactions.filter((item) => item.status === "pending").length;
+    const pendingExpenses = pending.filter((item) => item.type === "expense").reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const expectedIncome = pending.filter((item) => item.type === "income").reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const overdue = pending.filter((item) => item.type === "expense" && item.date < todayISO());
+    const overdueTotal = overdue.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const forecastBalance = income + expectedIncome - totalExpenses - pendingExpenses - invested;
     const categoryTotals = {};
     expenses.forEach((item) => {
       categoryTotals[item.category] = (categoryTotals[item.category] || 0) + Number(item.amount || 0);
@@ -166,6 +280,11 @@
       invested,
       balance,
       pendingCount,
+      pendingExpenses,
+      expectedIncome,
+      overdueCount: overdue.length,
+      overdueTotal,
+      forecastBalance,
       transactionCount: transactions.length
     });
 
@@ -182,6 +301,11 @@
       invested,
       balance,
       pendingCount,
+      pendingExpenses,
+      expectedIncome,
+      overdueCount: overdue.length,
+      overdueTotal,
+      forecastBalance,
       categoryTotals,
       ...scoreData
     };
@@ -251,9 +375,23 @@
   }
 
   function getInvestmentTotals() {
-    const contributed = state.investments.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-    const current = state.investments.reduce((sum, item) => sum + Number(item.currentValue ?? item.amount ?? 0), 0);
-    return { contributed, current, result: current - contributed };
+    const contributed = state.investmentEvents.filter((item) => item.type === "contribution").reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const withdrawn = state.investmentEvents.filter((item) => item.type === "withdrawal").reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const income = state.investmentEvents.filter((item) => item.type === "income").reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const current = state.investments.reduce((sum, asset) => sum + getAssetTotals(asset.id).current, 0);
+    return { contributed, withdrawn, income, current, result: current + withdrawn + income - contributed };
+  }
+
+  function getAssetTotals(assetId, throughDate = null) {
+    const events = state.investmentEvents.filter((item) => item.assetId === assetId && (!throughDate || item.date <= throughDate));
+    const contributions = events.filter((item) => item.type === "contribution").reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const withdrawals = events.filter((item) => item.type === "withdrawal").reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const income = events.filter((item) => item.type === "income").reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const valuations = events.filter((item) => item.type === "valuation").sort((a, b) => b.date.localeCompare(a.date));
+    const current = valuations.length ? Number(valuations[0].amount || 0) : Math.max(0, contributions - withdrawals);
+    const result = current + withdrawals + income - contributions;
+    const profitability = contributions > 0 ? (result / contributions) * 100 : 0;
+    return { contributions, withdrawals, income, current, result, profitability };
   }
 
   function renderMonthNavigation() {
@@ -331,11 +469,17 @@
   }
 
   function renderAll() {
+    generateRecurringTransactions();
     renderMonthNavigation();
     renderDashboard();
     renderTransactions();
+    renderCategoryBudgets();
+    renderCards();
     renderInvestments();
+    renderInvestmentEvents();
+    renderClosures();
     renderGoals();
+    saveState();
   }
 
   function renderDashboard() {
@@ -369,6 +513,18 @@
     $("#scoreMetric").textContent = stats.score;
     $("#scoreDetail").textContent = stats.level;
     $("#dashboardScoreRing").style.setProperty("--score", stats.score);
+    $("#actualBalanceMetric").textContent = formatCurrency(stats.balance);
+    $("#forecastBalanceMetric").textContent = formatCurrency(stats.forecastBalance);
+    $("#forecastBalanceMetric").className = `money-value ${stats.forecastBalance >= 0 ? "amount-positive" : "amount-negative"}`;
+    $("#pendingMetric").textContent = formatCurrency(stats.pendingExpenses);
+    $("#overdueMetric").textContent = stats.overdueCount
+      ? `${stats.overdueCount} conta(s) vencida(s) · ${formatCurrency(stats.overdueTotal)}`
+      : "Nenhuma conta vencida";
+    $("#expectedIncomeMetric").textContent = formatCurrency(stats.expectedIncome);
+    const futureCommitment = futureCardCommitment();
+    $("#futureCommitmentMetric").textContent = futureCommitment > 0
+      ? `${formatCurrency(futureCommitment)} em faturas futuras`
+      : "Sem compromissos futuros";
 
     const subtitle = $("#heroSubmessage");
     if (stats.income === 0 && stats.totalExpenses === 0 && stats.invested === 0) {
@@ -654,14 +810,87 @@
     `).join("");
   }
 
+  function renderCategoryBudgets() {
+    const stats = getMonthStats();
+    const plan = stats.plan;
+    $("#categoryBudgetFields").innerHTML = expenseCategories.map((category) => `<label><span>${escapeHtml(category)}</span><input data-category-budget="${escapeHtml(category)}" type="number" min="0" step="0.01" value="${categoryBudgetFor(plan, category) || ""}" placeholder="0,00" /></label>`).join("");
+    $("#categoryBudgetList").innerHTML = expenseCategories.map((category) => {
+      const limit = categoryBudgetFor(plan, category);
+      const spent = Number(stats.categoryTotals[category] || 0);
+      const pct = limit > 0 ? spent / limit * 100 : 0;
+      const status = pct >= 100 ? "danger" : pct >= 90 ? "warning" : pct >= 70 ? "attention" : "";
+      return `<div class="category-budget-row ${status}"><div><strong>${escapeHtml(category)}</strong><small>${limit > 0 ? `${formatCurrency(spent)} de ${formatCurrency(limit)}` : "Sem limite definido"}</small></div><div class="progress-track"><div class="progress-fill" style="width:${Math.min(100, pct)}%"></div></div><span>${limit > 0 ? `${pct.toFixed(0)}%` : "—"}</span></div>`;
+    }).join("");
+  }
+
+  function populateCardSelect() {
+    const options = state.cards.map((card) => `<option value="${card.id}">${escapeHtml(card.name)}</option>`).join("");
+    $("#installmentCard").innerHTML = options || '<option value="">Cadastre um cartão primeiro</option>';
+  }
+
+  function populateInstallmentCategories() {
+    $("#installmentCategory").innerHTML = expenseCategories.map((category) => `<option value="${category}">${category}</option>`).join("");
+  }
+
+  function renderCards() {
+    populateCardSelect();
+    const currentRows = invoiceRows().filter((row) => row.month === selectedMonth);
+    $("#creditCardGrid").innerHTML = state.cards.length ? state.cards.map((card) => {
+      const invoice = currentRows.find((row) => row.cardId === card.id)?.total || 0;
+      const pct = card.limit > 0 ? invoice / Number(card.limit) * 100 : 0;
+      return `<article class="credit-card ${pct >= 90 ? "limit-warning" : ""}"><div><span>Cartão</span><strong>${escapeHtml(card.name)}</strong></div><div><small>Fatura de ${monthLabel(selectedMonth)}</small><strong class="money-value">${formatCurrency(invoice)}</strong></div><div class="progress-track"><div class="progress-fill" style="width:${Math.min(100, pct)}%"></div></div><small>${pct.toFixed(0)}% de ${formatCurrency(card.limit)} · fecha dia ${card.closingDay} · vence dia ${card.dueDay}</small><button class="row-action" data-delete-card="${card.id}" type="button">Excluir cartão</button></article>`;
+    }).join("") : '<p class="empty-state">Nenhum cartão cadastrado.</p>';
+    const rows = invoiceRows().filter((row) => row.month >= selectedMonth).slice(0, 24);
+    $("#invoiceEmpty").classList.toggle("hidden", rows.length > 0);
+    $("#invoiceTableBody").innerHTML = rows.map((row) => `<tr><td>${monthLabel(row.month)}</td><td>${escapeHtml(row.card?.name || "Cartão removido")}</td><td class="align-right money-value">${formatCurrency(row.total)}</td><td class="align-right ${row.commitment >= 90 ? "amount-negative" : ""}">${row.commitment.toFixed(0)}%</td></tr>`).join("");
+    $("#invoiceCommitment").textContent = `${formatCurrency(futureCardCommitment())} comprometidos após este mês`;
+  }
+
+  function renderRecurringList() {
+    const freq = { monthly: "Mensal", weekly: "Semanal", annual: "Anual" };
+    $("#recurringList").innerHTML = state.recurrences.length ? state.recurrences.map((item) => {
+      const skipped = (item.skippedMonths || []).includes(selectedMonth);
+      return `<div class="management-item"><div><strong>${escapeHtml(item.description)}</strong><small>${freq[item.frequency]} · vence dia ${item.dueDay} · ${formatCurrency(item.amount)}</small></div><div class="row-actions"><button class="row-action" data-skip-recurrence="${item.id}" type="button">${skipped ? "Reativar mês" : "Ignorar este mês"}</button><button class="row-action" data-delete-recurrence="${item.id}" type="button">Excluir</button></div></div>`;
+    }).join("") : '<p class="empty-state">Nenhuma recorrência cadastrada.</p>';
+  }
+
+  function renderClosures() {
+    const closures = Object.values(state.closures).sort((a, b) => b.month.localeCompare(a.month));
+    $("#closureList").innerHTML = closures.length ? closures.map((item) => `<div class="closure-item"><div><strong>${monthLabel(item.month)}</strong><small>Saldo ${formatCurrency(item.balance)} · pontuação ${item.score}/100</small></div><button class="row-action" data-download-closure="${item.month}" type="button">Baixar PDF</button></div>`).join("") : '<p class="empty-state">Nenhum mês fechado.</p>';
+  }
+
+  function closeSelectedMonth() {
+    if (state.closures[selectedMonth] && !confirm("Este mês já foi fechado. Deseja atualizar o resumo?")) return;
+    const stats = getMonthStats();
+    const previous = getMonthStats(getPreviousMonthKey(selectedMonth));
+    const categoryChanges = expenseCategories.map((category) => ({ category, change: Number(stats.categoryTotals[category] || 0) - Number(previous.categoryTotals[category] || 0) })).sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
+    state.closures[selectedMonth] = { month: selectedMonth, closedAt: todayISO(), income: stats.income, expenses: stats.totalExpenses, invested: stats.invested, balance: stats.balance, forecastBalance: stats.forecastBalance, pending: stats.pendingExpenses, score: stats.score, level: stats.level, categoryChanges: categoryChanges.slice(0, 3) };
+    state.transactions.filter((item) => monthFromDate(item.date) === selectedMonth && item.status === "pending").forEach((item) => {
+      const next = addMonths(new Date(`${item.date}T12:00:00`), 1);
+      const nextDate = safeDate(next.getFullYear(), next.getMonth(), new Date(`${item.date}T12:00:00`).getDate());
+      const transferKey = `carry_${item.id}_${monthFromDate(toISO(nextDate))}`;
+      if (!state.transactions.some((tx) => tx.transferKey === transferKey)) state.transactions.push({ ...item, id: generateId("tx"), date: toISO(nextDate), transferKey, notes: `${item.notes ? `${item.notes} · ` : ""}Transferido de ${monthLabel(selectedMonth)}` });
+    });
+    saveState(); renderAll(); downloadClosurePdf(selectedMonth); showToast("Mês fechado e relatório gerado.");
+  }
+
+  function pdfEscape(value) { return String(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[()\\]/g, "\\$&"); }
+  function downloadClosurePdf(month) {
+    const item = state.closures[month]; if (!item) return;
+    const lines = ["DESPESA MENSAL - RELATORIO", monthLabel(month).toUpperCase(), "", `Receitas: ${formatCurrency(item.income)}`, `Despesas: ${formatCurrency(item.expenses)}`, `Investimentos: ${formatCurrency(item.invested)}`, `Saldo: ${formatCurrency(item.balance)}`, `Saldo previsto: ${formatCurrency(item.forecastBalance)}`, `Pendencias transferidas: ${formatCurrency(item.pending)}`, `Pontuacao: ${item.score}/100 - ${item.level}`, "", "Maiores variacoes por categoria:", ...(item.categoryChanges || []).map((change) => `${change.category}: ${change.change >= 0 ? "+" : ""}${formatCurrency(change.change)}`)];
+    const stream = lines.map((line, index) => `BT /F1 ${index < 2 ? 16 : 11} Tf 50 ${790 - index * 28} Td (${pdfEscape(line)}) Tj ET`).join("\n");
+    const objects = ["1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj", "2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj", "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj", "4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj", `5 0 obj << /Length ${stream.length} >> stream\n${stream}\nendstream endobj`];
+    let pdf = "%PDF-1.4\n", offsets = [0]; objects.forEach((object) => { offsets.push(pdf.length); pdf += `${object}\n`; }); const xref = pdf.length; pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n${offsets.slice(1).map((offset) => String(offset).padStart(10, "0") + " 00000 n ").join("\n")}\ntrailer << /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+    const blob = new Blob([pdf], { type: "application/pdf" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `despesa-mensal-${month}.pdf`; link.click(); URL.revokeObjectURL(url);
+  }
+
   function classLabel(value) {
     return ({ fixed: "Fixa", variable: "Variável", recurring: "Recorrente" })[value] || "—";
   }
 
   function renderInvestments() {
-    const rows = [...state.investments].sort((a, b) => b.date.localeCompare(a.date));
-    const monthRows = monthInvestments();
-    const monthTotal = monthRows.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const rows = [...state.investments].sort((a, b) => a.name.localeCompare(b.name));
+    const monthTotal = monthInvestments().reduce((sum, item) => sum + Number(item.amount || 0), 0);
     const totals = getInvestmentTotals();
     const liquidity = Math.max(0, getMonthStats().balance);
 
@@ -673,29 +902,61 @@
     $("#investmentResultTotal").textContent = formatCurrency(totals.result);
     $("#investmentResultTotal").className = `money-value ${totals.result >= 0 ? "amount-positive" : "amount-negative"}`;
 
-    const body = $("#investmentsTableBody");
     $("#investmentsEmpty").classList.toggle("hidden", rows.length > 0);
-    body.innerHTML = rows.map((item) => {
-      const current = Number(item.currentValue ?? item.amount ?? 0);
-      const itemResult = current - Number(item.amount || 0);
+    $("#investmentsTableBody").innerHTML = rows.map((item) => {
+      const asset = getAssetTotals(item.id);
       return `
         <tr>
-          <td>${formatDate(item.date)}</td>
-          <td><strong>${escapeHtml(item.name)}</strong></td>
+          <td><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.institution || "—")}</small></td>
           <td>${escapeHtml(item.type)}</td>
-          <td>${escapeHtml(item.institution || "—")}</td>
-          <td class="align-right money-value">${formatCurrency(item.amount)}</td>
-          <td class="align-right money-value">${formatCurrency(current)}</td>
-          <td class="align-right money-value ${itemResult >= 0 ? "amount-positive" : "amount-negative"}">${formatCurrency(itemResult)}</td>
-          <td>
-            <div class="row-actions">
-              <button class="row-action" data-edit-investment="${item.id}" type="button">Editar</button>
-              <button class="row-action" data-delete-investment="${item.id}" type="button">Excluir</button>
-            </div>
-          </td>
-        </tr>
-      `;
+          <td>${escapeHtml(item.objective || "—")}</td>
+          <td class="align-right money-value">${formatCurrency(asset.contributions)}</td>
+          <td class="align-right money-value">${formatCurrency(asset.withdrawals)}</td>
+          <td class="align-right money-value amount-positive">${formatCurrency(asset.income)}</td>
+          <td class="align-right money-value">${formatCurrency(asset.current)}</td>
+          <td class="align-right ${asset.profitability >= 0 ? "amount-positive" : "amount-negative"}">${asset.profitability.toFixed(2).replace(".", ",")}%</td>
+          <td><div class="row-actions"><button class="row-action" data-edit-investment="${item.id}" type="button">Editar</button><button class="row-action" data-delete-investment="${item.id}" type="button">Excluir</button></div></td>
+        </tr>`;
     }).join("");
+    populateInvestmentEventAssets();
+    renderPatrimonyChart();
+  }
+
+  function renderInvestmentEvents() {
+    const label = { contribution: "Aporte", withdrawal: "Resgate", income: "Rendimento", valuation: "Valor atual" };
+    const rows = [...state.investmentEvents].sort((a, b) => b.date.localeCompare(a.date));
+    $("#investmentEventsEmpty").classList.toggle("hidden", rows.length > 0);
+    $("#investmentEventsBody").innerHTML = rows.map((event) => {
+      const asset = state.investments.find((item) => item.id === event.assetId);
+      return `<tr><td>${formatDate(event.date)}</td><td>${escapeHtml(asset?.name || "Investimento removido")}</td><td>${label[event.type] || event.type}</td><td class="align-right money-value">${formatCurrency(event.amount)}</td><td>${escapeHtml(event.notes || "—")}</td><td><button class="row-action" data-delete-investment-event="${event.id}" type="button">Excluir</button></td></tr>`;
+    }).join("");
+  }
+
+  function renderPatrimonyChart() {
+    const canvas = $("#patrimonyChart");
+    const empty = $("#patrimonyChartEmpty");
+    const months = getLastMonths(12);
+    const values = months.map((month) => {
+      const end = `${month}-31`;
+      return state.investments.reduce((sum, asset) => sum + getAssetTotals(asset.id, end).current, 0);
+    });
+    const hasData = values.some((value) => value > 0);
+    empty.classList.toggle("hidden", hasData);
+    canvas.classList.toggle("hidden", !hasData);
+    if (!hasData || !canvas.getBoundingClientRect().width) return;
+    const { ctx, width, height } = setupCanvas(canvas, 260);
+    const pad = 42;
+    const max = Math.max(...values, 1);
+    ctx.clearRect(0, 0, width, height);
+    ctx.strokeStyle = cssVar("--green"); ctx.lineWidth = 3; ctx.beginPath();
+    values.forEach((value, index) => {
+      const x = pad + index * ((width - pad * 2) / Math.max(1, values.length - 1));
+      const y = height - pad - (value / max) * (height - pad * 2);
+      if (index === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.fillStyle = cssVar("--muted"); ctx.font = "11px sans-serif"; ctx.textAlign = "center";
+    months.forEach((month, index) => { if (index % 2 === 0 || index === months.length - 1) ctx.fillText(monthLabel(month, "short"), pad + index * ((width - pad * 2) / 11), height - 12); });
   }
 
   function getAchievements() {
@@ -811,6 +1072,7 @@
       $("#investmentType").value = item.type;
       $("#investmentName").value = item.name;
       $("#investmentInstitution").value = item.institution || "";
+      $("#investmentObjective").value = item.objective || "";
       $("#investmentAmount").value = item.amount;
       $("#investmentCurrentValue").value = item.currentValue ?? item.amount;
       $("#investmentNotes").value = item.notes || "";
@@ -836,6 +1098,44 @@
     const isExpense = $("#transactionType").value === "expense";
     $("#expenseClassField").classList.toggle("hidden", !isExpense);
     populateCategories(isExpense ? "expense" : "income");
+  }
+
+  function populateRecurringCategories() {
+    const categories = $("#recurringType").value === "income" ? incomeCategories : expenseCategories;
+    $("#recurringCategory").innerHTML = categories.map((category) => `<option value="${category}">${category}</option>`).join("");
+  }
+
+  function openRecurringModal() {
+    $("#recurringForm").reset(); $("#recurringId").value = ""; $("#recurringStart").value = todayISO(); populateRecurringCategories(); renderRecurringList(); $("#recurringModal").showModal();
+  }
+
+  function handleRecurringSubmit(event) {
+    event.preventDefault();
+    const item = { id: generateId("rec"), type: $("#recurringType").value, frequency: $("#recurringFrequency").value, description: $("#recurringDescription").value.trim(), amount: Number($("#recurringAmount").value), category: $("#recurringCategory").value, start: $("#recurringStart").value, end: $("#recurringEnd").value || null, dueDay: Number($("#recurringDueDay").value || 1), status: $("#recurringStatus").value, skippedMonths: [], active: true };
+    state.recurrences.push(item); generateRecurringTransactions(); saveState(); renderAll(); renderRecurringList(); $("#recurringForm").reset(); $("#recurringStart").value = todayISO(); showToast("Recorrência criada e lançamentos gerados.");
+  }
+
+  function handleCardSubmit(event) {
+    event.preventDefault(); state.cards.push({ id: generateId("card"), name: $("#cardName").value.trim(), limit: Number($("#cardLimit").value), closingDay: Number($("#cardClosingDay").value), dueDay: Number($("#cardDueDay").value) }); saveState(); $("#cardModal").close(); renderAll(); showToast("Cartão cadastrado.");
+  }
+
+  function handleInstallmentSubmit(event) {
+    event.preventDefault(); const card = cardById($("#installmentCard").value); if (!card) return alert("Cadastre um cartão primeiro.");
+    const purchaseDate = new Date(`${$("#installmentDate").value}T12:00:00`); const count = Number($("#installmentCount").value); const total = Number($("#installmentTotal").value); const base = purchaseDate.getDate() > Number(card.closingDay) ? addMonths(purchaseDate, 1) : new Date(purchaseDate.getFullYear(), purchaseDate.getMonth(), 1); const group = generateId("parcel"); let allocated = 0;
+    for (let index = 0; index < count; index += 1) { const month = addMonths(base, index); const amount = index === count - 1 ? Number((total - allocated).toFixed(2)) : Number((total / count).toFixed(2)); allocated += amount; const date = safeDate(month.getFullYear(), month.getMonth(), card.dueDay); state.transactions.push({ id: generateId("tx"), type: "expense", date: toISO(date), invoiceMonth: monthFromDate(toISO(date)), description: `${$("#installmentDescription").value.trim()} (${index + 1}/${count})`, amount, category: $("#installmentCategory").value, expenseClass: "variable", status: "pending", paymentMethod: "credit", cardId: card.id, installmentGroup: group, installmentNumber: index + 1, installmentCount: count, notes: `Compra parcelada em ${card.name}` }); }
+    saveState(); $("#installmentModal").close(); renderAll(); showToast(`${count} parcela(s) distribuída(s) nas faturas.`);
+  }
+
+  function populateInvestmentEventAssets() {
+    $("#investmentEventAsset").innerHTML = state.investments.map((asset) => `<option value="${asset.id}">${escapeHtml(asset.name)}</option>`).join("") || '<option value="">Cadastre um investimento primeiro</option>';
+  }
+
+  function handleInvestmentEventSubmit(event) {
+    event.preventDefault(); const assetId = $("#investmentEventAsset").value; if (!state.investments.some((asset) => asset.id === assetId)) return alert("Cadastre um investimento primeiro."); state.investmentEvents.push({ id: generateId("evt"), assetId, type: $("#investmentEventType").value, date: $("#investmentEventDate").value, amount: Number($("#investmentEventAmount").value), notes: $("#investmentEventNotes").value.trim() }); saveState(); $("#investmentEventModal").close(); renderAll(); showToast("Evento do investimento registrado.");
+  }
+
+  function handleOnboardingSubmit(event) {
+    event.preventDefault(); state.plans[selectedMonth] = { ...getPlan(), salary: Number($("#onboardingSalary").value || 0), budget: Number($("#onboardingBudget").value || 0), investmentGoal: Number($("#onboardingInvestment").value || 0) }; const recurringName = $("#onboardingRecurringName").value.trim(); if (recurringName) state.recurrences.push({ id: generateId("rec"), type: "expense", frequency: "monthly", description: recurringName, amount: Number($("#onboardingRecurringAmount").value || 0), category: "Moradia", start: todayISO(), end: null, dueDay: Number($("#onboardingRecurringDay").value || 10), status: "pending", skippedMonths: [], active: true }); state.onboardingCompleted = true; generateRecurringTransactions(); saveState(); $("#onboardingModal").close(); renderAll(); showToast("Configuração inicial concluída.");
   }
 
   function handleTransactionSubmit(event) {
@@ -878,6 +1178,7 @@
       type: $("#investmentType").value,
       name: $("#investmentName").value.trim(),
       institution: $("#investmentInstitution").value.trim(),
+      objective: $("#investmentObjective").value.trim(),
       amount,
       currentValue: currentInput === "" ? amount : Number(currentInput),
       notes: $("#investmentNotes").value.trim()
@@ -885,7 +1186,11 @@
 
     const existingIndex = state.investments.findIndex((entry) => entry.id === id);
     if (existingIndex >= 0) state.investments[existingIndex] = item;
-    else state.investments.push(item);
+    else {
+      state.investments.push(item);
+      if (amount > 0) state.investmentEvents.push({ id: generateId("evt"), assetId: id, type: "contribution", date: item.date, amount, notes: "Aporte inicial" });
+      state.investmentEvents.push({ id: generateId("evt"), assetId: id, type: "valuation", date: item.date, amount: Number(item.currentValue || amount), notes: "Valor atual inicial" });
+    }
 
     saveState();
     elements.investmentModal.close();
@@ -897,10 +1202,13 @@
 
   function handlePlanSubmit(event) {
     event.preventDefault();
+    const categoryBudgets = {};
+    $$('[data-category-budget]').forEach((input) => { categoryBudgets[input.dataset.categoryBudget] = Number(input.value || 0); });
     state.plans[selectedMonth] = {
       salary: Number($("#planSalary").value || 0),
       budget: Number($("#planBudget").value || 0),
-      investmentGoal: Number($("#planInvestmentGoal").value || 0)
+      investmentGoal: Number($("#planInvestmentGoal").value || 0),
+      categoryBudgets
     };
     saveState();
     elements.planModal.close();
@@ -919,6 +1227,7 @@
   function deleteInvestment(id) {
     if (!confirm("Excluir este investimento?")) return;
     state.investments = state.investments.filter((item) => item.id !== id);
+    state.investmentEvents = state.investmentEvents.filter((item) => item.assetId !== id);
     saveState();
     renderAll();
     showToast("Investimento excluído.");
@@ -928,6 +1237,7 @@
     const titles = {
       dashboard: "Visão geral",
       movements: "Orçamento",
+      cards: "Cartões e faturas",
       investments: "Patrimônio",
       goals: "Metas e conquistas",
       settings: "Dados e privacidade"
@@ -967,14 +1277,19 @@
           ...parsed,
           plans: parsed.plans || {},
           transactions: parsed.transactions,
-          investments: parsed.investments
+          investments: parsed.investments,
+          investmentEvents: Array.isArray(parsed.investmentEvents) ? parsed.investmentEvents : [],
+          recurrences: Array.isArray(parsed.recurrences) ? parsed.recurrences : [],
+          cards: Array.isArray(parsed.cards) ? parsed.cards : [],
+          closures: parsed.closures || {},
+          onboardingCompleted: true
         };
         saveState();
         renderAll();
         showToast("Backup importado com sucesso.");
       } catch (error) {
         console.error(error);
-        alert("Não foi possível importar este arquivo. Verifique se ele é um backup válido do Finance Quest.");
+        alert("Não foi possível importar este arquivo. Verifique se ele é um backup válido do Despesa Mensal.");
       }
     };
     reader.readAsText(file);
@@ -1023,6 +1338,11 @@
     $("#openTransactionModalSecondary").addEventListener("click", () => openTransactionModal());
     $("#openTransactionModalDashboard").addEventListener("click", () => openTransactionModal());
     $("#openInvestmentModal").addEventListener("click", () => openInvestmentModal());
+    $("#openRecurringModal").addEventListener("click", openRecurringModal);
+    $("#openCardModal").addEventListener("click", () => { $("#cardForm").reset(); $("#cardModal").showModal(); });
+    $("#openInstallmentModal").addEventListener("click", () => { populateCardSelect(); populateInstallmentCategories(); $("#installmentForm").reset(); $("#installmentDate").value = todayISO(); populateCardSelect(); populateInstallmentCategories(); $("#installmentModal").showModal(); });
+    $("#openInvestmentEventModal").addEventListener("click", () => { populateInvestmentEventAssets(); $("#investmentEventForm").reset(); $("#investmentEventDate").value = todayISO(); populateInvestmentEventAssets(); $("#investmentEventModal").showModal(); });
+    $("#closeMonthButton").addEventListener("click", closeSelectedMonth);
     $("#openPlanModal").addEventListener("click", openPlanModal);
     $("#openPlanModalSecondary").addEventListener("click", openPlanModal);
     $("#openPlanModalMovement").addEventListener("click", openPlanModal);
@@ -1032,6 +1352,13 @@
     elements.transactionForm.addEventListener("submit", handleTransactionSubmit);
     elements.investmentForm.addEventListener("submit", handleInvestmentSubmit);
     elements.planForm.addEventListener("submit", handlePlanSubmit);
+    $("#recurringForm").addEventListener("submit", handleRecurringSubmit);
+    $("#recurringType").addEventListener("change", populateRecurringCategories);
+    $("#cardForm").addEventListener("submit", handleCardSubmit);
+    $("#installmentForm").addEventListener("submit", handleInstallmentSubmit);
+    $("#investmentEventForm").addEventListener("submit", handleInvestmentEventSubmit);
+    $("#onboardingForm").addEventListener("submit", handleOnboardingSubmit);
+    $("#skipOnboarding").addEventListener("click", () => { state.onboardingCompleted = true; saveState(); $("#onboardingModal").close(); });
 
     $("#transactionSearch").addEventListener("input", renderTransactions);
     $("#transactionTypeFilter").addEventListener("change", renderTransactions);
@@ -1052,6 +1379,14 @@
       if (edit) openInvestmentModal(edit.dataset.editInvestment);
       if (remove) deleteInvestment(remove.dataset.deleteInvestment);
     });
+    $("#investmentEventsBody").addEventListener("click", (event) => { const remove = event.target.closest("[data-delete-investment-event]"); if (remove && confirm("Excluir este evento?")) { state.investmentEvents = state.investmentEvents.filter((item) => item.id !== remove.dataset.deleteInvestmentEvent); saveState(); renderAll(); } });
+    $("#recurringList").addEventListener("click", (event) => {
+      const skip = event.target.closest("[data-skip-recurrence]"); const remove = event.target.closest("[data-delete-recurrence]");
+      if (skip) { const item = state.recurrences.find((entry) => entry.id === skip.dataset.skipRecurrence); if (!item) return; item.skippedMonths ||= []; if (item.skippedMonths.includes(selectedMonth)) item.skippedMonths = item.skippedMonths.filter((month) => month !== selectedMonth); else { item.skippedMonths.push(selectedMonth); state.transactions = state.transactions.filter((tx) => !(tx.recurrenceId === item.id && monthFromDate(tx.date) === selectedMonth && tx.status === "pending")); } generateRecurringTransactions(); saveState(); renderAll(); renderRecurringList(); }
+      if (remove && confirm("Excluir esta recorrência e os lançamentos futuros pendentes?")) { const id = remove.dataset.deleteRecurrence; state.recurrences = state.recurrences.filter((item) => item.id !== id); state.transactions = state.transactions.filter((tx) => !(tx.recurrenceId === id && tx.status === "pending" && tx.date >= todayISO())); saveState(); renderAll(); renderRecurringList(); }
+    });
+    $("#creditCardGrid").addEventListener("click", (event) => { const remove = event.target.closest("[data-delete-card]"); if (remove && confirm("Excluir este cartão? As parcelas existentes serão preservadas.")) { state.cards = state.cards.filter((card) => card.id !== remove.dataset.deleteCard); saveState(); renderAll(); } });
+    $("#closureList").addEventListener("click", (event) => { const download = event.target.closest("[data-download-closure]"); if (download) downloadClosurePdf(download.dataset.downloadClosure); });
 
     $("#exportData").addEventListener("click", exportData);
     $("#importData").addEventListener("change", (event) => {
@@ -1082,11 +1417,15 @@
     elements.monthSelector.value = selectedMonth;
     $("#transactionDate").value = todayISO();
     $("#investmentDate").value = todayISO();
+    $("#installmentDate").value = todayISO();
+    $("#investmentEventDate").value = todayISO();
+    $("#recurringStart").value = todayISO();
     applyTheme(localStorage.getItem(THEME_KEY) || "light");
     bindEvents();
     setDashboardView(dashboardView);
     setDashboardFilter(dashboardFilter);
     renderAll();
+    if (!state.onboardingCompleted) setTimeout(() => $("#onboardingModal").showModal(), 250);
   }
 
   init();

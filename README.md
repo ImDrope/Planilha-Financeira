@@ -1,40 +1,33 @@
-# Finance Quest — Dashboard Financeiro Pessoal
+# Despesa Mensal — Dashboard Financeiro Pessoal
 
-Aplicação web pessoal para registrar receitas, despesas e investimentos, acompanhar o orçamento mensal e visualizar análises e conquistas.
+Aplicação web pessoal para registrar receitas, despesas, cartões e investimentos, acompanhar o orçamento mensal e visualizar previsões, análises e conquistas.
 
-## O que mudou nesta versão
+## Funcionalidades
 
-- Novo dashboard inspirado nas referências fornecidas, adaptado para desktop e mobile.
-- Cabeçalho com navegação rápida entre meses.
-- Cartão principal de patrimônio acompanhado.
-- Resumo em quatro cartões: Receita, Investir, Despesas e Saldo.
-- Alternância entre visualização em tabela e gráficos.
-- Filtros rápidos de Receita, Fixa e Variável no dashboard.
-- Página de Orçamento redesenhada.
-- Página de Patrimônio redesenhada.
-- Navegação inferior no celular.
-- Botão de privacidade para ocultar e exibir valores.
-- Todas as funcionalidades da primeira versão foram mantidas.
+- Recorrências mensais, semanais ou anuais, com período de vigência, geração automática e meses ignorados.
+- Cartões de crédito, compras parceladas, faturas atuais e futuras e alerta de comprometimento do limite.
+- Indicadores separados de saldo atual e previsto, pagamentos, pendências, vencimentos e receitas esperadas.
+- Área patrimonial com aportes, resgates, rendimentos, valor atual, rentabilidade, objetivos e evolução histórica.
+- Orçamento geral e limites específicos por categoria.
+- Fechamento mensal permanente, comparação com o mês anterior, transferência de pendências e relatório em PDF.
+- Assistente inicial para configurar renda, limite, meta de investimento e primeiras recorrências.
+- Gráficos, metas, pontuação, conquistas, tema claro/escuro e controles de privacidade.
+- Exportação e importação de backup em JSON.
+- Interface responsiva para computador e celular.
 
 ## Como testar
 
-1. Extraia o arquivo ZIP.
-2. Abra a pasta `finance-quest`.
-3. Clique duas vezes em `index.html`.
+Abra o arquivo `index.html` no navegador. Não é necessário instalar dependências, Node.js ou banco de dados.
 
-Não é necessário instalar dependências, Node.js ou banco de dados.
+## Armazenamento e privacidade
 
-## Armazenamento
-
-Os dados são salvos no `localStorage` do navegador. Eles permanecem apenas no navegador e dispositivo em que o site foi usado.
-
-Use a área **Dados e privacidade** para exportar um backup em JSON antes de limpar os dados do navegador ou trocar de dispositivo.
+Os dados são salvos no `localStorage` e permanecem apenas no navegador e dispositivo em que o site foi usado. Use a área **Dados e privacidade** para exportar um backup antes de limpar os dados do navegador ou trocar de dispositivo.
 
 ## Arquivos
 
-- `index.html`: estrutura da interface.
+- `index.html`: estrutura e formulários da interface.
 - `styles.css`: estilos responsivos para desktop e mobile.
-- `app.js`: cálculos, gráficos, formulários, armazenamento e interações.
+- `app.js`: regras financeiras, gráficos, armazenamento e interações.
 
 ## GitHub Pages
 
