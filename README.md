@@ -7,7 +7,7 @@ Aplicação web pessoal para registrar receitas, despesas, cartões e investimen
 - Recorrências mensais, semanais ou anuais, com período de vigência, geração automática e meses ignorados.
 - Cartões e faturas integrados à área de Despesas, com compras parceladas registradas pelo mesmo formulário das demais movimentações.
 - Indicadores separados de saldo atual e previsto, pagamentos, pendências, vencimentos e receitas esperadas.
-- Área de Investimentos com meta mensal, aportes, resgates, rendimentos, valor atual, rentabilidade, objetivos e evolução histórica.
+- Área de Investimentos com meta mensal, aportes, resgates, rendimentos, valor atual estimado, alertas de atualização, rentabilidade, objetivos e evolução histórica.
 - Orçamento geral e limites específicos por categoria.
 - Fechamento mensal permanente, comparação com o mês anterior, transferência de pendências e relatório em PDF.
 - Assistente inicial para configurar renda, limite, meta de investimento e primeiras recorrências.

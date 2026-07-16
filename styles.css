@@ -594,6 +594,16 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 32%, transpa
 .investment-month-strip strong { color: var(--blue); font-size: 20px; }
 .investment-goal-panel { margin: 18px 0; }
 .investment-goal-panel .progress-row { margin-top: 16px; }
+.investment-header-actions { display: grid; justify-items: end; gap: 7px; }
+.investment-header-actions > small { max-width: 420px; color: var(--muted); font-size: 11px; text-align: right; }
+.investment-valuation-alert { display: grid; gap: 4px; margin: 0 0 18px; padding: 14px 17px; border: 1px solid #e6b65c; border-radius: 15px; color: #6b4c11; background: #fff6df; }
+.investment-valuation-alert strong { font-size: 13px; }
+.investment-valuation-alert span { font-size: 12px; line-height: 1.45; }
+.valuation-status { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; white-space: nowrap; }
+.valuation-status.stale { color: var(--red); }
+.valuation-status.estimated { color: #a16a09; }
+.investment-event-help { margin: -3px 0 2px; padding: 12px 14px; border-radius: 12px; color: var(--muted); background: var(--surface-soft); font-size: 12px; line-height: 1.45; }
+.soft-action-button:disabled { cursor: not-allowed; opacity: .48; }
 .embedded-section-title { margin-top: 30px; padding-top: 26px; border-top: 1px solid var(--border); }
 .credit-purchase-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding: 16px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface-soft); }
 .credit-purchase-fields small { grid-column: 1 / -1; }
@@ -767,6 +777,8 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 32%, transpa
   .dashboard-quick-table th:nth-child(1), .dashboard-quick-table td:nth-child(1) { width: 72px; }
   .portfolio-hero-card > strong { font-size: 34px; }
   .investment-month-strip { align-items: flex-start; flex-direction: column; }
+  .investment-header-actions { justify-items: stretch; width: 100%; }
+  .investment-header-actions > small { text-align: left; }
   .form-grid { grid-template-columns: 1fr; }
   .form-grid .full-span { grid-column: auto; }
   .credit-purchase-fields { grid-template-columns: 1fr; }
