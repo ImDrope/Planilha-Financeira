@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Dashboard financeiro pessoal, privado e gamificado." />
-  <title>Finance Quest</title>
+  <title>Despesa Mensal</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -24,6 +24,9 @@
         </button>
         <button class="nav-item" data-section="movements">
           <span class="nav-icon" aria-hidden="true">↔</span><span class="nav-label">Orçamento</span>
+        </button>
+        <button class="nav-item" data-section="cards">
+          <span class="nav-icon" aria-hidden="true">▤</span><span class="nav-label">Cartões</span>
         </button>
         <button class="nav-item" data-section="investments">
           <span class="nav-icon" aria-hidden="true">⌁</span><span class="nav-label">Patrimônio</span>
@@ -48,7 +51,7 @@
     <main class="main-content">
       <header class="topbar">
         <div class="page-heading">
-          <p class="eyebrow">Finance Quest</p>
+          <p class="eyebrow">Despesa Mensal</p>
           <h1 id="pageTitle">Visão geral</h1>
         </div>
         <div class="topbar-actions">
@@ -72,7 +75,10 @@
             <p class="eyebrow">Resumo financeiro</p>
             <h2>Orçamento</h2>
           </div>
-          <button id="openPlanModal" class="soft-action-button" type="button"><span aria-hidden="true">✎</span> Planejar mês</button>
+          <div class="panel-actions">
+            <button id="closeMonthButton" class="soft-action-button" type="button">✓ Fechar mês</button>
+            <button id="openPlanModal" class="soft-action-button" type="button"><span aria-hidden="true">✎</span> Planejar mês</button>
+          </div>
         </div>
 
         <div class="overview-hero-grid">
@@ -128,6 +134,13 @@
             <strong id="balanceMetric" class="money-value">R$ 0,00</strong>
             <small id="balanceDetail">Após gastos e investimentos</small>
           </article>
+        </div>
+
+        <div class="forecast-grid">
+          <article class="forecast-card"><span>Saldo atual</span><strong id="actualBalanceMetric" class="money-value">R$ 0,00</strong><small>Somente valores realizados</small></article>
+          <article class="forecast-card"><span>Saldo previsto</span><strong id="forecastBalanceMetric" class="money-value">R$ 0,00</strong><small>Inclui pendências e parcelas</small></article>
+          <article class="forecast-card"><span>Total pendente</span><strong id="pendingMetric" class="money-value">R$ 0,00</strong><small id="overdueMetric">Nenhuma conta vencida</small></article>
+          <article class="forecast-card"><span>Receitas esperadas</span><strong id="expectedIncomeMetric" class="money-value">R$ 0,00</strong><small id="futureCommitmentMetric">Sem compromissos futuros</small></article>
         </div>
 
         <div class="dashboard-view-toggle" role="tablist" aria-label="Visualização do dashboard">
@@ -203,7 +216,10 @@
       <section id="movementsSection" class="app-section">
         <div class="section-title-row">
           <div><p class="eyebrow">Planejamento mensal</p><h2>Orçamento</h2></div>
-          <button id="openPlanModalMovement" class="soft-action-button" type="button"><span aria-hidden="true">✎</span> Editar planejamento</button>
+          <div class="panel-actions">
+            <button id="openRecurringModal" class="soft-action-button" type="button">↻ Recorrências</button>
+            <button id="openPlanModalMovement" class="soft-action-button" type="button"><span aria-hidden="true">✎</span> Editar planejamento</button>
+          </div>
         </div>
 
         <div class="budget-summary-grid page-summary-grid">
@@ -229,12 +245,36 @@
           </div>
           <p id="transactionsEmpty" class="empty-state">Nenhuma movimentação encontrada.</p>
         </article>
+
+        <article class="panel table-panel reference-table-panel">
+          <div class="panel-heading table-card-heading"><div><p class="eyebrow">Orçamento por categoria</p><h3>Limites e consumo</h3></div></div>
+          <div id="categoryBudgetList" class="category-budget-list"></div>
+        </article>
+      </section>
+
+      <section id="cardsSection" class="app-section">
+        <div class="section-title-row">
+          <div><p class="eyebrow">Crédito e parcelamentos</p><h2>Cartões</h2></div>
+          <div class="panel-actions">
+            <button id="openInstallmentModal" class="soft-action-button" type="button">＋ Compra parcelada</button>
+            <button id="openCardModal" class="primary-button" type="button">＋ Novo cartão</button>
+          </div>
+        </div>
+        <div id="creditCardGrid" class="credit-card-grid"></div>
+        <article class="panel table-panel reference-table-panel">
+          <div class="panel-heading table-card-heading"><div><p class="eyebrow">Faturas</p><h3>Atual e futuras</h3></div><span id="invoiceCommitment" class="legend-note"></span></div>
+          <div class="table-wrap"><table><thead><tr><th>Mês</th><th>Cartão</th><th class="align-right">Fatura</th><th class="align-right">% do limite</th></tr></thead><tbody id="invoiceTableBody"></tbody></table></div>
+          <p id="invoiceEmpty" class="empty-state">Cadastre um cartão e uma compra parcelada.</p>
+        </article>
       </section>
 
       <section id="investmentsSection" class="app-section">
         <div class="section-title-row">
           <div><p class="eyebrow">Patrimônio manual</p><h2>Patrimônio</h2></div>
-          <button id="openInvestmentModal" class="soft-action-button" type="button"><span aria-hidden="true">＋</span> Novo investimento</button>
+          <div class="panel-actions">
+            <button id="openInvestmentEventModal" class="soft-action-button" type="button">＋ Registrar evento</button>
+            <button id="openInvestmentModal" class="primary-button" type="button"><span aria-hidden="true">＋</span> Novo investimento</button>
+          </div>
         </div>
 
         <article class="portfolio-hero-card">
@@ -252,10 +292,20 @@
 
         <div class="investment-month-strip"><span>Aportes no mês selecionado</span><strong id="investmentMonthTotal" class="money-value">R$ 0,00</strong></div>
 
+        <article class="panel chart-panel wide">
+          <div class="panel-heading"><div><p class="eyebrow">Evolução patrimonial</p><h3>Últimos 12 meses</h3></div></div>
+          <div class="chart-wrap"><canvas id="patrimonyChart" aria-label="Gráfico de evolução patrimonial"></canvas><p id="patrimonyChartEmpty" class="empty-state">Registre aportes ou valores atuais para visualizar.</p></div>
+        </article>
+
         <article class="panel table-panel reference-table-panel">
           <div class="panel-heading table-card-heading"><div><p class="eyebrow">Carteira cadastrada</p><h3>Investimentos</h3></div></div>
-          <div class="table-wrap"><table><thead><tr><th>Data</th><th>Investimento</th><th>Tipo</th><th>Instituição</th><th class="align-right">Aportado</th><th class="align-right">Valor atual</th><th class="align-right">Resultado</th><th aria-label="Ações"></th></tr></thead><tbody id="investmentsTableBody"></tbody></table></div>
+          <div class="table-wrap"><table><thead><tr><th>Investimento</th><th>Tipo</th><th>Objetivo</th><th class="align-right">Aportes</th><th class="align-right">Resgates</th><th class="align-right">Rendimentos</th><th class="align-right">Valor atual</th><th class="align-right">Rentabilidade</th><th aria-label="Ações"></th></tr></thead><tbody id="investmentsTableBody"></tbody></table></div>
           <p id="investmentsEmpty" class="empty-state">Nenhum investimento cadastrado.</p>
+        </article>
+        <article class="panel table-panel reference-table-panel">
+          <div class="panel-heading table-card-heading"><div><p class="eyebrow">Histórico</p><h3>Eventos dos investimentos</h3></div></div>
+          <div class="table-wrap"><table><thead><tr><th>Data</th><th>Investimento</th><th>Evento</th><th class="align-right">Valor</th><th>Observação</th><th aria-label="Ações"></th></tr></thead><tbody id="investmentEventsBody"></tbody></table></div>
+          <p id="investmentEventsEmpty" class="empty-state">Nenhum evento registrado.</p>
         </article>
       </section>
 
@@ -314,6 +364,11 @@
         </div>
 
         <div class="settings-grid">
+          <article class="panel">
+            <h3>Fechamentos mensais</h3>
+            <p>Resumos permanentes, comparações e relatórios dos meses já encerrados.</p>
+            <div id="closureList" class="closure-list"></div>
+          </article>
           <article class="panel">
             <h3>Armazenamento local</h3>
             <p>As informações ficam salvas apenas no navegador deste dispositivo. O projeto não envia dados para servidores externos.</p>
@@ -452,6 +507,10 @@
           <input id="investmentInstitution" type="text" maxlength="60" placeholder="Ex.: Banco ou corretora" />
         </label>
         <label>
+          <span>Objetivo</span>
+          <input id="investmentObjective" type="text" maxlength="80" placeholder="Ex.: Reserva, viagem, aposentadoria" />
+        </label>
+        <label>
           <span>Valor aportado</span>
           <input id="investmentAmount" type="number" min="0" step="0.01" required />
         </label>
@@ -494,11 +553,93 @@
           <span>Meta de investimento</span>
           <input id="planInvestmentGoal" type="number" min="0" step="0.01" placeholder="0,00" />
         </label>
+        <div class="full-span">
+          <span class="field-title">Limites por categoria</span>
+          <div id="categoryBudgetFields" class="category-budget-fields"></div>
+        </div>
       </div>
       <div class="modal-actions">
         <button class="ghost-button close-modal" type="button">Cancelar</button>
         <button class="primary-button" type="submit">Salvar planejamento</button>
       </div>
+    </form>
+  </dialog>
+
+  <dialog id="recurringModal" class="modal">
+    <form id="recurringForm" method="dialog" class="modal-card">
+      <div class="modal-header"><div><p class="eyebrow">Automação</p><h2>Nova recorrência</h2></div><button class="icon-button close-modal" type="button" aria-label="Fechar">×</button></div>
+      <input id="recurringId" type="hidden" />
+      <div class="form-grid">
+        <label><span>Tipo</span><select id="recurringType"><option value="expense">Despesa</option><option value="income">Receita</option></select></label>
+        <label><span>Frequência</span><select id="recurringFrequency"><option value="monthly">Mensal</option><option value="weekly">Semanal</option><option value="annual">Anual</option></select></label>
+        <label class="full-span"><span>Descrição</span><input id="recurringDescription" required maxlength="80" /></label>
+        <label><span>Valor</span><input id="recurringAmount" type="number" min="0.01" step="0.01" required /></label>
+        <label><span>Categoria</span><select id="recurringCategory"></select></label>
+        <label><span>Data inicial</span><input id="recurringStart" type="date" required /></label>
+        <label><span>Data final (opcional)</span><input id="recurringEnd" type="date" /></label>
+        <label><span>Dia do vencimento</span><input id="recurringDueDay" type="number" min="1" max="31" value="10" /></label>
+        <label><span>Status dos lançamentos</span><select id="recurringStatus"><option value="pending">Pendente</option><option value="paid">Pago/recebido</option></select></label>
+      </div>
+      <div class="modal-actions"><button class="ghost-button close-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Salvar e gerar lançamentos</button></div>
+      <div id="recurringList" class="management-list"></div>
+    </form>
+  </dialog>
+
+  <dialog id="cardModal" class="modal">
+    <form id="cardForm" method="dialog" class="modal-card small-modal">
+      <div class="modal-header"><div><p class="eyebrow">Crédito</p><h2>Novo cartão</h2></div><button class="icon-button close-modal" type="button" aria-label="Fechar">×</button></div>
+      <div class="form-grid one-column">
+        <label><span>Nome do cartão</span><input id="cardName" required maxlength="40" placeholder="Ex.: Nubank" /></label>
+        <label><span>Limite total</span><input id="cardLimit" type="number" min="0" step="0.01" required /></label>
+        <label><span>Dia de fechamento</span><input id="cardClosingDay" type="number" min="1" max="31" value="20" required /></label>
+        <label><span>Dia de vencimento</span><input id="cardDueDay" type="number" min="1" max="31" value="10" required /></label>
+      </div>
+      <div class="modal-actions"><button class="ghost-button close-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Salvar cartão</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="installmentModal" class="modal">
+    <form id="installmentForm" method="dialog" class="modal-card">
+      <div class="modal-header"><div><p class="eyebrow">Parcelamento</p><h2>Registrar compra parcelada</h2></div><button class="icon-button close-modal" type="button" aria-label="Fechar">×</button></div>
+      <div class="form-grid">
+        <label><span>Cartão</span><select id="installmentCard" required></select></label>
+        <label><span>Data da compra</span><input id="installmentDate" type="date" required /></label>
+        <label class="full-span"><span>Descrição</span><input id="installmentDescription" required maxlength="80" /></label>
+        <label><span>Valor total</span><input id="installmentTotal" type="number" min="0.01" step="0.01" required /></label>
+        <label><span>Número de parcelas</span><input id="installmentCount" type="number" min="1" max="48" value="1" required /></label>
+        <label><span>Categoria</span><select id="installmentCategory"></select></label>
+      </div>
+      <div class="modal-actions"><button class="ghost-button close-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Distribuir parcelas</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="investmentEventModal" class="modal">
+    <form id="investmentEventForm" method="dialog" class="modal-card small-modal">
+      <div class="modal-header"><div><p class="eyebrow">Histórico</p><h2>Registrar evento</h2></div><button class="icon-button close-modal" type="button" aria-label="Fechar">×</button></div>
+      <div class="form-grid one-column">
+        <label><span>Investimento</span><select id="investmentEventAsset" required></select></label>
+        <label><span>Evento</span><select id="investmentEventType"><option value="contribution">Aporte</option><option value="withdrawal">Resgate</option><option value="income">Rendimento recebido</option><option value="valuation">Atualização do valor atual</option></select></label>
+        <label><span>Data</span><input id="investmentEventDate" type="date" required /></label>
+        <label><span>Valor</span><input id="investmentEventAmount" type="number" min="0" step="0.01" required /></label>
+        <label><span>Observação</span><input id="investmentEventNotes" maxlength="120" /></label>
+      </div>
+      <div class="modal-actions"><button class="ghost-button close-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Registrar evento</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="onboardingModal" class="modal onboarding-modal">
+    <form id="onboardingForm" method="dialog" class="modal-card">
+      <div class="modal-header"><div><p class="eyebrow">Bem-vindo</p><h2>Vamos configurar seu primeiro mês</h2></div></div>
+      <p class="muted">Você poderá alterar tudo depois. Seus dados continuam salvos somente neste navegador.</p>
+      <div class="form-grid">
+        <label><span>Renda principal</span><input id="onboardingSalary" type="number" min="0" step="0.01" /></label>
+        <label><span>Limite mensal</span><input id="onboardingBudget" type="number" min="0" step="0.01" /></label>
+        <label><span>Meta de investimento</span><input id="onboardingInvestment" type="number" min="0" step="0.01" /></label>
+        <label><span>Primeira despesa recorrente</span><input id="onboardingRecurringName" maxlength="80" placeholder="Ex.: Aluguel (opcional)" /></label>
+        <label><span>Valor da recorrência</span><input id="onboardingRecurringAmount" type="number" min="0" step="0.01" /></label>
+        <label><span>Dia do vencimento</span><input id="onboardingRecurringDay" type="number" min="1" max="31" value="10" /></label>
+      </div>
+      <div class="modal-actions"><button id="skipOnboarding" class="ghost-button" type="button">Configurar depois</button><button class="primary-button" type="submit">Começar</button></div>
     </form>
   </dialog>
 
