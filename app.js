@@ -384,15 +384,31 @@
   }
 
   function getAssetTotals(assetId, throughDate = null) {
-    const events = state.investmentEvents.filter((item) => item.assetId === assetId && (!throughDate || item.date <= throughDate));
+    const events = state.investmentEvents
+      .map((item, stateIndex) => ({ ...item, stateIndex }))
+      .filter((item) => item.assetId === assetId && (!throughDate || item.date <= throughDate))
+      .sort((a, b) => a.date.localeCompare(b.date) || a.stateIndex - b.stateIndex);
     const contributions = events.filter((item) => item.type === "contribution").reduce((sum, item) => sum + Number(item.amount || 0), 0);
     const withdrawals = events.filter((item) => item.type === "withdrawal").reduce((sum, item) => sum + Number(item.amount || 0), 0);
     const income = events.filter((item) => item.type === "income").reduce((sum, item) => sum + Number(item.amount || 0), 0);
-    const valuations = events.filter((item) => item.type === "valuation").sort((a, b) => b.date.localeCompare(a.date));
-    const current = valuations.length ? Number(valuations[0].amount || 0) : Math.max(0, contributions - withdrawals);
+    const valuations = events.filter((item) => item.type === "valuation");
+    const latestValuation = valuations[valuations.length - 1] || null;
+    const movementsAfterValuation = latestValuation
+      ? events.filter((item) => item.date > latestValuation.date || (item.date === latestValuation.date && item.stateIndex > latestValuation.stateIndex))
+      : events;
+    const estimatedChange = movementsAfterValuation.reduce((sum, item) => {
+      if (item.type === "contribution") return sum + Number(item.amount || 0);
+      if (item.type === "withdrawal") return sum - Number(item.amount || 0);
+      return sum;
+    }, 0);
+    const current = Math.max(0, latestValuation ? Number(latestValuation.amount || 0) + estimatedChange : estimatedChange);
     const result = current + withdrawals + income - contributions;
     const profitability = contributions > 0 ? (result / contributions) * 100 : 0;
-    return { contributions, withdrawals, income, current, result, profitability };
+    const referenceDate = throughDate || todayISO();
+    const ageInDays = latestValuation ? Math.floor((new Date(`${referenceDate}T12:00:00`) - new Date(`${latestValuation.date}T12:00:00`)) / 86400000) : Infinity;
+    const isEstimated = Boolean(latestValuation && movementsAfterValuation.some((item) => item.type === "contribution" || item.type === "withdrawal"));
+    const isStale = !latestValuation || ageInDays > 30;
+    return { contributions, withdrawals, income, current, result, profitability, valuationDate: latestValuation?.date || null, isEstimated, isStale };
   }
 
   function renderMonthNavigation() {
@@ -903,6 +919,17 @@
     $("#investmentResultTotal").textContent = formatCurrency(totals.result);
     $("#investmentResultTotal").className = `money-value ${totals.result >= 0 ? "amount-positive" : "amount-negative"}`;
 
+    const movementButton = $("#openInvestmentEventModal");
+    movementButton.disabled = rows.length === 0;
+    $("#investmentEventHint").textContent = rows.length
+      ? "Registre aportes, resgates, rendimentos ou atualizações de valor."
+      : "Cadastre um investimento antes de registrar movimentações.";
+
+    const valuationIssues = rows.map((item) => ({ item, totals: getAssetTotals(item.id) })).filter(({ totals: asset }) => asset.isStale || asset.isEstimated);
+    const valuationAlert = $("#investmentValuationAlert");
+    valuationAlert.classList.toggle("hidden", valuationIssues.length === 0);
+    valuationAlert.innerHTML = valuationIssues.length ? `<strong>Valores que merecem revisão</strong><span>${valuationIssues.map(({ item, totals: asset }) => `${escapeHtml(item.name)}: ${asset.isStale ? "valor atual desatualizado" : "valor estimado após movimentações"}`).join(" · ")}</span>` : "";
+
     $("#investmentsEmpty").classList.toggle("hidden", rows.length > 0);
     $("#investmentsTableBody").innerHTML = rows.map((item) => {
       const asset = getAssetTotals(item.id);
@@ -914,7 +941,7 @@
           <td class="align-right money-value">${formatCurrency(asset.contributions)}</td>
           <td class="align-right money-value">${formatCurrency(asset.withdrawals)}</td>
           <td class="align-right money-value amount-positive">${formatCurrency(asset.income)}</td>
-          <td class="align-right money-value">${formatCurrency(asset.current)}</td>
+          <td class="align-right"><strong class="money-value">${formatCurrency(asset.current)}</strong><small class="valuation-status ${asset.isStale ? "stale" : asset.isEstimated ? "estimated" : ""}">${asset.isStale ? "Atualize o valor atual" : asset.isEstimated ? "Valor estimado" : `Atualizado em ${formatDate(asset.valuationDate)}`}</small></td>
           <td class="align-right ${asset.profitability >= 0 ? "amount-positive" : "amount-negative"}">${asset.profitability.toFixed(2).replace(".", ",")}%</td>
           <td><div class="row-actions"><button class="row-action" data-edit-investment="${item.id}" type="button">Editar</button><button class="row-action" data-delete-investment="${item.id}" type="button">Excluir</button></div></td>
         </tr>`;
@@ -925,7 +952,7 @@
 
   function renderInvestmentEvents() {
     const label = { contribution: "Aporte", withdrawal: "Resgate", income: "Rendimento", valuation: "Valor atual" };
-    const rows = [...state.investmentEvents].sort((a, b) => b.date.localeCompare(a.date));
+    const rows = state.investmentEvents.map((item, stateIndex) => ({ ...item, stateIndex })).sort((a, b) => b.date.localeCompare(a.date) || b.stateIndex - a.stateIndex);
     $("#investmentEventsEmpty").classList.toggle("hidden", rows.length > 0);
     $("#investmentEventsBody").innerHTML = rows.map((event) => {
       const asset = state.investments.find((item) => item.id === event.assetId);
@@ -1156,8 +1183,18 @@
     $("#investmentEventAsset").innerHTML = state.investments.map((asset) => `<option value="${asset.id}">${escapeHtml(asset.name)}</option>`).join("") || '<option value="">Cadastre um investimento primeiro</option>';
   }
 
+  function updateInvestmentEventHelp() {
+    const messages = {
+      contribution: "Aporte adiciona capital ao investimento e aumenta provisoriamente o valor atual.",
+      withdrawal: "Resgate retira capital e reduz provisoriamente o valor atual do investimento.",
+      income: "Rendimento registra juros, dividendos ou outros valores recebidos sem alterar o valor atual informado.",
+      valuation: "Valor atual substitui a estimativa anterior pelo saldo total informado nesta data."
+    };
+    $("#investmentEventHelp").textContent = messages[$("#investmentEventType").value];
+  }
+
   function handleInvestmentEventSubmit(event) {
-    event.preventDefault(); const assetId = $("#investmentEventAsset").value; if (!state.investments.some((asset) => asset.id === assetId)) return alert("Cadastre um investimento primeiro."); state.investmentEvents.push({ id: generateId("evt"), assetId, type: $("#investmentEventType").value, date: $("#investmentEventDate").value, amount: Number($("#investmentEventAmount").value), notes: $("#investmentEventNotes").value.trim() }); saveState(); $("#investmentEventModal").close(); renderAll(); showToast("Evento do investimento registrado.");
+    event.preventDefault(); const assetId = $("#investmentEventAsset").value; if (!state.investments.some((asset) => asset.id === assetId)) return alert("Cadastre um investimento primeiro."); state.investmentEvents.push({ id: generateId("evt"), assetId, type: $("#investmentEventType").value, date: $("#investmentEventDate").value, amount: Number($("#investmentEventAmount").value), notes: $("#investmentEventNotes").value.trim(), createdAt: new Date().toISOString() }); saveState(); $("#investmentEventModal").close(); renderAll(); showToast("Movimentação do investimento registrada.");
   }
 
   function handleOnboardingSubmit(event) {
@@ -1399,7 +1436,15 @@
     $("#openInvestmentModal").addEventListener("click", () => openInvestmentModal());
     $("#openRecurringModal").addEventListener("click", openRecurringModal);
     $("#openCardModal").addEventListener("click", () => { $("#cardForm").reset(); $("#cardModal").showModal(); });
-    $("#openInvestmentEventModal").addEventListener("click", () => { populateInvestmentEventAssets(); $("#investmentEventForm").reset(); $("#investmentEventDate").value = todayISO(); populateInvestmentEventAssets(); $("#investmentEventModal").showModal(); });
+    $("#openInvestmentEventModal").addEventListener("click", () => {
+      if (!state.investments.length) return;
+      populateInvestmentEventAssets();
+      $("#investmentEventForm").reset();
+      $("#investmentEventDate").value = todayISO();
+      populateInvestmentEventAssets();
+      updateInvestmentEventHelp();
+      $("#investmentEventModal").showModal();
+    });
     $("#closeMonthButton").addEventListener("click", closeSelectedMonth);
     $("#openPlanModal").addEventListener("click", openPlanModal);
     $("#openPlanModalSecondary").addEventListener("click", openPlanModal);
@@ -1418,6 +1463,7 @@
     $("#recurringType").addEventListener("change", populateRecurringCategories);
     $("#cardForm").addEventListener("submit", handleCardSubmit);
     $("#investmentEventForm").addEventListener("submit", handleInvestmentEventSubmit);
+    $("#investmentEventType").addEventListener("change", updateInvestmentEventHelp);
     $("#onboardingForm").addEventListener("submit", handleOnboardingSubmit);
     $("#skipOnboarding").addEventListener("click", () => { state.onboardingCompleted = true; saveState(); $("#onboardingModal").close(); });
 
