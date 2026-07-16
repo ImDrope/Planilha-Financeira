@@ -23,13 +23,10 @@
           <span class="nav-icon" aria-hidden="true">▦</span><span class="nav-label">Visão geral</span>
         </button>
         <button class="nav-item" data-section="movements">
-          <span class="nav-icon" aria-hidden="true">↔</span><span class="nav-label">Orçamento</span>
-        </button>
-        <button class="nav-item" data-section="cards">
-          <span class="nav-icon" aria-hidden="true">▤</span><span class="nav-label">Cartões</span>
+          <span class="nav-icon" aria-hidden="true">↔</span><span class="nav-label">Despesas</span>
         </button>
         <button class="nav-item" data-section="investments">
-          <span class="nav-icon" aria-hidden="true">⌁</span><span class="nav-label">Patrimônio</span>
+          <span class="nav-icon" aria-hidden="true">⌁</span><span class="nav-label">Investimentos</span>
         </button>
         <button class="nav-item" data-section="goals">
           <span class="nav-icon" aria-hidden="true">♜</span><span class="nav-label">Metas</span>
@@ -73,7 +70,7 @@
         <div class="section-title-row dashboard-title-row">
           <div>
             <p class="eyebrow">Resumo financeiro</p>
-            <h2>Orçamento</h2>
+            <h2>Visão geral</h2>
           </div>
           <div class="panel-actions">
             <button id="closeMonthButton" class="soft-action-button" type="button">✓ Fechar mês</button>
@@ -118,11 +115,6 @@
             <div class="summary-card-top"><span class="summary-icon">$</span><span class="metric-label">Receita</span></div>
             <strong id="incomeMetric" class="money-value">R$ 0,00</strong>
             <small id="incomeDetail">Renda principal + entradas extras</small>
-          </article>
-          <article class="summary-card investment">
-            <div class="summary-card-top"><span class="summary-icon">♙</span><span class="metric-label">Investir</span></div>
-            <strong id="investmentMetric" class="money-value">R$ 0,00</strong>
-            <small id="investmentDetail">Meta ainda não definida</small>
           </article>
           <article class="summary-card expense">
             <div class="summary-card-top"><span class="summary-icon">▣</span><span class="metric-label">Despesas</span></div>
@@ -177,10 +169,9 @@
 
           <div class="dashboard-grid lower-grid reference-lower-grid">
             <article class="panel">
-              <div class="panel-heading"><div><p class="eyebrow">Orçamento</p><h3>Progresso mensal</h3></div></div>
+              <div class="panel-heading"><div><p class="eyebrow">Despesas</p><h3>Progresso mensal</h3></div></div>
               <div class="progress-group">
                 <div class="progress-row"><div><span>Gastos</span><strong id="budgetProgressText">R$ 0 de R$ 0</strong></div><div class="progress-track"><div id="budgetProgressBar" class="progress-fill"></div></div></div>
-                <div class="progress-row"><div><span>Investimentos</span><strong id="investmentProgressText">R$ 0 de R$ 0</strong></div><div class="progress-track"><div id="investmentProgressBar" class="progress-fill alt"></div></div></div>
               </div>
             </article>
             <article class="panel">
@@ -215,7 +206,7 @@
 
       <section id="movementsSection" class="app-section">
         <div class="section-title-row">
-          <div><p class="eyebrow">Planejamento mensal</p><h2>Orçamento</h2></div>
+          <div><p class="eyebrow">Planejamento mensal</p><h2>Despesas</h2></div>
           <div class="panel-actions">
             <button id="openRecurringModal" class="soft-action-button" type="button">↻ Recorrências</button>
             <button id="openPlanModalMovement" class="soft-action-button" type="button"><span aria-hidden="true">✎</span> Editar planejamento</button>
@@ -224,7 +215,6 @@
 
         <div class="budget-summary-grid page-summary-grid">
           <article class="summary-card income"><div class="summary-card-top"><span class="summary-icon">$</span><span class="metric-label">Receita</span></div><strong id="movementIncomeMetric" class="money-value">R$ 0,00</strong></article>
-          <article class="summary-card investment"><div class="summary-card-top"><span class="summary-icon">♙</span><span class="metric-label">Investir</span></div><strong id="movementInvestMetric" class="money-value">R$ 0,00</strong></article>
           <article class="summary-card expense"><div class="summary-card-top"><span class="summary-icon">▣</span><span class="metric-label">Despesas</span></div><strong id="movementExpenseMetric" class="money-value">R$ 0,00</strong></article>
           <article class="summary-card balance"><div class="summary-card-top"><span class="summary-icon">✦</span><span class="metric-label">Saldo</span></div><strong id="movementBalanceMetric" class="money-value">R$ 0,00</strong></article>
         </div>
@@ -250,14 +240,11 @@
           <div class="panel-heading table-card-heading"><div><p class="eyebrow">Orçamento por categoria</p><h3>Limites e consumo</h3></div></div>
           <div id="categoryBudgetList" class="category-budget-list"></div>
         </article>
-      </section>
 
-      <section id="cardsSection" class="app-section">
-        <div class="section-title-row">
-          <div><p class="eyebrow">Crédito e parcelamentos</p><h2>Cartões</h2></div>
+        <div class="section-title-row embedded-section-title">
+          <div><p class="eyebrow">Crédito e parcelamentos</p><h2>Cartões e faturas</h2></div>
           <div class="panel-actions">
-            <button id="openInstallmentModal" class="soft-action-button" type="button">＋ Compra parcelada</button>
-            <button id="openCardModal" class="primary-button" type="button">＋ Novo cartão</button>
+            <button id="openCardModal" class="soft-action-button" type="button">Gerenciar cartões</button>
           </div>
         </div>
         <div id="creditCardGrid" class="credit-card-grid"></div>
@@ -270,7 +257,7 @@
 
       <section id="investmentsSection" class="app-section">
         <div class="section-title-row">
-          <div><p class="eyebrow">Patrimônio manual</p><h2>Patrimônio</h2></div>
+          <div><p class="eyebrow">Patrimônio manual</p><h2>Investimentos</h2></div>
           <div class="panel-actions">
             <button id="openInvestmentEventModal" class="soft-action-button" type="button">＋ Registrar evento</button>
             <button id="openInvestmentModal" class="primary-button" type="button"><span aria-hidden="true">＋</span> Novo investimento</button>
@@ -281,6 +268,15 @@
           <div><span>Patrimônio total informado</span><small>Valor atual de todos os investimentos cadastrados</small></div>
           <strong id="portfolioHeroMetric" class="money-value">R$ 0,00</strong>
           <span class="wealth-badge">BRL</span>
+        </article>
+
+        <article class="panel investment-goal-panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">Planejamento de aportes</p><h3>Meta mensal de investimento</h3></div>
+            <strong id="investmentMetric" class="money-value">R$ 0,00</strong>
+          </div>
+          <p id="investmentDetail" class="legend-note">Meta ainda não definida</p>
+          <div class="progress-row"><div><span>Progresso do mês</span><strong id="investmentProgressText">R$ 0 de R$ 0</strong></div><div class="progress-track"><div id="investmentProgressBar" class="progress-fill alt"></div></div></div>
         </article>
 
         <div class="portfolio-card-grid">
@@ -458,6 +454,17 @@
             <option value="other">Outro</option>
           </select>
         </label>
+        <div id="creditPurchaseFields" class="full-span credit-purchase-fields hidden">
+          <label>
+            <span>Cartão</span>
+            <select id="transactionCard"></select>
+          </label>
+          <label>
+            <span>Número de parcelas</span>
+            <input id="transactionInstallmentCount" type="number" min="1" max="48" value="1" />
+          </label>
+          <small>O valor total será distribuído automaticamente nas faturas.</small>
+        </div>
         <label class="full-span">
           <span>Observações</span>
           <textarea id="transactionNotes" rows="3" maxlength="240" placeholder="Opcional"></textarea>
@@ -595,21 +602,6 @@
         <label><span>Dia de vencimento</span><input id="cardDueDay" type="number" min="1" max="31" value="10" required /></label>
       </div>
       <div class="modal-actions"><button class="ghost-button close-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Salvar cartão</button></div>
-    </form>
-  </dialog>
-
-  <dialog id="installmentModal" class="modal">
-    <form id="installmentForm" method="dialog" class="modal-card">
-      <div class="modal-header"><div><p class="eyebrow">Parcelamento</p><h2>Registrar compra parcelada</h2></div><button class="icon-button close-modal" type="button" aria-label="Fechar">×</button></div>
-      <div class="form-grid">
-        <label><span>Cartão</span><select id="installmentCard" required></select></label>
-        <label><span>Data da compra</span><input id="installmentDate" type="date" required /></label>
-        <label class="full-span"><span>Descrição</span><input id="installmentDescription" required maxlength="80" /></label>
-        <label><span>Valor total</span><input id="installmentTotal" type="number" min="0.01" step="0.01" required /></label>
-        <label><span>Número de parcelas</span><input id="installmentCount" type="number" min="1" max="48" value="1" required /></label>
-        <label><span>Categoria</span><select id="installmentCategory"></select></label>
-      </div>
-      <div class="modal-actions"><button class="ghost-button close-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Distribuir parcelas</button></div>
     </form>
   </dialog>
 
