@@ -128,12 +128,15 @@
           </article>
         </div>
 
-        <div class="forecast-grid">
-          <article class="forecast-card"><span>Saldo atual</span><strong id="actualBalanceMetric" class="money-value">R$ 0,00</strong><small>Somente valores realizados</small></article>
-          <article class="forecast-card"><span>Saldo previsto</span><strong id="forecastBalanceMetric" class="money-value">R$ 0,00</strong><small>Inclui pendências e parcelas</small></article>
-          <article class="forecast-card"><span>Total pendente</span><strong id="pendingMetric" class="money-value">R$ 0,00</strong><small id="overdueMetric">Nenhuma conta vencida</small></article>
-          <article class="forecast-card"><span>Receitas esperadas</span><strong id="expectedIncomeMetric" class="money-value">R$ 0,00</strong><small id="futureCommitmentMetric">Sem compromissos futuros</small></article>
-        </div>
+        <details id="forecastDisclosure" class="forecast-disclosure" open>
+          <summary><span>Previsão do mês</span><small>Saldo previsto, pendências e receitas esperadas</small></summary>
+          <div class="forecast-grid">
+            <article class="forecast-card"><span>Saldo atual</span><strong id="actualBalanceMetric" class="money-value">R$ 0,00</strong><small>Somente valores realizados</small></article>
+            <article class="forecast-card"><span>Saldo previsto</span><strong id="forecastBalanceMetric" class="money-value">R$ 0,00</strong><small>Inclui pendências e parcelas</small></article>
+            <article class="forecast-card"><span>Total pendente</span><strong id="pendingMetric" class="money-value">R$ 0,00</strong><small id="overdueMetric">Nenhuma conta vencida</small></article>
+            <article class="forecast-card"><span>Receitas esperadas</span><strong id="expectedIncomeMetric" class="money-value">R$ 0,00</strong><small id="futureCommitmentMetric">Sem compromissos futuros</small></article>
+          </div>
+        </details>
 
         <div class="dashboard-view-toggle" role="tablist" aria-label="Visualização do dashboard">
           <button class="dashboard-view-button active" data-dashboard-view-button="table" type="button"><span aria-hidden="true">▦</span> Tabela</button>
@@ -142,8 +145,9 @@
 
         <div id="dashboardTableView" class="dashboard-view active" data-dashboard-view="table">
           <div class="transaction-tabs" role="tablist" aria-label="Filtrar registros rápidos">
+            <button class="transaction-tab active" data-dashboard-filter="all" type="button">Todos</button>
             <button class="transaction-tab" data-dashboard-filter="income" type="button">Receita</button>
-            <button class="transaction-tab active" data-dashboard-filter="fixed" type="button">Fixa</button>
+            <button class="transaction-tab" data-dashboard-filter="fixed" type="button">Fixa</button>
             <button class="transaction-tab" data-dashboard-filter="variable" type="button">Variável</button>
           </div>
 
@@ -151,7 +155,7 @@
             <div class="panel-heading dashboard-table-heading">
               <div>
                 <p class="eyebrow">Registros do mês</p>
-                <h3 id="dashboardTableTitle">Despesas fixas</h3>
+                <h3 id="dashboardTableTitle">Todos os registros</h3>
               </div>
               <div class="panel-actions">
                 <button class="soft-action-button" data-section-link="movements" type="button"><span aria-hidden="true">☷</span> Filtros</button>
@@ -213,10 +217,12 @@
           </div>
         </div>
 
-        <div class="budget-summary-grid page-summary-grid">
-          <article class="summary-card income"><div class="summary-card-top"><span class="summary-icon">$</span><span class="metric-label">Receita</span></div><strong id="movementIncomeMetric" class="money-value">R$ 0,00</strong></article>
-          <article class="summary-card expense"><div class="summary-card-top"><span class="summary-icon">▣</span><span class="metric-label">Despesas</span></div><strong id="movementExpenseMetric" class="money-value">R$ 0,00</strong></article>
-          <article class="summary-card balance"><div class="summary-card-top"><span class="summary-icon">✦</span><span class="metric-label">Saldo</span></div><strong id="movementBalanceMetric" class="money-value">R$ 0,00</strong></article>
+        <div class="movement-summary-grid page-summary-grid">
+          <article class="summary-card income"><div class="summary-card-top"><span class="summary-icon">$</span><span class="metric-label">Receita realizada</span></div><strong id="movementIncomeMetric" class="money-value">R$ 0,00</strong><small>Renda principal e entradas recebidas</small></article>
+          <article class="summary-card expense"><div class="summary-card-top"><span class="summary-icon">▣</span><span class="metric-label">Despesas pagas</span></div><strong id="movementExpenseMetric" class="money-value">R$ 0,00</strong><small>Somente valores realizados</small></article>
+          <article class="summary-card pending-summary"><div class="summary-card-top"><span class="summary-icon">◷</span><span class="metric-label">Despesas pendentes</span></div><strong id="movementPendingMetric" class="money-value">R$ 0,00</strong><small id="movementOverdueDetail">Nenhuma conta vencida</small></article>
+          <article class="summary-card balance"><div class="summary-card-top"><span class="summary-icon">✦</span><span class="metric-label">Saldo atual</span></div><strong id="movementBalanceMetric" class="money-value">R$ 0,00</strong><small>Considera apenas valores realizados</small></article>
+          <article class="summary-card forecast-summary"><div class="summary-card-top"><span class="summary-icon">↝</span><span class="metric-label">Saldo previsto</span></div><strong id="movementForecastMetric" class="money-value">R$ 0,00</strong><small>Inclui receitas e despesas pendentes</small></article>
         </div>
 
         <div class="section-toolbar budget-toolbar">
@@ -228,31 +234,28 @@
           <button class="soft-action-button" id="openTransactionModalSecondary" type="button"><span aria-hidden="true">＋</span> Adicionar</button>
         </div>
 
-        <article class="panel table-panel reference-table-panel">
+        <article class="panel table-panel reference-table-panel transactions-panel">
           <div class="panel-heading table-card-heading"><div><p class="eyebrow">Todos os registros</p><h3>Movimentações do mês</h3></div><span class="legend-note">Edite ou remova pelos botões da última coluna</span></div>
           <div class="table-wrap">
             <table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Classificação</th><th>Status</th><th class="align-right">Valor</th><th aria-label="Ações"></th></tr></thead><tbody id="transactionsTableBody"></tbody></table>
           </div>
+          <div id="transactionsMobileList" class="transactions-mobile-list"></div>
           <p id="transactionsEmpty" class="empty-state">Nenhuma movimentação encontrada.</p>
         </article>
 
-        <article class="panel table-panel reference-table-panel">
-          <div class="panel-heading table-card-heading"><div><p class="eyebrow">Orçamento por categoria</p><h3>Limites e consumo</h3></div></div>
-          <div id="categoryBudgetList" class="category-budget-list"></div>
-        </article>
+        <details class="secondary-section-disclosure">
+          <summary><div><p class="eyebrow">Orçamento por categoria</p><h3>Limites e consumo</h3></div><span>Ver detalhes</span></summary>
+          <article class="panel reference-table-panel disclosure-panel"><div id="categoryBudgetList" class="category-budget-list"></div></article>
+        </details>
 
-        <div class="section-title-row embedded-section-title">
-          <div><p class="eyebrow">Crédito e parcelamentos</p><h2>Cartões e faturas</h2></div>
-          <div class="panel-actions">
-            <button id="openCardModal" class="soft-action-button" type="button">Gerenciar cartões</button>
-          </div>
-        </div>
-        <div id="creditCardGrid" class="credit-card-grid"></div>
-        <article class="panel table-panel reference-table-panel">
-          <div class="panel-heading table-card-heading"><div><p class="eyebrow">Faturas</p><h3>Atual e futuras</h3></div><span id="invoiceCommitment" class="legend-note"></span></div>
-          <div class="table-wrap"><table><thead><tr><th>Mês</th><th>Cartão</th><th class="align-right">Fatura</th><th class="align-right">% do limite</th></tr></thead><tbody id="invoiceTableBody"></tbody></table></div>
-          <p id="invoiceEmpty" class="empty-state">Cadastre um cartão e uma compra parcelada.</p>
-        </article>
+        <details class="secondary-section-disclosure credit-disclosure">
+          <summary><div><p class="eyebrow">Crédito e parcelamentos</p><h3>Compras parceladas</h3></div><span id="invoiceCommitment">Sem parcelas futuras</span></summary>
+          <article class="panel table-panel reference-table-panel disclosure-panel">
+            <div class="panel-heading table-card-heading"><div><p class="eyebrow">Planejamento futuro</p><h3>Parcelas atuais e futuras</h3></div><button id="openInstallmentPurchase" class="soft-action-button" type="button">＋ Nova compra parcelada</button></div>
+            <div class="table-wrap"><table><thead><tr><th>Mês</th><th class="align-right">Total previsto</th><th class="align-right">Parcelas</th></tr></thead><tbody id="invoiceTableBody"></tbody></table></div>
+            <p id="invoiceEmpty" class="empty-state">Nenhuma compra parcelada registrada.</p>
+          </article>
+        </details>
       </section>
 
       <section id="investmentsSection" class="app-section">
@@ -460,14 +463,10 @@
         </label>
         <div id="creditPurchaseFields" class="full-span credit-purchase-fields hidden">
           <label>
-            <span>Cartão</span>
-            <select id="transactionCard"></select>
-          </label>
-          <label>
             <span>Número de parcelas</span>
             <input id="transactionInstallmentCount" type="number" min="1" max="48" value="1" />
           </label>
-          <small>O valor total será distribuído automaticamente nas faturas.</small>
+          <small>O valor total será dividido a partir do mês da compra. Não é necessário cadastrar um cartão.</small>
         </div>
         <label class="full-span">
           <span>Observações</span>
@@ -593,19 +592,6 @@
       </div>
       <div class="modal-actions"><button class="ghost-button close-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Salvar e gerar lançamentos</button></div>
       <div id="recurringList" class="management-list"></div>
-    </form>
-  </dialog>
-
-  <dialog id="cardModal" class="modal">
-    <form id="cardForm" method="dialog" class="modal-card small-modal">
-      <div class="modal-header"><div><p class="eyebrow">Crédito</p><h2>Novo cartão</h2></div><button class="icon-button close-modal" type="button" aria-label="Fechar">×</button></div>
-      <div class="form-grid one-column">
-        <label><span>Nome do cartão</span><input id="cardName" required maxlength="40" placeholder="Ex.: Nubank" /></label>
-        <label><span>Limite total</span><input id="cardLimit" type="number" min="0" step="0.01" required /></label>
-        <label><span>Dia de fechamento</span><input id="cardClosingDay" type="number" min="1" max="31" value="20" required /></label>
-        <label><span>Dia de vencimento</span><input id="cardDueDay" type="number" min="1" max="31" value="10" required /></label>
-      </div>
-      <div class="modal-actions"><button class="ghost-button close-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Salvar cartão</button></div>
     </form>
   </dialog>
 
