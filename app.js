@@ -4,6 +4,7 @@
   const STORAGE_KEY = "financeQuestData_v1";
   const DATA_VERSION = 4;
   const THEME_KEY = "financeQuestTheme";
+  const PRIVACY_KEY = "financeQuestValuesHidden";
 
   const expenseCategories = [
     "Moradia", "Alimentação", "Transporte", "Assinaturas", "Lazer",
@@ -459,13 +460,18 @@
     `).join("");
   }
 
-  function togglePrivacyValues() {
-    valuesHidden = !valuesHidden;
+  function applyPrivacyValues(hidden) {
+    valuesHidden = hidden;
     document.body.classList.toggle("hide-values", valuesHidden);
     const button = $("#privacyToggle");
     button.textContent = valuesHidden ? "◌" : "◉";
     button.setAttribute("aria-label", valuesHidden ? "Exibir valores" : "Ocultar valores");
     button.title = valuesHidden ? "Exibir valores" : "Ocultar valores";
+  }
+
+  function togglePrivacyValues() {
+    applyPrivacyValues(!valuesHidden);
+    localStorage.setItem(PRIVACY_KEY, String(valuesHidden));
   }
 
   function renderAll() {
@@ -1421,6 +1427,7 @@
     $("#investmentEventDate").value = todayISO();
     $("#recurringStart").value = todayISO();
     applyTheme(localStorage.getItem(THEME_KEY) || "light");
+    applyPrivacyValues(localStorage.getItem(PRIVACY_KEY) === "true");
     bindEvents();
     setDashboardView(dashboardView);
     setDashboardFilter(dashboardFilter);
