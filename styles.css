@@ -450,7 +450,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .transaction-tabs {
   max-width: 680px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
   margin: 0 auto 24px;
 }
@@ -520,6 +520,13 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 
 /* Budget / movement page */
 .page-summary-grid { margin-bottom: 24px; }
+.movement-summary-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin-bottom: 24px; }
+.movement-summary-grid .summary-card { min-height: 150px; padding: 19px; }
+.movement-summary-grid .summary-card > strong { font-size: clamp(21px, 2vw, 29px); }
+.pending-summary > strong, .pending-summary .summary-icon { color: var(--amber); }
+.pending-summary .summary-icon { background: var(--amber-soft); }
+.forecast-summary > strong, .forecast-summary .summary-icon { color: var(--blue); }
+.forecast-summary .summary-icon { background: var(--blue-soft); }
 .budget-toolbar { align-items: flex-end; margin-bottom: 18px; }
 .filter-row, .button-stack { display: flex; gap: 11px; align-items: flex-end; flex-wrap: wrap; }
 .filter-row label, .form-grid label { display: grid; gap: 7px; color: var(--muted); font-size: 12px; font-weight: 700; }
@@ -553,6 +560,17 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 32%, transpa
 .row-action { border: 0; border-radius: 10px; padding: 8px 10px; color: var(--muted); background: var(--surface-soft); }
 .row-action:hover { color: var(--primary); background: var(--primary-soft); }
 .empty-state { margin: 0; padding: 30px; color: var(--muted); text-align: center; }
+.transactions-mobile-list { display: none; }
+.transaction-mobile-card { display: grid; gap: 13px; padding: 16px; border-bottom: 1px solid var(--border); }
+.transaction-mobile-card:last-child { border-bottom: 0; }
+.transaction-mobile-head { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+.transaction-mobile-head > div { min-width: 0; }
+.transaction-mobile-head strong, .transaction-mobile-head small { display: block; }
+.transaction-mobile-head > div strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.transaction-mobile-head small { margin-top: 4px; color: var(--muted); font-size: 11px; }
+.transaction-mobile-head > .money-value { flex: 0 0 auto; }
+.transaction-mobile-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+.transaction-mobile-card .row-actions { justify-content: flex-start; }
 
 /* Portfolio page */
 .portfolio-hero-card {
@@ -607,6 +625,32 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 32%, transpa
 .embedded-section-title { margin-top: 30px; padding-top: 26px; border-top: 1px solid var(--border); }
 .credit-purchase-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding: 16px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface-soft); }
 .credit-purchase-fields small { grid-column: 1 / -1; }
+.forecast-disclosure, .secondary-section-disclosure { margin: 16px 0 24px; }
+.forecast-disclosure > summary, .secondary-section-disclosure > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 15px 18px;
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  color: var(--text);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  list-style: none;
+}
+.forecast-disclosure > summary::-webkit-details-marker, .secondary-section-disclosure > summary::-webkit-details-marker { display: none; }
+.forecast-disclosure > summary::after, .secondary-section-disclosure > summary::after { content: "⌄"; color: var(--muted); font-size: 18px; transition: transform .2s ease; }
+.forecast-disclosure[open] > summary::after, .secondary-section-disclosure[open] > summary::after { transform: rotate(180deg); }
+.forecast-disclosure > summary span, .secondary-section-disclosure > summary h3 { font-weight: 800; }
+.forecast-disclosure > summary small, .secondary-section-disclosure > summary > span { margin-left: auto; color: var(--muted); font-size: 12px; }
+.forecast-disclosure .forecast-grid { margin-bottom: 0; }
+.secondary-section-disclosure { margin-top: 18px; }
+.secondary-section-disclosure > summary h3, .secondary-section-disclosure > summary p { margin: 0; }
+.secondary-section-disclosure > summary p { margin-bottom: 4px; }
+.disclosure-panel { margin-top: 10px; }
+.credit-disclosure { margin-bottom: 0; }
 
 /* Goals and achievements */
 .goals-layout, .settings-grid { display: grid; gap: 20px; }
@@ -816,9 +860,15 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 32%, transpa
 
 @media (max-width: 980px) {
   .forecast-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .movement-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 760px) {
+  .movement-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+  .movement-summary-grid .summary-card { min-height: 132px; padding: 16px; }
+  .movement-summary-grid .summary-card > small { display: block; }
+  #movementsSection .transactions-panel > .table-wrap { display: none; }
+  #movementsSection .transactions-mobile-list { display: block; }
   .category-budget-fields { grid-template-columns: 1fr; }
   .category-budget-row { grid-template-columns: 1fr 52px; }
   .category-budget-row .progress-track { grid-column: 1 / -1; grid-row: 2; }
@@ -830,4 +880,10 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 32%, transpa
   .forecast-card { padding: 14px; border-radius: 17px; }
   .forecast-card strong { font-size: 19px; }
   .forecast-card small { font-size: 10px; }
+  .forecast-disclosure > summary { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .forecast-disclosure > summary small { margin-left: 0; }
+  .forecast-disclosure > summary::after { position: absolute; right: 20px; }
+  .secondary-section-disclosure > summary > span { max-width: 130px; text-align: right; }
+  .transaction-tabs { gap: 5px; }
+  .transaction-tab { min-height: 44px; padding: 8px 5px; font-size: 13px; }
 }
