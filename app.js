@@ -56,6 +56,7 @@
       const migratedInvestments = (Array.isArray(parsed.investments) ? parsed.investments : []).map((item) => ({
         ...item,
         objective: item.objective || "",
+        quantity: Number(item.quantity || 0),
         migratedLegacy: !item.migratedLegacy
       }));
       const investmentEvents = Array.isArray(parsed.investmentEvents) ? parsed.investmentEvents : [];
@@ -112,6 +113,19 @@
       currency: "BRL",
       maximumFractionDigits: compact ? 0 : 2
     }).format(amount);
+  }
+
+  function formatQuantity(value) {
+    return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 8 }).format(Number(value || 0));
+  }
+
+  function formatUnitCurrency(value) {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 8
+    }).format(Number(value || 0));
   }
 
   function formatDate(dateString) {
@@ -900,13 +914,81 @@
     saveState(); renderAll(); downloadClosurePdf(selectedMonth); showToast("Mês fechado e relatório gerado.");
   }
 
-  function pdfEscape(value) { return String(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[()\\]/g, "\\$&"); }
+  function pdfEscape(value) { return String(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\x20-\x7E]/g, " ").replace(/[()\\]/g, "\\$&"); }
+  function pdfHex(value) {
+    return Array.from(String(value)).map((character) => {
+      const code = character.charCodeAt(0);
+      return (code <= 255 ? code : 63).toString(16).padStart(2, "0");
+    }).join("");
+  }
+  function pdfCurrency(value) { return formatCurrency(value).replace(/\u00a0/g, " "); }
+  function pdfText(value, x, y, size = 11, font = "F1", color = "0.12 0.16 0.14") {
+    return `BT ${color} rg /${font} ${size} Tf ${x} ${y} Td <${pdfHex(value)}> Tj ET`;
+  }
+  function pdfRect(x, y, width, height, color) { return `${color} rg ${x} ${y} ${width} ${height} re f`; }
+  function buildClosurePdf(item, month) {
+    const commands = [];
+    const positive = Number(item.balance || 0) >= 0;
+    const accent = positive ? "0.18 0.54 0.41" : "0.72 0.24 0.28";
+    const card = (x, y, label, value, valueColor = "0.10 0.14 0.12") => {
+      commands.push(pdfRect(x, y, 247, 72, "0.96 0.98 0.97"));
+      commands.push(pdfText(label.toUpperCase(), x + 18, y + 48, 8, "F2", "0.42 0.47 0.44"));
+      commands.push(pdfText(value, x + 18, y + 20, 18, "F2", valueColor));
+    };
+
+    commands.push(pdfRect(0, 642, 595, 200, "0.12 0.39 0.29"));
+    commands.push(pdfText("DESPESA MENSAL", 42, 795, 10, "F2", "0.78 0.91 0.85"));
+    commands.push(pdfText("Relatório mensal", 42, 750, 28, "F2", "1 1 1"));
+    commands.push(pdfText(monthLabel(month), 42, 720, 14, "F1", "0.88 0.96 0.92"));
+    commands.push(pdfRect(431, 706, 122, 72, "0.24 0.52 0.41"));
+    commands.push(pdfText("SAÚDE FINANCEIRA", 446, 756, 7, "F2", "0.82 0.93 0.88"));
+    commands.push(pdfText(`${item.score}/100`, 446, 730, 20, "F2", "1 1 1"));
+    commands.push(pdfText(item.level || "", 446, 714, 8, "F1", "0.90 0.96 0.93"));
+
+    commands.push(pdfText("Resumo do período", 42, 610, 16, "F2"));
+    card(42, 515, "Receitas", pdfCurrency(item.income), "0.12 0.48 0.34");
+    card(306, 515, "Despesas", pdfCurrency(item.expenses), "0.66 0.22 0.27");
+    card(42, 427, "Investimentos", pdfCurrency(item.invested), "0.25 0.38 0.68");
+    card(306, 427, "Saldo do mes", pdfCurrency(item.balance), accent);
+
+    commands.push(pdfText("Planejamento e fechamento", 42, 385, 16, "F2"));
+    commands.push(pdfRect(42, 315, 511, 52, "0.94 0.96 0.95"));
+    commands.push(pdfText("SALDO PREVISTO", 58, 346, 8, "F2", "0.42 0.47 0.44"));
+    commands.push(pdfText(pdfCurrency(item.forecastBalance), 58, 326, 14, "F2"));
+    commands.push(pdfText("PENDÊNCIAS TRANSFERIDAS", 305, 346, 8, "F2", "0.42 0.47 0.44"));
+    commands.push(pdfText(pdfCurrency(item.pending), 305, 326, 14, "F2"));
+
+    commands.push(pdfText("Maiores variações por categoria", 42, 276, 16, "F2"));
+    const changes = (item.categoryChanges || []).slice(0, 3);
+    if (!changes.length) commands.push(pdfText("Não houve variações relevantes neste período.", 42, 242, 11, "F1", "0.42 0.47 0.44"));
+    changes.forEach((change, index) => {
+      const y = 236 - index * 38;
+      const changePositive = Number(change.change || 0) <= 0;
+      commands.push(pdfRect(42, y - 12, 511, 30, index % 2 ? "0.98 0.99 0.98" : "0.95 0.97 0.96"));
+      commands.push(pdfText(change.category, 56, y, 10, "F1"));
+      commands.push(pdfText(`${change.change >= 0 ? "+" : ""}${pdfCurrency(change.change)}`, 430, y, 10, "F2", changePositive ? "0.12 0.48 0.34" : "0.66 0.22 0.27"));
+    });
+
+    commands.push(pdfText(`Fechado em ${formatDate(item.closedAt)}`, 42, 48, 8, "F1", "0.48 0.52 0.50"));
+    commands.push(pdfText("Gerado pela plataforma Despesa Mensal", 355, 48, 8, "F1", "0.48 0.52 0.50"));
+    const stream = commands.join("\n");
+    const objects = [
+      "1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj",
+      "2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj",
+      "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >> endobj",
+      "4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >> endobj",
+      "5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >> endobj",
+      `6 0 obj << /Length ${stream.length} >> stream\n${stream}\nendstream endobj`
+    ];
+    let pdf = "%PDF-1.4\n", offsets = [0];
+    objects.forEach((object) => { offsets.push(pdf.length); pdf += `${object}\n`; });
+    const xref = pdf.length;
+    pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n${offsets.slice(1).map((offset) => String(offset).padStart(10, "0") + " 00000 n ").join("\n")}\ntrailer << /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+    return pdf;
+  }
   function downloadClosurePdf(month) {
     const item = state.closures[month]; if (!item) return;
-    const lines = ["DESPESA MENSAL - RELATORIO", monthLabel(month).toUpperCase(), "", `Receitas: ${formatCurrency(item.income)}`, `Despesas: ${formatCurrency(item.expenses)}`, `Investimentos: ${formatCurrency(item.invested)}`, `Saldo: ${formatCurrency(item.balance)}`, `Saldo previsto: ${formatCurrency(item.forecastBalance)}`, `Pendencias transferidas: ${formatCurrency(item.pending)}`, `Pontuacao: ${item.score}/100 - ${item.level}`, "", "Maiores variacoes por categoria:", ...(item.categoryChanges || []).map((change) => `${change.category}: ${change.change >= 0 ? "+" : ""}${formatCurrency(change.change)}`)];
-    const stream = lines.map((line, index) => `BT /F1 ${index < 2 ? 16 : 11} Tf 50 ${790 - index * 28} Td (${pdfEscape(line)}) Tj ET`).join("\n");
-    const objects = ["1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj", "2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj", "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj", "4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj", `5 0 obj << /Length ${stream.length} >> stream\n${stream}\nendstream endobj`];
-    let pdf = "%PDF-1.4\n", offsets = [0]; objects.forEach((object) => { offsets.push(pdf.length); pdf += `${object}\n`; }); const xref = pdf.length; pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n${offsets.slice(1).map((offset) => String(offset).padStart(10, "0") + " 00000 n ").join("\n")}\ntrailer << /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+    const pdf = buildClosurePdf(item, month);
     const blob = new Blob([pdf], { type: "application/pdf" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `despesa-mensal-${month}.pdf`; link.click(); URL.revokeObjectURL(url);
   }
 
@@ -942,15 +1024,18 @@
     $("#investmentsEmpty").classList.toggle("hidden", rows.length > 0);
     $("#investmentsTableBody").innerHTML = rows.map((item) => {
       const asset = getAssetTotals(item.id);
+      const quantity = Number(item.quantity || 0);
+      const unitValue = quantity > 0 ? asset.current / quantity : 0;
       return `
         <tr>
           <td><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.institution || "—")}</small></td>
           <td>${escapeHtml(item.type)}</td>
           <td>${escapeHtml(item.objective || "—")}</td>
+          <td class="align-right">${quantity > 0 ? formatQuantity(quantity) : "—"}</td>
           <td class="align-right money-value">${formatCurrency(asset.contributions)}</td>
           <td class="align-right money-value">${formatCurrency(asset.withdrawals)}</td>
           <td class="align-right money-value amount-positive">${formatCurrency(asset.income)}</td>
-          <td class="align-right"><strong class="money-value">${formatCurrency(asset.current)}</strong><small class="valuation-status ${asset.isStale ? "stale" : asset.isEstimated ? "estimated" : ""}">${asset.isStale ? "Atualize o valor atual" : asset.isEstimated ? "Valor estimado" : `Atualizado em ${formatDate(asset.valuationDate)}`}</small></td>
+          <td class="align-right"><strong class="money-value">${formatCurrency(asset.current)}</strong>${quantity > 0 ? `<small class="valuation-status">${formatUnitCurrency(unitValue)} por unidade</small>` : ""}<small class="valuation-status ${asset.isStale ? "stale" : asset.isEstimated ? "estimated" : ""}">${asset.isStale ? "Atualize o valor atual" : asset.isEstimated ? "Valor estimado" : `Atualizado em ${formatDate(asset.valuationDate)}`}</small></td>
           <td class="align-right ${asset.profitability >= 0 ? "amount-positive" : "amount-negative"}">${asset.profitability.toFixed(2).replace(".", ",")}%</td>
           <td><div class="row-actions"><button class="row-action" data-edit-investment="${item.id}" type="button">Editar</button><button class="row-action" data-delete-investment="${item.id}" type="button">Excluir</button></div></td>
         </tr>`;
@@ -1115,6 +1200,7 @@
       $("#investmentInstitution").value = item.institution || "";
       $("#investmentObjective").value = item.objective || "";
       $("#investmentAmount").value = item.amount;
+      $("#investmentQuantity").value = item.quantity || "";
       $("#investmentCurrentValue").value = item.currentValue ?? item.amount;
       $("#investmentNotes").value = item.notes || "";
     }
@@ -1274,6 +1360,7 @@
       institution: $("#investmentInstitution").value.trim(),
       objective: $("#investmentObjective").value.trim(),
       amount,
+      quantity: Number($("#investmentQuantity").value || 0),
       currentValue: currentInput === "" ? amount : Number(currentInput),
       notes: $("#investmentNotes").value.trim()
     };
@@ -1336,7 +1423,9 @@
   }
 
   function deleteTransaction(id) {
-    if (!confirm("Excluir esta movimentação?")) return;
+    const item = state.transactions.find((entry) => entry.id === id);
+    if (!item) return;
+    if (!confirm(`Excluir "${item.description}" no valor de ${formatCurrency(item.amount)}? Esta ação não pode ser desfeita.`)) return;
     state.transactions = state.transactions.filter((item) => item.id !== id);
     saveState();
     renderAll();
@@ -1497,6 +1586,8 @@
     $("#transactionSearch").addEventListener("input", renderTransactions);
     $("#transactionTypeFilter").addEventListener("change", renderTransactions);
     $("#transactionStatusFilter").addEventListener("change", renderTransactions);
+    $("#emptyAddTransaction").addEventListener("click", () => openTransactionModal());
+    $("#emptyAddInvestment").addEventListener("click", () => openInvestmentModal());
 
     const handleTransactionTableAction = (event) => {
       const edit = event.target.closest("[data-edit-transaction]");
