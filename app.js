@@ -1612,19 +1612,21 @@
     $("#authModal").showModal();
   }
 
-  function updatePasswordStrength() {
+  function updatePasswordRequirements() {
     const password = $("#registerPassword").value;
-    let score = 0;
-    if (password.length >= 8) score += 1;
-    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score += 1;
-    if (/\d/.test(password)) score += 1;
-    if (/[^A-Za-z0-9]/.test(password)) score += 1;
-    const widths = [0, 25, 50, 75, 100];
-    const labels = ["Use pelo menos 8 caracteres, com uma letra e um número.", "Inclua uma letra e um número.", "Senha razoável", "Senha boa", "Senha forte"];
-    const colors = ["var(--red)", "var(--red)", "var(--amber)", "var(--primary)", "var(--primary)"];
-    $("#passwordStrengthFill").style.width = `${widths[score]}%`;
-    $("#passwordStrengthFill").style.background = colors[score];
-    $("#passwordStrengthText").textContent = labels[score];
+    const requirements = [
+      ["#passwordRequirementLength", password.length >= 8],
+      ["#passwordRequirementLetter", /[A-Za-z]/.test(password)],
+      ["#passwordRequirementNumber", /\d/.test(password)]
+    ];
+    requirements.forEach(([selector, met]) => $(selector).classList.toggle("met", met));
+    const confirmation = $("#registerPasswordConfirm").value;
+    const ready = requirements.every(([, met]) => met)
+      && confirmation === password
+      && $("#registerName").value.trim().length > 0
+      && $("#registerEmail").checkValidity()
+      && $("#registerTerms").checked;
+    $("#registerSubmitButton").disabled = !ready;
   }
 
   function startResendCountdown() {
@@ -1690,7 +1692,7 @@
     updateProfileButton();
     $("#authModal").close();
     $("#registerForm").reset();
-    updatePasswordStrength();
+    updatePasswordRequirements();
     showToast("E-mail confirmado. Conta de demonstração pronta.");
   }
 
@@ -1792,7 +1794,8 @@
     $("#registerForm").addEventListener("submit", handleRegisterSubmit);
     $("#verificationForm").addEventListener("submit", handleVerificationSubmit);
     $("#forgotPasswordForm").addEventListener("submit", handleForgotSubmit);
-    $("#registerPassword").addEventListener("input", updatePasswordStrength);
+    $("#registerForm").addEventListener("input", updatePasswordRequirements);
+    $("#registerForm").addEventListener("change", updatePasswordRequirements);
     $$('[data-auth-tab]').forEach((button) => button.addEventListener("click", () => setAuthView(button.dataset.authTab)));
     $$('[data-auth-action="forgot"]').forEach((button) => button.addEventListener("click", () => { $("#forgotEmail").value = $("#loginEmail").value; setAuthView("forgot"); }));
     $$('[data-toggle-password]').forEach((button) => button.addEventListener("click", () => {
