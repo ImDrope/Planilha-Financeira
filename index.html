@@ -65,6 +65,10 @@
           </div>
           <button id="privacyToggle" class="icon-button privacy-toggle" type="button" aria-label="Ocultar valores" title="Ocultar valores">◉</button>
           <button id="openTransactionModal" class="primary-button top-add-button" type="button">+ Nova movimentação</button>
+          <button id="openAuthModal" class="profile-button" type="button" aria-label="Acessar conta" title="Acessar conta">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.25"></circle><path d="M5.5 19c.65-3.2 3-5 6.5-5s5.85 1.8 6.5 5"></path></svg>
+            <span id="profileStatusDot" aria-hidden="true"></span>
+          </button>
         </div>
       </header>
 
@@ -664,6 +668,104 @@
       <div class="close-month-note"><span aria-hidden="true">✓</span><p id="closeMonthNote">Um resumo permanente e o relatório PDF serão gerados.</p></div>
       <div class="modal-actions"><button class="ghost-button close-modal" type="button">Cancelar</button><button id="confirmCloseMonth" class="primary-button" type="submit">Confirmar fechamento</button></div>
     </form>
+  </dialog>
+
+  <dialog id="authModal" class="modal auth-modal">
+    <div class="modal-card auth-card">
+      <div class="modal-header auth-modal-header">
+        <div class="auth-brand-lockup">
+          <img src="assets/logo-money.svg" alt="" />
+          <div><p class="eyebrow">Despesa Mensal</p><h2 id="authModalTitle">Acesse sua conta</h2></div>
+        </div>
+        <button class="icon-button close-modal" type="button" aria-label="Fechar">×</button>
+      </div>
+
+      <div class="auth-demo-notice" role="note"><span aria-hidden="true">i</span><p><strong>Modo de demonstração</strong>Nenhuma conta é criada e nenhuma senha é armazenada nesta etapa.</p></div>
+
+      <section id="authLoginView" class="auth-view" data-auth-view="login">
+        <div class="auth-tabs" role="tablist" aria-label="Acesso à conta">
+          <button class="active" type="button" role="tab" aria-selected="true" data-auth-tab="login">Entrar</button>
+          <button type="button" role="tab" aria-selected="false" data-auth-tab="register">Criar conta</button>
+        </div>
+        <form id="loginForm" class="auth-form">
+          <label><span>E-mail</span><input id="loginEmail" type="email" autocomplete="email" placeholder="seu@email.com" required /></label>
+          <label><span>Senha</span><span class="password-field"><input id="loginPassword" type="password" autocomplete="current-password" minlength="6" placeholder="Digite sua senha" required /><button type="button" data-toggle-password="loginPassword" aria-label="Mostrar senha">◉</button></span></label>
+          <div class="auth-form-options"><label class="check-label"><input id="rememberLogin" type="checkbox" /> Lembrar de mim</label><button class="text-button" type="button" data-auth-action="forgot">Esqueci minha senha</button></div>
+          <p id="loginError" class="auth-error" role="alert"></p>
+          <button class="primary-button auth-submit" type="submit">Entrar</button>
+        </form>
+      </section>
+
+      <section id="authRegisterView" class="auth-view hidden" data-auth-view="register">
+        <div class="auth-tabs" role="tablist" aria-label="Acesso à conta">
+          <button type="button" role="tab" aria-selected="false" data-auth-tab="login">Entrar</button>
+          <button class="active" type="button" role="tab" aria-selected="true" data-auth-tab="register">Criar conta</button>
+        </div>
+        <form id="registerForm" class="auth-form">
+          <label><span>Nome</span><input id="registerName" autocomplete="name" maxlength="80" placeholder="Como devemos chamar você?" required /></label>
+          <label><span>E-mail</span><input id="registerEmail" type="email" autocomplete="email" placeholder="seu@email.com" required /></label>
+          <label><span>Senha</span><span class="password-field"><input id="registerPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Mínimo de 8 caracteres" required /><button type="button" data-toggle-password="registerPassword" aria-label="Mostrar senha">◉</button></span></label>
+          <div class="password-strength" aria-live="polite"><div><span id="passwordStrengthFill"></span></div><small id="passwordStrengthText">Use letras, números e símbolos.</small></div>
+          <label><span>Confirmar senha</span><span class="password-field"><input id="registerPasswordConfirm" type="password" autocomplete="new-password" minlength="8" placeholder="Digite novamente" required /><button type="button" data-toggle-password="registerPasswordConfirm" aria-label="Mostrar senha">◉</button></span></label>
+          <label class="check-label terms-check"><input id="registerTerms" type="checkbox" required /> Li e aceito os Termos de Uso e a Política de Privacidade.</label>
+          <p id="registerError" class="auth-error" role="alert"></p>
+          <button class="primary-button auth-submit" type="submit">Continuar</button>
+        </form>
+      </section>
+
+      <section id="authVerifyView" class="auth-view auth-centered hidden" data-auth-view="verify">
+        <div class="auth-state-icon" aria-hidden="true">✉</div>
+        <p class="eyebrow">Confirme seu e-mail</p>
+        <h2>Digite o código enviado</h2>
+        <p class="muted">Enviamos um código de 6 dígitos para <strong id="verificationEmail">se***@email.com</strong>.</p>
+        <div class="auth-demo-code">Para testar o protótipo, use o código <strong>123456</strong>.</div>
+        <form id="verificationForm" class="auth-form">
+          <div class="otp-fields" aria-label="Código de verificação">
+            <input data-otp type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="1" aria-label="Dígito 1" required />
+            <input data-otp type="text" inputmode="numeric" maxlength="1" aria-label="Dígito 2" required />
+            <input data-otp type="text" inputmode="numeric" maxlength="1" aria-label="Dígito 3" required />
+            <input data-otp type="text" inputmode="numeric" maxlength="1" aria-label="Dígito 4" required />
+            <input data-otp type="text" inputmode="numeric" maxlength="1" aria-label="Dígito 5" required />
+            <input data-otp type="text" inputmode="numeric" maxlength="1" aria-label="Dígito 6" required />
+          </div>
+          <p id="verificationError" class="auth-error" role="alert"></p>
+          <button class="primary-button auth-submit" type="submit">Confirmar e-mail</button>
+        </form>
+        <p class="auth-resend"><span id="resendCountdown">Reenviar código em 00:45</span><button id="resendCode" class="text-button hidden" type="button">Reenviar código</button></p>
+        <button class="text-button" type="button" data-auth-tab="register">Alterar e-mail</button>
+        <small class="auth-spam-note">Não encontrou? Verifique também sua caixa de spam.</small>
+      </section>
+
+      <section id="authForgotView" class="auth-view auth-centered hidden" data-auth-view="forgot">
+        <div class="auth-state-icon" aria-hidden="true">↗</div>
+        <p class="eyebrow">Recuperar acesso</p>
+        <h2>Redefina sua senha</h2>
+        <p class="muted">Informe o e-mail da conta. Enviaremos as instruções para criar uma nova senha.</p>
+        <form id="forgotPasswordForm" class="auth-form auth-form-left">
+          <label><span>E-mail</span><input id="forgotEmail" type="email" autocomplete="email" placeholder="seu@email.com" required /></label>
+          <button class="primary-button auth-submit" type="submit">Enviar instruções</button>
+        </form>
+        <button class="text-button" type="button" data-auth-tab="login">Voltar para o login</button>
+      </section>
+
+      <section id="authResetSentView" class="auth-view auth-centered hidden" data-auth-view="reset-sent">
+        <div class="auth-state-icon success" aria-hidden="true">✓</div>
+        <p class="eyebrow">E-mail enviado</p>
+        <h2>Confira sua caixa de entrada</h2>
+        <p class="muted">Se houver uma conta vinculada a <strong id="resetEmail">se***@email.com</strong>, as instruções chegarão em instantes.</p>
+        <div class="auth-security-note">Por segurança, não informamos se o endereço está cadastrado.</div>
+        <button class="primary-button auth-submit" type="button" data-auth-tab="login">Voltar para o login</button>
+      </section>
+
+      <section id="authProfileView" class="auth-view auth-centered hidden" data-auth-view="profile">
+        <div class="profile-avatar-large" aria-hidden="true"><span id="profileInitials">DM</span></div>
+        <p class="eyebrow">Sessão de demonstração</p>
+        <h2 id="profileName">Usuário</h2>
+        <p id="profileEmail" class="muted">usuario@email.com</p>
+        <div class="auth-profile-status"><span aria-hidden="true">✓</span><div><strong>E-mail confirmado</strong><small>Perfil autenticado somente durante este teste.</small></div></div>
+        <button id="logoutDemo" class="ghost-button auth-submit" type="button">Sair da conta</button>
+      </section>
+    </div>
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>

@@ -5,6 +5,8 @@
   const DATA_VERSION = 5;
   const THEME_KEY = "financeQuestTheme";
   const PRIVACY_KEY = "financeQuestValuesHidden";
+  const DEMO_VERIFICATION_CODE = "123456";
+  const RESEND_DELAY_SECONDS = 45;
 
   const expenseCategories = [
     "Moradia", "Alimentação", "Transporte", "Assinaturas", "Lazer",
@@ -32,6 +34,10 @@
   let dashboardView = "table";
   let dashboardFilter = "all";
   let valuesHidden = false;
+  let demoUser = null;
+  let pendingRegistration = null;
+  let resendTimer = null;
+  let verificationAttempts = 0;
 
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -1563,6 +1569,166 @@
     });
   }
 
+  function maskEmail(email) {
+    const [name = "", domain = ""] = String(email || "").split("@");
+    if (!domain) return email;
+    const visible = name.slice(0, Math.min(2, name.length));
+    return `${visible}${"*".repeat(Math.max(3, name.length - visible.length))}@${domain}`;
+  }
+
+  function getInitials(name) {
+    return String(name || "DM").trim().split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "DM";
+  }
+
+  function setAuthView(view) {
+    $$('[data-auth-view]').forEach((section) => section.classList.toggle("hidden", section.dataset.authView !== view));
+    const titles = { login: "Acesse sua conta", register: "Crie sua conta", verify: "Confirme seu e-mail", forgot: "Recupere seu acesso", "reset-sent": "Confira seu e-mail", profile: "Sua conta" };
+    $("#authModalTitle").textContent = titles[view] || "Sua conta";
+    $$('[data-auth-tab]').forEach((button) => {
+      if (!button.closest(".auth-tabs")) return;
+      const active = button.dataset.authTab === view;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-selected", String(active));
+    });
+    if (view !== "verify") clearInterval(resendTimer);
+  }
+
+  function updateProfileButton() {
+    const button = $("#openAuthModal");
+    button.classList.toggle("authenticated", Boolean(demoUser));
+    button.setAttribute("aria-label", demoUser ? `Abrir perfil de ${demoUser.name}` : "Acessar conta");
+    button.title = demoUser ? `Perfil de ${demoUser.name}` : "Acessar conta";
+  }
+
+  function openAuthModal() {
+    if (demoUser) {
+      $("#profileName").textContent = demoUser.name;
+      $("#profileEmail").textContent = demoUser.email;
+      $("#profileInitials").textContent = getInitials(demoUser.name);
+      setAuthView("profile");
+    } else {
+      setAuthView("login");
+    }
+    $("#authModal").showModal();
+  }
+
+  function updatePasswordStrength() {
+    const password = $("#registerPassword").value;
+    let score = 0;
+    if (password.length >= 8) score += 1;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score += 1;
+    if (/\d/.test(password)) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+    const widths = [0, 25, 50, 75, 100];
+    const labels = ["Use letras, números e símbolos.", "Senha fraca", "Senha razoável", "Senha boa", "Senha forte"];
+    const colors = ["var(--red)", "var(--red)", "var(--amber)", "var(--primary)", "var(--primary)"];
+    $("#passwordStrengthFill").style.width = `${widths[score]}%`;
+    $("#passwordStrengthFill").style.background = colors[score];
+    $("#passwordStrengthText").textContent = labels[score];
+  }
+
+  function startResendCountdown() {
+    clearInterval(resendTimer);
+    let remaining = RESEND_DELAY_SECONDS;
+    const label = $("#resendCountdown");
+    const resend = $("#resendCode");
+    label.classList.remove("hidden");
+    resend.classList.add("hidden");
+    const render = () => { label.textContent = `Reenviar código em 00:${String(remaining).padStart(2, "0")}`; };
+    render();
+    resendTimer = setInterval(() => {
+      remaining -= 1;
+      render();
+      if (remaining <= 0) {
+        clearInterval(resendTimer);
+        label.classList.add("hidden");
+        resend.classList.remove("hidden");
+      }
+    }, 1000);
+  }
+
+  function clearOtp() {
+    $$('[data-otp]').forEach((input) => { input.value = ""; });
+    $("#verificationError").textContent = "";
+    verificationAttempts = 0;
+    $$('[data-otp]')[0]?.focus();
+  }
+
+  function handleRegisterSubmit(event) {
+    event.preventDefault();
+    const name = $("#registerName").value.trim();
+    const email = $("#registerEmail").value.trim().toLowerCase();
+    const password = $("#registerPassword").value;
+    const confirmation = $("#registerPasswordConfirm").value;
+    const error = $("#registerError");
+    error.textContent = "";
+    if (password !== confirmation) { error.textContent = "As senhas informadas não são iguais."; return; }
+    if (!$("#registerTerms").checked) { error.textContent = "Aceite os termos para continuar."; return; }
+    pendingRegistration = { name, email };
+    $("#verificationEmail").textContent = maskEmail(email);
+    clearOtp();
+    $("#verificationForm button[type='submit']").disabled = false;
+    setAuthView("verify");
+    startResendCountdown();
+  }
+
+  function handleVerificationSubmit(event) {
+    event.preventDefault();
+    const code = $$('[data-otp]').map((input) => input.value).join("");
+    const error = $("#verificationError");
+    if (code !== DEMO_VERIFICATION_CODE) {
+      verificationAttempts += 1;
+      const remaining = Math.max(0, 5 - verificationAttempts);
+      error.textContent = remaining ? `Código incorreto. Restam ${remaining} tentativa${remaining === 1 ? "" : "s"}.` : "Limite de tentativas atingido. Reenvie o código.";
+      if (!remaining) $("#verificationForm button[type='submit']").disabled = true;
+      return;
+    }
+    demoUser = { ...pendingRegistration };
+    pendingRegistration = null;
+    clearInterval(resendTimer);
+    updateProfileButton();
+    $("#authModal").close();
+    $("#registerForm").reset();
+    updatePasswordStrength();
+    showToast("E-mail confirmado. Conta de demonstração pronta.");
+  }
+
+  function handleLoginSubmit(event) {
+    event.preventDefault();
+    const email = $("#loginEmail").value.trim().toLowerCase();
+    const localName = email.split("@")[0].replace(/[._-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+    demoUser = { name: localName || "Usuário", email };
+    updateProfileButton();
+    $("#authModal").close();
+    $("#loginForm").reset();
+    showToast("Login de demonstração realizado.");
+  }
+
+  function handleForgotSubmit(event) {
+    event.preventDefault();
+    const email = $("#forgotEmail").value.trim().toLowerCase();
+    $("#resetEmail").textContent = maskEmail(email);
+    setAuthView("reset-sent");
+  }
+
+  function handleOtpInput(event) {
+    const input = event.target;
+    input.value = input.value.replace(/\D/g, "").slice(-1);
+    if (input.value) input.nextElementSibling?.focus();
+  }
+
+  function handleOtpKeydown(event) {
+    if (event.key === "Backspace" && !event.target.value) event.target.previousElementSibling?.focus();
+  }
+
+  function handleOtpPaste(event) {
+    const digits = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (!digits) return;
+    event.preventDefault();
+    $$('[data-otp]').forEach((input, index) => { input.value = digits[index] || ""; });
+    $$('[data-otp]')[Math.min(digits.length, 6) - 1]?.focus();
+  }
+
   function bindEvents() {
     elements.monthSelector.addEventListener("change", () => {
       selectedMonth = elements.monthSelector.value || currentMonthKey();
@@ -1571,6 +1737,7 @@
     $("#previousMonth").addEventListener("click", () => shiftMonth(-1));
     $("#nextMonth").addEventListener("click", () => shiftMonth(1));
     $("#privacyToggle").addEventListener("click", togglePrivacyValues);
+    $("#openAuthModal").addEventListener("click", openAuthModal);
 
     $$(".nav-item").forEach((button) => button.addEventListener("click", () => navigate(button.dataset.section)));
     $$('[data-section-link]').forEach((button) => button.addEventListener("click", () => navigate(button.dataset.sectionLink)));
@@ -1619,6 +1786,24 @@
     $("#investmentEventType").addEventListener("change", updateInvestmentEventHelp);
     $("#onboardingForm").addEventListener("submit", handleOnboardingSubmit);
     $("#skipOnboarding").addEventListener("click", () => { state.onboardingCompleted = true; saveState(); $("#onboardingModal").close(); });
+
+    $("#loginForm").addEventListener("submit", handleLoginSubmit);
+    $("#registerForm").addEventListener("submit", handleRegisterSubmit);
+    $("#verificationForm").addEventListener("submit", handleVerificationSubmit);
+    $("#forgotPasswordForm").addEventListener("submit", handleForgotSubmit);
+    $("#registerPassword").addEventListener("input", updatePasswordStrength);
+    $$('[data-auth-tab]').forEach((button) => button.addEventListener("click", () => setAuthView(button.dataset.authTab)));
+    $$('[data-auth-action="forgot"]').forEach((button) => button.addEventListener("click", () => { $("#forgotEmail").value = $("#loginEmail").value; setAuthView("forgot"); }));
+    $$('[data-toggle-password]').forEach((button) => button.addEventListener("click", () => {
+      const input = $(`#${button.dataset.togglePassword}`);
+      const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      button.setAttribute("aria-label", show ? "Ocultar senha" : "Mostrar senha");
+    }));
+    $$('[data-otp]').forEach((input) => { input.addEventListener("input", handleOtpInput); input.addEventListener("keydown", handleOtpKeydown); input.addEventListener("paste", handleOtpPaste); });
+    $("#resendCode").addEventListener("click", () => { clearOtp(); $("#verificationForm button[type='submit']").disabled = false; startResendCountdown(); showToast("Novo código de demonstração enviado."); });
+    $("#logoutDemo").addEventListener("click", () => { demoUser = null; updateProfileButton(); $("#authModal").close(); showToast("Você saiu da conta de demonstração."); });
+    $("#authModal").addEventListener("close", () => clearInterval(resendTimer));
 
     $("#transactionSearch").addEventListener("input", renderTransactions);
     $("#transactionTypeFilter").addEventListener("change", renderTransactions);
@@ -1684,6 +1869,7 @@
     applyTheme(localStorage.getItem(THEME_KEY) || "light");
     applyPrivacyValues(localStorage.getItem(PRIVACY_KEY) === "true");
     bindEvents();
+    updateProfileButton();
     setDashboardView(dashboardView);
     setDashboardFilter(dashboardFilter);
     if (window.matchMedia("(max-width: 760px)").matches) $("#forecastDisclosure").open = false;
