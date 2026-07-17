@@ -312,6 +312,12 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     linear-gradient(120deg, #55b58a 0%, #2e815f 48%, #205f46 100%);
   box-shadow: 0 22px 45px rgba(35, 104, 77, 0.2);
 }
+.wealth-card.negative {
+  background:
+    radial-gradient(circle at 75% 10%, rgba(255,255,255,0.12), transparent 22%),
+    linear-gradient(120deg, #d76565 0%, #b63e47 48%, #842d37 100%);
+  box-shadow: 0 22px 45px rgba(146, 45, 54, 0.24);
+}
 .wealth-card::before, .wealth-card::after {
   content: "";
   position: absolute;
