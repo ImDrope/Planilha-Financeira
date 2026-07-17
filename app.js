@@ -520,6 +520,10 @@
     const liquidity = stats.balance;
     const trackedPatrimony = investments.current + liquidity;
     const expenseRatio = stats.income > 0 ? (stats.totalExpenses / stats.income) * 100 : 0;
+    const monthClosed = Boolean(state.closures[selectedMonth]);
+    const closeButton = $("#closeMonthButton");
+    closeButton.textContent = monthClosed ? "✓ Mês fechado · atualizar" : "✓ Fechar mês";
+    closeButton.classList.toggle("completed", monthClosed);
 
     $("#patrimonyMetric").textContent = formatCurrency(trackedPatrimony);
     $("#patrimonyInvestmentMetric").textContent = formatCurrency(investments.current);
@@ -900,8 +904,22 @@
   }
 
   function closeSelectedMonth() {
-    if (state.closures[selectedMonth] && !confirm("Este mês já foi fechado. Deseja atualizar o resumo?")) return;
     const stats = getMonthStats();
+    const alreadyClosed = Boolean(state.closures[selectedMonth]);
+    const pendingCount = state.transactions.filter((item) => monthFromDate(item.date) === selectedMonth && item.status === "pending").length;
+    const review = [
+      `${alreadyClosed ? "Atualizar" : "Fechar"} ${monthLabel(selectedMonth)}?`,
+      "",
+      `Receitas: ${formatCurrency(stats.income)}`,
+      `Despesas: ${formatCurrency(stats.totalExpenses)}`,
+      `Investimentos: ${formatCurrency(stats.invested)}`,
+      `Saldo final: ${formatCurrency(stats.balance)}`,
+      `Pendências a transferir: ${pendingCount} (${formatCurrency(stats.pendingExpenses)})`,
+      `Pontuação: ${stats.score}/100`,
+      "",
+      alreadyClosed ? "O resumo anterior será substituído." : "Um resumo permanente e o relatório PDF serão gerados."
+    ].join("\n");
+    if (!confirm(review)) return;
     const previous = getMonthStats(getPreviousMonthKey(selectedMonth));
     const categoryChanges = expenseCategories.map((category) => ({ category, change: Number(stats.categoryTotals[category] || 0) - Number(previous.categoryTotals[category] || 0) })).sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
     state.closures[selectedMonth] = { month: selectedMonth, closedAt: todayISO(), income: stats.income, expenses: stats.totalExpenses, invested: stats.invested, balance: stats.balance, forecastBalance: stats.forecastBalance, pending: stats.pendingExpenses, score: stats.score, level: stats.level, categoryChanges: categoryChanges.slice(0, 3) };
@@ -1465,7 +1483,7 @@
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `finance-quest-backup-${todayISO()}.json`;
+    link.download = `despesa-mensal-backup-${todayISO()}.json`;
     link.click();
     URL.revokeObjectURL(url);
     showToast("Backup exportado.");
@@ -1478,6 +1496,20 @@
         const parsed = JSON.parse(reader.result);
         if (!parsed || !Array.isArray(parsed.transactions) || !Array.isArray(parsed.investments)) {
           throw new Error("Formato inválido");
+        }
+        const summary = [
+          "Importar este backup e substituir os dados atuais?",
+          "",
+          `Movimentações: ${parsed.transactions.length}`,
+          `Investimentos: ${parsed.investments.length}`,
+          `Recorrências: ${Array.isArray(parsed.recurrences) ? parsed.recurrences.length : 0}`,
+          `Fechamentos: ${Object.keys(parsed.closures || {}).length}`,
+          "",
+          "Recomendação: exporte um backup dos dados atuais antes de continuar."
+        ].join("\n");
+        if (!confirm(summary)) {
+          showToast("Importação cancelada. Seus dados foram mantidos.");
+          return;
         }
         state = {
           ...structuredClone(defaultState),
@@ -1656,3 +1688,4 @@
 
   init();
 })();
+

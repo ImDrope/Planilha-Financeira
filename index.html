@@ -5,13 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Dashboard financeiro pessoal, privado e gamificado." />
   <title>Despesa Mensal</title>
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar" aria-label="Navegação principal">
       <div class="brand">
-        <div class="brand-mark" aria-hidden="true"><span>F</span><span>Q</span></div>
+        <div class="brand-mark" aria-hidden="true"><img src="assets/logo-money.svg" alt="" /></div>
         <div>
           <strong>Despesa Mensal</strong>
           <span>Seu painel financeiro</span>
@@ -19,19 +21,19 @@
       </div>
 
       <nav class="nav-list">
-        <button class="nav-item active" data-section="dashboard">
+        <button class="nav-item active" data-section="dashboard" aria-label="Visão geral">
           <span class="nav-icon" aria-hidden="true">▦</span><span class="nav-label">Visão geral</span>
         </button>
-        <button class="nav-item" data-section="movements">
+        <button class="nav-item" data-section="movements" aria-label="Despesas">
           <span class="nav-icon" aria-hidden="true">↔</span><span class="nav-label">Despesas</span>
         </button>
-        <button class="nav-item" data-section="investments">
+        <button class="nav-item" data-section="investments" aria-label="Investimentos">
           <span class="nav-icon" aria-hidden="true">⌁</span><span class="nav-label">Investimentos</span>
         </button>
-        <button class="nav-item" data-section="goals">
+        <button class="nav-item" data-section="goals" aria-label="Metas">
           <span class="nav-icon" aria-hidden="true">♜</span><span class="nav-label">Metas</span>
         </button>
-        <button class="nav-item" data-section="settings">
+        <button class="nav-item" data-section="settings" aria-label="Dados e privacidade">
           <span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Dados</span>
         </button>
       </nav>
@@ -646,3 +648,4 @@
   <script src="app.js"></script>
 </body>
 </html>
+
