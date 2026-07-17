@@ -760,18 +760,38 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 32%, transpa
   .main-content { padding: 0 16px 110px; }
   .topbar { margin: 0 -16px 27px; padding: 13px 16px; gap: 10px; }
   .page-heading { display: none; }
-  .topbar-actions { width: 100%; justify-content: space-between; }
-  .month-navigation { flex: 1; min-width: 0; }
+  .topbar-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 48px;
+    gap: 10px;
+  }
+  .month-navigation { min-width: 0; }
   .month-picker { min-width: 0; flex: 1; }
   .month-picker strong { font-size: 14px; }
-  .top-add-button { width: 48px; padding: 0; font-size: 0; }
-  .top-add-button::after { content: "+"; font-size: 23px; }
+  .top-add-button {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 48px;
+    padding: 0 18px;
+    font-size: 14px;
+  }
   .privacy-toggle { flex: 0 0 auto; }
   .section-title-row { align-items: center; }
   .section-title-row h2 { font-size: 32px; }
-  .dashboard-title-row .soft-action-button span { margin: 0; }
-  .dashboard-title-row .soft-action-button { width: 48px; padding: 0; font-size: 0; }
-  .dashboard-title-row .soft-action-button span { font-size: 18px; }
+  .dashboard-title-row { align-items: stretch; flex-direction: column; }
+  .dashboard-title-row .panel-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .dashboard-title-row .soft-action-button {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+  .dashboard-title-row .soft-action-button span { margin: 0 5px 0 0; font-size: 16px; }
   .wealth-card { min-height: 250px; padding: 26px 25px 23px; }
   .wealth-card > strong { font-size: clamp(34px, 10vw, 48px); }
   .score-summary-card { grid-template-columns: 105px 1fr; padding: 22px; }
