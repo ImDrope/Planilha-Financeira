@@ -29,6 +29,11 @@
     <symbol id="icon-wallet" viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H19v16H6.5A2.5 2.5 0 0 1 4 17.5v-11Z"/><path d="M4 8h15M15 12h6v4h-6a2 2 0 0 1 0-4Z"/></symbol>
     <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
     <symbol id="icon-forecast" viewBox="0 0 24 24"><path d="M4 18 9 13l4 3 7-9"/><path d="M15 7h5v5"/></symbol>
+    <symbol id="icon-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.7-4 3.2-6 7-6s6.3 2 7 6"/></symbol>
+    <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.2 8.4-8 10-4.8-1.6-8-5-8-10V6l8-3Z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="icon-document" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6V3Z"/><path d="M14 3v5h5M9 12h6M9 16h6"/></symbol>
+    <symbol id="icon-logout" viewBox="0 0 24 24"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></symbol>
+    <symbol id="icon-key" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4"/><path d="M12 12h9M17 12v3M20 12v2"/></symbol>
   </svg>
   <div class="app-shell">
     <aside class="sidebar" aria-label="Navegação principal">
@@ -53,8 +58,8 @@
         <button class="nav-item" data-section="goals" aria-label="Metas">
           <span class="nav-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-goals"/></svg></span><span class="nav-label">Metas</span>
         </button>
-        <button class="nav-item" data-section="settings" aria-label="Dados e privacidade">
-          <span class="nav-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-settings"/></svg></span><span class="nav-label">Dados</span>
+        <button class="nav-item" data-section="settings" aria-label="Configurações">
+          <span class="nav-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-settings"/></svg></span><span class="nav-label">Configurações</span>
         </button>
       </nav>
 
@@ -292,6 +297,15 @@
             <p id="invoiceEmpty" class="empty-state">Nenhuma compra parcelada registrada.</p>
           </article>
         </details>
+
+        <details class="secondary-section-disclosure reports-disclosure">
+          <summary><div><p class="eyebrow">Histórico financeiro</p><h3>Relatórios mensais</h3></div><span>Ver fechamentos</span></summary>
+          <article class="panel disclosure-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Meses encerrados</p><h3>Fechamentos e PDFs</h3></div></div>
+            <p class="muted">Consulte os resumos permanentes e baixe novamente os relatórios já gerados.</p>
+            <div id="closureList" class="closure-list"></div>
+          </article>
+        </details>
       </section>
 
       <section id="investmentsSection" class="app-section">
@@ -402,8 +416,8 @@
       <section id="settingsSection" class="app-section">
         <div class="section-toolbar">
           <div>
-            <p class="eyebrow">Controle dos seus dados</p>
-            <h2>Dados e privacidade</h2>
+            <p class="eyebrow">Preferências da plataforma</p>
+            <h2>Configurações</h2>
           </div>
         </div>
 
@@ -414,12 +428,7 @@
             <button id="themeToggleSettings" class="secondary-button" type="button">Usar tema escuro</button>
           </article>
           <article class="panel">
-            <h3>Fechamentos mensais</h3>
-            <p>Resumos permanentes, comparações e relatórios dos meses já encerrados.</p>
-            <div id="closureList" class="closure-list"></div>
-          </article>
-          <article class="panel">
-            <h3>Armazenamento local</h3>
+            <h3>Backup e portabilidade</h3>
             <p>As informações ficam salvas apenas no navegador deste dispositivo. O projeto não envia dados para servidores externos.</p>
             <div class="button-stack">
               <button id="exportData" class="secondary-button" type="button">Exportar backup em JSON</button>
@@ -431,15 +440,15 @@
           </article>
 
           <article class="panel danger-panel">
-            <h3>Apagar dados</h3>
+            <h3>Gerenciamento dos dados</h3>
             <p>Esta ação remove movimentações, investimentos, metas e configurações salvas neste navegador.</p>
             <button id="clearData" class="danger-button" type="button">Apagar todos os dados</button>
           </article>
 
           <article class="panel">
-            <h3>Publicação no GitHub</h3>
-            <p>O site pode ser publicado com GitHub Pages. Os dados continuarão locais, mas o código e a página serão acessíveis conforme a visibilidade configurada no serviço.</p>
-            <p class="muted">Para autenticação real e sincronização entre dispositivos, será necessário adicionar um backend em uma próxima etapa.</p>
+            <h3>Privacidade financeira</h3>
+            <p>Seus valores continuam armazenados apenas neste navegador durante a fase de demonstração.</p>
+            <p class="muted">A futura sincronização usará contas individuais e políticas de acesso no banco de dados.</p>
           </article>
         </div>
       </section>
@@ -797,7 +806,63 @@
         <h2 id="profileName">Usuário</h2>
         <p id="profileEmail" class="muted">usuario@email.com</p>
         <div class="auth-profile-status"><span aria-hidden="true">✓</span><div><strong>E-mail confirmado</strong><small>Perfil autenticado somente durante este teste.</small></div></div>
-        <button id="logoutDemo" class="ghost-button auth-submit" type="button">Sair da conta</button>
+        <div class="profile-menu" aria-label="Menu da conta">
+          <button type="button" data-auth-tab="account"><svg class="ui-icon" aria-hidden="true"><use href="#icon-user"/></svg><span><strong>Minha conta</strong><small>Nome e endereço de e-mail</small></span><b aria-hidden="true">›</b></button>
+          <button type="button" data-auth-tab="security"><svg class="ui-icon" aria-hidden="true"><use href="#icon-shield"/></svg><span><strong>Segurança</strong><small>Senha, verificação e sessões</small></span><b aria-hidden="true">›</b></button>
+          <button type="button" data-auth-tab="terms"><svg class="ui-icon" aria-hidden="true"><use href="#icon-document"/></svg><span><strong>Termos e privacidade</strong><small>Documentos e uso dos dados</small></span><b aria-hidden="true">›</b></button>
+          <button id="logoutDemo" class="profile-menu-danger" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-logout"/></svg><span><strong>Sair da conta</strong><small>Encerrar esta sessão</small></span></button>
+        </div>
+      </section>
+
+      <section id="authAccountView" class="auth-view hidden" data-auth-view="account">
+        <button class="auth-back-button" type="button" data-auth-tab="profile">← Voltar para o perfil</button>
+        <div class="auth-section-heading"><span><svg class="ui-icon" aria-hidden="true"><use href="#icon-user"/></svg></span><div><p class="eyebrow">Informações pessoais</p><h2>Minha conta</h2></div></div>
+        <form id="accountForm" class="auth-form">
+          <label><span>Nome</span><input id="accountName" autocomplete="name" maxlength="80" required /></label>
+          <label><span>E-mail atual</span><input id="accountEmail" type="email" disabled /></label>
+          <p class="muted account-note">A alteração do e-mail é protegida e fica disponível em Segurança.</p>
+          <button class="primary-button auth-submit" type="submit">Salvar nome</button>
+        </form>
+      </section>
+
+      <section id="authSecurityView" class="auth-view hidden" data-auth-view="security">
+        <button class="auth-back-button" type="button" data-auth-tab="profile">← Voltar para o perfil</button>
+        <div class="auth-section-heading"><span><svg class="ui-icon" aria-hidden="true"><use href="#icon-shield"/></svg></span><div><p class="eyebrow">Proteção da conta</p><h2>Segurança</h2></div></div>
+        <div class="security-status-card"><span aria-hidden="true">✓</span><div><strong>E-mail verificado</strong><small id="securityVerifiedEmail">usuario@email.com</small></div><button id="resendSecurityVerification" class="text-button" type="button">Reenviar confirmação</button></div>
+        <details class="security-control" open>
+          <summary><span><svg class="ui-icon" aria-hidden="true"><use href="#icon-key"/></svg>Alterar senha</span><small>Recomendado periodicamente</small></summary>
+          <form id="changePasswordForm" class="auth-form security-form">
+            <label><span>Senha atual</span><input id="currentPassword" type="password" autocomplete="current-password" required /></label>
+            <label><span>Nova senha</span><input id="newSecurityPassword" type="password" autocomplete="new-password" minlength="8" required /></label>
+            <label><span>Confirmar nova senha</span><input id="confirmSecurityPassword" type="password" autocomplete="new-password" minlength="8" required /></label>
+            <p id="securityPasswordError" class="auth-error" role="alert"></p>
+            <button class="secondary-button" type="submit">Atualizar senha</button>
+          </form>
+        </details>
+        <details class="security-control">
+          <summary><span><svg class="ui-icon" aria-hidden="true"><use href="#icon-income"/></svg>Alterar e-mail</span><small>Exige nova verificação</small></summary>
+          <form id="changeEmailForm" class="auth-form security-form">
+            <label><span>Novo e-mail</span><input id="newSecurityEmail" type="email" autocomplete="email" required /></label>
+            <p class="muted account-note">Um código de seis dígitos será solicitado quando o Supabase estiver conectado.</p>
+            <button class="secondary-button" type="submit">Enviar verificação</button>
+          </form>
+        </details>
+        <div class="security-control sessions-card">
+          <div class="security-control-title"><span><svg class="ui-icon" aria-hidden="true"><use href="#icon-dashboard"/></svg>Sessões e dispositivos</span><small>1 sessão ativa</small></div>
+          <div class="session-item"><span class="session-device" aria-hidden="true">●</span><div><strong>Este navegador</strong><small>Sessão atual · ativa agora</small></div><em>Atual</em></div>
+          <button id="logoutAllDemo" class="ghost-button full-width" type="button">Sair de todos os dispositivos</button>
+        </div>
+        <p class="auth-security-note">Autenticação em dois fatores e exclusão definitiva da conta serão adicionadas após a integração segura com o Supabase.</p>
+      </section>
+
+      <section id="authTermsView" class="auth-view hidden" data-auth-view="terms">
+        <button class="auth-back-button" type="button" data-auth-tab="profile">← Voltar para o perfil</button>
+        <div class="auth-section-heading"><span><svg class="ui-icon" aria-hidden="true"><use href="#icon-document"/></svg></span><div><p class="eyebrow">Transparência</p><h2>Termos e privacidade</h2></div></div>
+        <div class="legal-menu">
+          <button type="button" data-demo-document="terms"><span><strong>Termos de Uso</strong><small>Condições para utilização da plataforma</small></span><b>›</b></button>
+          <button type="button" data-demo-document="privacy"><span><strong>Política de Privacidade</strong><small>Como seus dados serão tratados</small></span><b>›</b></button>
+        </div>
+        <p class="auth-security-note">Os documentos definitivos serão publicados antes da abertura comercial da plataforma.</p>
       </section>
     </div>
   </dialog>
