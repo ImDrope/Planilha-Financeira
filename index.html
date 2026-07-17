@@ -704,8 +704,8 @@
         <form id="registerForm" class="auth-form">
           <label><span>Nome</span><input id="registerName" autocomplete="name" maxlength="80" placeholder="Como devemos chamar você?" required /></label>
           <label><span>E-mail</span><input id="registerEmail" type="email" autocomplete="email" placeholder="seu@email.com" required /></label>
-          <label><span>Senha</span><span class="password-field"><input id="registerPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Mínimo de 8 caracteres" required /><button type="button" data-toggle-password="registerPassword" aria-label="Mostrar senha">◉</button></span></label>
-          <div class="password-strength" aria-live="polite"><div><span id="passwordStrengthFill"></span></div><small id="passwordStrengthText">Use letras, números e símbolos.</small></div>
+          <label><span>Senha</span><span class="password-field"><input id="registerPassword" type="password" autocomplete="new-password" minlength="8" title="Use pelo menos 8 caracteres, incluindo uma letra e um número." placeholder="Mínimo de 8 caracteres" required /><button type="button" data-toggle-password="registerPassword" aria-label="Mostrar senha">◉</button></span></label>
+          <div class="password-strength" aria-live="polite"><div><span id="passwordStrengthFill"></span></div><small id="passwordStrengthText">Use pelo menos 8 caracteres, com uma letra e um número.</small></div>
           <label><span>Confirmar senha</span><span class="password-field"><input id="registerPasswordConfirm" type="password" autocomplete="new-password" minlength="8" placeholder="Digite novamente" required /><button type="button" data-toggle-password="registerPasswordConfirm" aria-label="Mostrar senha">◉</button></span></label>
           <label class="check-label terms-check"><input id="registerTerms" type="checkbox" required /> Li e aceito os Termos de Uso e a Política de Privacidade.</label>
           <p id="registerError" class="auth-error" role="alert"></p>
