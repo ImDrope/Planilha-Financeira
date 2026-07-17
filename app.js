@@ -1483,7 +1483,7 @@
       movements: "Despesas",
       investments: "Investimentos",
       goals: "Metas e conquistas",
-      settings: "Dados e privacidade"
+      settings: "Configurações"
     };
     $$(".nav-item").forEach((item) => item.classList.toggle("active", item.dataset.section === section));
     $$(".app-section").forEach((item) => item.classList.remove("active"));
@@ -1594,7 +1594,7 @@
 
   function setAuthView(view) {
     $$('[data-auth-view]').forEach((section) => section.classList.toggle("hidden", section.dataset.authView !== view));
-    const titles = { login: "Acesse sua conta", register: "Crie sua conta", verify: "Confirme seu e-mail", forgot: "Recupere seu acesso", "reset-sent": "Confira seu e-mail", profile: "Sua conta" };
+    const titles = { login: "Acesse sua conta", register: "Crie sua conta", verify: "Confirme seu e-mail", forgot: "Recupere seu acesso", "reset-sent": "Confira seu e-mail", profile: "Sua conta", account: "Minha conta", security: "Segurança", terms: "Termos e privacidade" };
     $("#authModalTitle").textContent = titles[view] || "Sua conta";
     $$('[data-auth-tab]').forEach((button) => {
       if (!button.closest(".auth-tabs")) return;
@@ -1602,6 +1602,14 @@
       button.classList.toggle("active", active);
       button.setAttribute("aria-selected", String(active));
     });
+    if (demoUser && ["profile", "account", "security"].includes(view)) {
+      $("#profileName").textContent = demoUser.name;
+      $("#profileEmail").textContent = demoUser.email;
+      $("#profileInitials").textContent = getInitials(demoUser.name);
+      $("#accountName").value = demoUser.name;
+      $("#accountEmail").value = demoUser.email;
+      $("#securityVerifiedEmail").textContent = demoUser.email;
+    }
     if (view !== "verify") clearInterval(resendTimer);
   }
 
@@ -1614,9 +1622,6 @@
 
   function openAuthModal() {
     if (demoUser) {
-      $("#profileName").textContent = demoUser.name;
-      $("#profileEmail").textContent = demoUser.email;
-      $("#profileInitials").textContent = getInitials(demoUser.name);
       setAuthView("profile");
     } else {
       setAuthView("login");
@@ -1726,6 +1731,45 @@
     setAuthView("reset-sent");
   }
 
+  function handleAccountSubmit(event) {
+    event.preventDefault();
+    if (!demoUser) return setAuthView("login");
+    demoUser.name = $("#accountName").value.trim() || demoUser.name;
+    updateProfileButton();
+    setAuthView("profile");
+    showToast("Nome atualizado nesta sessão de demonstração.");
+  }
+
+  function handleSecurityPasswordSubmit(event) {
+    event.preventDefault();
+    const password = $("#newSecurityPassword").value;
+    const confirmation = $("#confirmSecurityPassword").value;
+    const error = $("#securityPasswordError");
+    error.textContent = "";
+    if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) {
+      error.textContent = "Use pelo menos 8 caracteres, incluindo uma letra e um número.";
+      return;
+    }
+    if (password !== confirmation) {
+      error.textContent = "As novas senhas não são iguais.";
+      return;
+    }
+    event.currentTarget.reset();
+    showToast("Senha validada. A atualização real será ativada com o Supabase.");
+  }
+
+  function handleSecurityEmailSubmit(event) {
+    event.preventDefault();
+    if (!demoUser) return setAuthView("login");
+    const email = $("#newSecurityEmail").value.trim().toLowerCase();
+    pendingRegistration = { ...demoUser, email };
+    $("#verificationEmail").textContent = maskEmail(email);
+    clearOtp();
+    $("#verificationForm button[type='submit']").disabled = false;
+    setAuthView("verify");
+    startResendCountdown();
+  }
+
   function handleOtpInput(event) {
     const input = event.target;
     input.value = input.value.replace(/\D/g, "").slice(-1);
@@ -1807,6 +1851,9 @@
     $("#registerForm").addEventListener("submit", handleRegisterSubmit);
     $("#verificationForm").addEventListener("submit", handleVerificationSubmit);
     $("#forgotPasswordForm").addEventListener("submit", handleForgotSubmit);
+    $("#accountForm").addEventListener("submit", handleAccountSubmit);
+    $("#changePasswordForm").addEventListener("submit", handleSecurityPasswordSubmit);
+    $("#changeEmailForm").addEventListener("submit", handleSecurityEmailSubmit);
     $("#registerForm").addEventListener("input", updatePasswordRequirements);
     $("#registerForm").addEventListener("change", updatePasswordRequirements);
     $$('[data-auth-tab]').forEach((button) => button.addEventListener("click", () => setAuthView(button.dataset.authTab)));
@@ -1820,6 +1867,9 @@
     $$('[data-otp]').forEach((input) => { input.addEventListener("input", handleOtpInput); input.addEventListener("keydown", handleOtpKeydown); input.addEventListener("paste", handleOtpPaste); });
     $("#resendCode").addEventListener("click", () => { clearOtp(); $("#verificationForm button[type='submit']").disabled = false; startResendCountdown(); showToast("Novo código de demonstração enviado."); });
     $("#logoutDemo").addEventListener("click", () => { demoUser = null; updateProfileButton(); $("#authModal").close(); showToast("Você saiu da conta de demonstração."); });
+    $("#logoutAllDemo").addEventListener("click", () => { demoUser = null; updateProfileButton(); $("#authModal").close(); showToast("Todas as sessões de demonstração foram encerradas."); });
+    $("#resendSecurityVerification").addEventListener("click", () => showToast("Confirmação reenviada no modo de demonstração."));
+    $$('[data-demo-document]').forEach((button) => button.addEventListener("click", () => showToast("Documento em preparação para a versão comercial.")));
     $("#authModal").addEventListener("close", () => clearInterval(resendTimer));
 
     $("#transactionSearch").addEventListener("input", renderTransactions);
