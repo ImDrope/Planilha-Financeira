@@ -503,13 +503,14 @@
   function renderDashboard() {
     const stats = getMonthStats();
     const investments = getInvestmentTotals();
-    const liquidity = Math.max(0, stats.balance);
+    const liquidity = stats.balance;
     const trackedPatrimony = investments.current + liquidity;
     const expenseRatio = stats.income > 0 ? (stats.totalExpenses / stats.income) * 100 : 0;
 
     $("#patrimonyMetric").textContent = formatCurrency(trackedPatrimony);
     $("#patrimonyInvestmentMetric").textContent = formatCurrency(investments.current);
     $("#patrimonyLiquidityMetric").textContent = formatCurrency(liquidity);
+    $("#patrimonyMetric").closest(".wealth-card")?.classList.toggle("negative", trackedPatrimony < 0);
 
     $("#incomeMetric").textContent = formatCurrency(stats.income);
     $("#incomeDetail").textContent = stats.extraIncome > 0
@@ -1278,7 +1279,32 @@
     };
 
     const existingIndex = state.investments.findIndex((entry) => entry.id === id);
-    if (existingIndex >= 0) state.investments[existingIndex] = item;
+    if (existingIndex >= 0) {
+      state.investments[existingIndex] = item;
+
+      const assetEvents = state.investmentEvents
+        .map((entry, stateIndex) => ({ entry, stateIndex }))
+        .filter(({ entry }) => entry.assetId === id);
+      const initialContribution = assetEvents.find(({ entry }) => entry.type === "contribution" && entry.notes === "Aporte inicial")
+        || assetEvents.find(({ entry }) => entry.type === "contribution");
+      const latestValuation = assetEvents
+        .filter(({ entry }) => entry.type === "valuation")
+        .sort((a, b) => a.entry.date.localeCompare(b.entry.date) || a.stateIndex - b.stateIndex)
+        .at(-1);
+
+      if (initialContribution) {
+        initialContribution.entry.amount = amount;
+        initialContribution.entry.date = item.date;
+      } else if (amount > 0) {
+        state.investmentEvents.push({ id: generateId("evt"), assetId: id, type: "contribution", date: item.date, amount, notes: "Aporte inicial" });
+      }
+
+      if (latestValuation) {
+        latestValuation.entry.amount = item.currentValue;
+      } else {
+        state.investmentEvents.push({ id: generateId("evt"), assetId: id, type: "valuation", date: item.date, amount: item.currentValue, notes: "Valor atual informado" });
+      }
+    }
     else {
       state.investments.push(item);
       if (amount > 0) state.investmentEvents.push({ id: generateId("evt"), assetId: id, type: "contribution", date: item.date, amount, notes: "Aporte inicial" });
