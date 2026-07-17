@@ -10,6 +10,26 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <svg class="icon-sprite" aria-hidden="true">
+    <symbol id="icon-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></symbol>
+    <symbol id="icon-expenses" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6M9 16h3"/></symbol>
+    <symbol id="icon-investments" viewBox="0 0 24 24"><path d="M4 18 9 13l4 3 7-9"/><path d="M15 7h5v5"/></symbol>
+    <symbol id="icon-goals" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></symbol>
+    <symbol id="icon-eye" viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="icon-calendar-check" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18M8 15l2.5 2.5L16 13"/></symbol>
+    <symbol id="icon-pencil" viewBox="0 0 24 24"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"/><path d="m14 7 3 3"/></symbol>
+    <symbol id="icon-table" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></symbol>
+    <symbol id="icon-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+    <symbol id="icon-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+    <symbol id="icon-repeat" viewBox="0 0 24 24"><path d="M17 2l4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4M21 13v2a3 3 0 0 1-3 3H3"/></symbol>
+    <symbol id="icon-income" viewBox="0 0 24 24"><path d="M7 7h10v10M17 7 7 17"/><path d="M5 20h14"/></symbol>
+    <symbol id="icon-outflow" viewBox="0 0 24 24"><path d="M17 17H7V7M7 17 17 7"/><path d="M5 20h14"/></symbol>
+    <symbol id="icon-wallet" viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H19v16H6.5A2.5 2.5 0 0 1 4 17.5v-11Z"/><path d="M4 8h15M15 12h6v4h-6a2 2 0 0 1 0-4Z"/></symbol>
+    <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="icon-forecast" viewBox="0 0 24 24"><path d="M4 18 9 13l4 3 7-9"/><path d="M15 7h5v5"/></symbol>
+  </svg>
   <div class="app-shell">
     <aside class="sidebar" aria-label="Navegação principal">
       <div class="brand">
@@ -22,19 +42,19 @@
 
       <nav class="nav-list">
         <button class="nav-item active" data-section="dashboard" aria-label="Visão geral">
-          <span class="nav-icon" aria-hidden="true">▦</span><span class="nav-label">Visão geral</span>
+          <span class="nav-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-dashboard"/></svg></span><span class="nav-label">Visão geral</span>
         </button>
         <button class="nav-item" data-section="movements" aria-label="Despesas">
-          <span class="nav-icon" aria-hidden="true">↔</span><span class="nav-label">Despesas</span>
+          <span class="nav-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-expenses"/></svg></span><span class="nav-label">Despesas</span>
         </button>
         <button class="nav-item" data-section="investments" aria-label="Investimentos">
-          <span class="nav-icon" aria-hidden="true">⌁</span><span class="nav-label">Investimentos</span>
+          <span class="nav-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-investments"/></svg></span><span class="nav-label">Investimentos</span>
         </button>
         <button class="nav-item" data-section="goals" aria-label="Metas">
-          <span class="nav-icon" aria-hidden="true">♜</span><span class="nav-label">Metas</span>
+          <span class="nav-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-goals"/></svg></span><span class="nav-label">Metas</span>
         </button>
         <button class="nav-item" data-section="settings" aria-label="Dados e privacidade">
-          <span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Dados</span>
+          <span class="nav-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-settings"/></svg></span><span class="nav-label">Dados</span>
         </button>
       </nav>
 
@@ -63,8 +83,8 @@
             </label>
             <button id="nextMonth" class="month-arrow" type="button" aria-label="Próximo mês">›</button>
           </div>
-          <button id="privacyToggle" class="icon-button privacy-toggle" type="button" aria-label="Ocultar valores" title="Ocultar valores">◉</button>
-          <button id="openTransactionModal" class="primary-button top-add-button" type="button">+ Nova movimentação</button>
+          <button id="privacyToggle" class="icon-button privacy-toggle" type="button" aria-label="Ocultar valores" title="Ocultar valores"><svg class="ui-icon" aria-hidden="true"><use href="#icon-eye"/></svg></button>
+          <button id="openTransactionModal" class="primary-button top-add-button" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-plus"/></svg> Nova movimentação</button>
           <button id="openAuthModal" class="profile-button" type="button" aria-label="Acessar conta" title="Acessar conta">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.25"></circle><path d="M5.5 19c.65-3.2 3-5 6.5-5s5.85 1.8 6.5 5"></path></svg>
             <span id="profileStatusDot" aria-hidden="true"></span>
@@ -79,8 +99,8 @@
             <h2>Visão geral</h2>
           </div>
           <div class="panel-actions">
-            <button id="closeMonthButton" class="soft-action-button" type="button">✓ Fechar mês</button>
-            <button id="openPlanModal" class="soft-action-button" type="button"><span aria-hidden="true">✎</span> Planejar mês</button>
+          <button id="closeMonthButton" class="soft-action-button" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar-check"/></svg><span id="closeMonthButtonLabel">Fechar mês</span></button>
+            <button id="openPlanModal" class="soft-action-button" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-pencil"/></svg> Planejar mês</button>
           </div>
         </div>
 
@@ -118,17 +138,17 @@
 
         <div class="budget-summary-grid">
           <article class="summary-card income">
-            <div class="summary-card-top"><span class="summary-icon">$</span><span class="metric-label">Receita</span></div>
+            <div class="summary-card-top"><span class="summary-icon"><svg class="ui-icon"><use href="#icon-income"/></svg></span><span class="metric-label">Receita</span></div>
             <strong id="incomeMetric" class="money-value">R$ 0,00</strong>
             <small id="incomeDetail">Renda principal + entradas extras</small>
           </article>
           <article class="summary-card expense">
-            <div class="summary-card-top"><span class="summary-icon">▣</span><span class="metric-label">Despesas</span></div>
+            <div class="summary-card-top"><span class="summary-icon"><svg class="ui-icon"><use href="#icon-outflow"/></svg></span><span class="metric-label">Despesas</span></div>
             <strong id="expensesMetric" class="money-value">R$ 0,00</strong>
             <small id="expenseDetail">Fixas, variáveis e recorrentes</small>
           </article>
           <article class="summary-card balance">
-            <div class="summary-card-top"><span class="summary-icon">✦</span><span class="metric-label">Saldo</span></div>
+            <div class="summary-card-top"><span class="summary-icon"><svg class="ui-icon"><use href="#icon-wallet"/></svg></span><span class="metric-label">Saldo</span></div>
             <strong id="balanceMetric" class="money-value">R$ 0,00</strong>
             <small id="balanceDetail">Após gastos e investimentos</small>
           </article>
@@ -145,8 +165,8 @@
         </details>
 
         <div class="dashboard-view-toggle" role="tablist" aria-label="Visualização do dashboard">
-          <button class="dashboard-view-button active" data-dashboard-view-button="table" type="button"><span aria-hidden="true">▦</span> Tabela</button>
-          <button class="dashboard-view-button" data-dashboard-view-button="charts" type="button"><span aria-hidden="true">◔</span> Gráficos</button>
+          <button class="dashboard-view-button active" data-dashboard-view-button="table" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-table"/></svg> Tabela</button>
+          <button class="dashboard-view-button" data-dashboard-view-button="charts" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-chart"/></svg> Gráficos</button>
         </div>
 
         <div id="dashboardTableView" class="dashboard-view active" data-dashboard-view="table">
@@ -164,8 +184,8 @@
                 <h3 id="dashboardTableTitle">Todos os registros</h3>
               </div>
               <div class="panel-actions">
-                <button class="soft-action-button" data-section-link="movements" type="button"><span aria-hidden="true">☷</span> Filtros</button>
-                <button id="openTransactionModalDashboard" class="soft-action-button" type="button"><span aria-hidden="true">＋</span> Adicionar</button>
+                <button class="soft-action-button" data-section-link="movements" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-filter"/></svg> Filtros</button>
+                <button id="openTransactionModalDashboard" class="soft-action-button" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-plus"/></svg> Adicionar</button>
               </div>
             </div>
             <div class="table-wrap dashboard-table-wrap">
@@ -174,7 +194,12 @@
                 <tbody id="dashboardTransactionRows"></tbody>
               </table>
             </div>
-            <p id="dashboardTransactionsEmpty" class="empty-state">Nenhum registro nesta categoria.</p>
+            <div id="dashboardTransactionsEmpty" class="empty-state empty-state-action">
+              <span class="empty-state-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-expenses"/></svg></span>
+              <strong>Nenhum registro neste filtro</strong>
+              <span>Adicione uma movimentação ou escolha outra categoria para consultar seus registros.</span>
+              <button id="emptyAddDashboard" class="secondary-button" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-plus"/></svg>Adicionar movimentação</button>
+            </div>
           </article>
 
           <div class="dashboard-grid lower-grid reference-lower-grid">
@@ -218,17 +243,17 @@
         <div class="section-title-row">
           <div><p class="eyebrow">Planejamento mensal</p><h2>Despesas</h2></div>
           <div class="panel-actions">
-            <button id="openRecurringModal" class="soft-action-button" type="button">+ Recorrências</button>
-            <button id="openPlanModalMovement" class="soft-action-button" type="button"><span aria-hidden="true">✎</span> Editar planejamento</button>
+            <button id="openRecurringModal" class="soft-action-button" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-repeat"/></svg> Recorrências</button>
+            <button id="openPlanModalMovement" class="soft-action-button" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-pencil"/></svg> Editar planejamento</button>
           </div>
         </div>
 
         <div class="movement-summary-grid page-summary-grid">
-          <article class="summary-card income"><div class="summary-card-top"><span class="summary-icon">$</span><span class="metric-label">Receita realizada</span></div><strong id="movementIncomeMetric" class="money-value">R$ 0,00</strong><small>Renda principal e entradas recebidas</small></article>
-          <article class="summary-card expense"><div class="summary-card-top"><span class="summary-icon">▣</span><span class="metric-label">Despesas pagas</span></div><strong id="movementExpenseMetric" class="money-value">R$ 0,00</strong><small>Somente valores realizados</small></article>
-          <article class="summary-card pending-summary"><div class="summary-card-top"><span class="summary-icon">◷</span><span class="metric-label">Despesas pendentes</span></div><strong id="movementPendingMetric" class="money-value">R$ 0,00</strong><small id="movementOverdueDetail">Nenhuma conta vencida</small></article>
-          <article class="summary-card balance"><div class="summary-card-top"><span class="summary-icon">✦</span><span class="metric-label">Saldo atual</span></div><strong id="movementBalanceMetric" class="money-value">R$ 0,00</strong><small>Considera apenas valores realizados</small></article>
-          <article class="summary-card forecast-summary"><div class="summary-card-top"><span class="summary-icon">↝</span><span class="metric-label">Saldo previsto</span></div><strong id="movementForecastMetric" class="money-value">R$ 0,00</strong><small>Inclui receitas e despesas pendentes</small></article>
+          <article class="summary-card income"><div class="summary-card-top"><span class="summary-icon"><svg class="ui-icon"><use href="#icon-income"/></svg></span><span class="metric-label">Receita realizada</span></div><strong id="movementIncomeMetric" class="money-value">R$ 0,00</strong><small>Renda principal e entradas recebidas</small></article>
+          <article class="summary-card expense"><div class="summary-card-top"><span class="summary-icon"><svg class="ui-icon"><use href="#icon-outflow"/></svg></span><span class="metric-label">Despesas pagas</span></div><strong id="movementExpenseMetric" class="money-value">R$ 0,00</strong><small>Somente valores realizados</small></article>
+          <article class="summary-card pending-summary"><div class="summary-card-top"><span class="summary-icon"><svg class="ui-icon"><use href="#icon-clock"/></svg></span><span class="metric-label">Despesas pendentes</span></div><strong id="movementPendingMetric" class="money-value">R$ 0,00</strong><small id="movementOverdueDetail">Nenhuma conta vencida</small></article>
+          <article class="summary-card balance"><div class="summary-card-top"><span class="summary-icon"><svg class="ui-icon"><use href="#icon-wallet"/></svg></span><span class="metric-label">Saldo atual</span></div><strong id="movementBalanceMetric" class="money-value">R$ 0,00</strong><small>Considera apenas valores realizados</small></article>
+          <article class="summary-card forecast-summary"><div class="summary-card-top"><span class="summary-icon"><svg class="ui-icon"><use href="#icon-forecast"/></svg></span><span class="metric-label">Saldo previsto</span></div><strong id="movementForecastMetric" class="money-value">R$ 0,00</strong><small>Inclui receitas e despesas pendentes</small></article>
         </div>
 
         <div class="section-toolbar budget-toolbar">
@@ -237,7 +262,7 @@
             <label><span>Tipo</span><select id="transactionTypeFilter"><option value="all">Todos</option><option value="income">Receitas</option><option value="expense">Despesas</option></select></label>
             <label><span>Status</span><select id="transactionStatusFilter"><option value="all">Todos</option><option value="paid">Pago/recebido</option><option value="pending">Pendente</option></select></label>
           </div>
-          <button class="soft-action-button" id="openTransactionModalSecondary" type="button"><span aria-hidden="true">＋</span> Adicionar</button>
+          <button class="soft-action-button" id="openTransactionModalSecondary" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-plus"/></svg> Adicionar</button>
         </div>
 
         <article class="panel table-panel reference-table-panel transactions-panel">
@@ -247,7 +272,7 @@
           </div>
           <div id="transactionsMobileList" class="transactions-mobile-list"></div>
           <div id="transactionsEmpty" class="empty-state empty-state-action">
-            <span class="empty-state-icon" aria-hidden="true">↔</span>
+            <span class="empty-state-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-expenses"/></svg></span>
             <strong>Nenhuma movimentação encontrada</strong>
             <span>Registre uma receita ou despesa para começar a acompanhar o mês.</span>
             <button id="emptyAddTransaction" class="secondary-button" type="button">Adicionar primeira movimentação</button>
@@ -274,8 +299,8 @@
           <div><p class="eyebrow">Patrimônio manual</p><h2>Investimentos</h2></div>
           <div class="investment-header-actions">
             <div class="panel-actions">
-              <button id="openInvestmentEventModal" class="soft-action-button" type="button">＋ Movimentar investimento</button>
-              <button id="openInvestmentModal" class="primary-button" type="button"><span aria-hidden="true">＋</span> Novo investimento</button>
+              <button id="openInvestmentEventModal" class="soft-action-button" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-investments"/></svg> Movimentar investimento</button>
+              <button id="openInvestmentModal" class="primary-button" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-plus"/></svg> Novo investimento</button>
             </div>
             <small id="investmentEventHint">Cadastre um investimento antes de registrar movimentações.</small>
           </div>
@@ -315,7 +340,7 @@
           <div class="panel-heading table-card-heading"><div><p class="eyebrow">Carteira cadastrada</p><h3>Investimentos</h3></div></div>
           <div class="table-wrap"><table><thead><tr><th>Investimento</th><th>Tipo</th><th>Objetivo</th><th class="align-right">Quantidade</th><th class="align-right">Aportes</th><th class="align-right">Resgates</th><th class="align-right">Rendimentos</th><th class="align-right">Valor atual</th><th class="align-right">Rentabilidade</th><th aria-label="Ações"></th></tr></thead><tbody id="investmentsTableBody"></tbody></table></div>
           <div id="investmentsEmpty" class="empty-state empty-state-action">
-            <span class="empty-state-icon" aria-hidden="true">⌁</span>
+            <span class="empty-state-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-investments"/></svg></span>
             <strong>Você ainda não cadastrou investimentos</strong>
             <span>Cadastre o primeiro ativo para acompanhar aportes, quantidade e evolução patrimonial.</span>
             <button id="emptyAddInvestment" class="secondary-button" type="button">Cadastrar primeiro investimento</button>
@@ -383,6 +408,11 @@
         </div>
 
         <div class="settings-grid">
+          <article class="panel">
+            <h3>Aparência</h3>
+            <p>Escolha o tema mais confortável para usar a plataforma neste dispositivo.</p>
+            <button id="themeToggleSettings" class="secondary-button" type="button">Usar tema escuro</button>
+          </article>
           <article class="panel">
             <h3>Fechamentos mensais</h3>
             <p>Resumos permanentes, comparações e relatórios dos meses já encerrados.</p>

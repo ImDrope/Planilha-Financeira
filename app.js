@@ -496,7 +496,7 @@
     valuesHidden = hidden;
     document.body.classList.toggle("hide-values", valuesHidden);
     const button = $("#privacyToggle");
-    button.textContent = valuesHidden ? "◌" : "◉";
+    button.classList.toggle("values-hidden", valuesHidden);
     button.setAttribute("aria-label", valuesHidden ? "Exibir valores" : "Ocultar valores");
     button.title = valuesHidden ? "Exibir valores" : "Ocultar valores";
   }
@@ -528,7 +528,7 @@
     const expenseRatio = stats.income > 0 ? (stats.totalExpenses / stats.income) * 100 : 0;
     const monthClosed = Boolean(state.closures[selectedMonth]);
     const closeButton = $("#closeMonthButton");
-    closeButton.textContent = monthClosed ? "✓ Mês fechado · atualizar" : "✓ Fechar mês";
+    $("#closeMonthButtonLabel").textContent = monthClosed ? "Mês fechado · atualizar" : "Fechar mês";
     closeButton.classList.toggle("completed", monthClosed);
 
     $("#patrimonyMetric").textContent = formatCurrency(trackedPatrimony);
@@ -932,7 +932,7 @@
     const stats = getMonthStats();
     const previous = getMonthStats(getPreviousMonthKey(selectedMonth));
     const categoryChanges = expenseCategories.map((category) => ({ category, change: Number(stats.categoryTotals[category] || 0) - Number(previous.categoryTotals[category] || 0) })).sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
-    state.closures[selectedMonth] = { month: selectedMonth, closedAt: todayISO(), income: stats.income, expenses: stats.totalExpenses, invested: stats.invested, balance: stats.balance, forecastBalance: stats.forecastBalance, pending: stats.pendingExpenses, score: stats.score, level: stats.level, categoryChanges: categoryChanges.slice(0, 3) };
+    state.closures[selectedMonth] = { month: selectedMonth, closedAt: todayISO(), income: stats.income, expenses: stats.totalExpenses, invested: stats.invested, balance: stats.balance, forecastBalance: stats.forecastBalance, pending: stats.pendingExpenses, score: stats.score, level: stats.level, savingsRate: stats.income > 0 ? ((stats.balance + stats.invested) / stats.income) * 100 : 0, categoryChanges: categoryChanges.slice(0, 3) };
     state.transactions.filter((item) => monthFromDate(item.date) === selectedMonth && item.status === "pending").forEach((item) => {
       const next = addMonths(new Date(`${item.date}T12:00:00`), 1);
       const nextDate = safeDate(next.getFullYear(), next.getMonth(), new Date(`${item.date}T12:00:00`).getDate());
@@ -957,6 +957,9 @@
   function buildClosurePdf(item, month) {
     const commands = [];
     const positive = Number(item.balance || 0) >= 0;
+    const savingsRate = Number.isFinite(Number(item.savingsRate))
+      ? Number(item.savingsRate)
+      : (Number(item.income || 0) > 0 ? ((Number(item.balance || 0) + Number(item.invested || 0)) / Number(item.income)) * 100 : 0);
     const accent = positive ? "0.18 0.54 0.41" : "0.72 0.24 0.28";
     const card = (x, y, label, value, valueColor = "0.10 0.14 0.12") => {
       commands.push(pdfRect(x, y, 247, 72, "0.96 0.98 0.97"));
@@ -996,6 +999,11 @@
       commands.push(pdfText(change.category, 56, y, 10, "F1"));
       commands.push(pdfText(`${change.change >= 0 ? "+" : ""}${pdfCurrency(change.change)}`, 430, y, 10, "F2", changePositive ? "0.12 0.48 0.34" : "0.66 0.22 0.27"));
     });
+
+    commands.push(pdfRect(42, 78, 511, 54, positive ? "0.91 0.97 0.94" : "0.99 0.92 0.92"));
+    commands.push(pdfText("LEITURA DO MÊS", 58, 111, 8, "F2", positive ? "0.12 0.48 0.34" : "0.66 0.22 0.27"));
+    commands.push(pdfText(positive ? "O período terminou com saldo positivo." : "O período terminou com saldo negativo.", 58, 91, 11, "F2", accent));
+    commands.push(pdfText(`Taxa de economia: ${savingsRate.toFixed(1).replace(".", ",")}%`, 388, 91, 9, "F2", "0.32 0.38 0.35"));
 
     commands.push(pdfText(`Fechado em ${formatDate(item.closedAt)}`, 42, 48, 8, "F1", "0.48 0.52 0.50"));
     commands.push(pdfText("Gerado pela plataforma Despesa Mensal", 355, 48, 8, "F1", "0.48 0.52 0.50"));
@@ -1563,6 +1571,10 @@
   function applyTheme(theme) {
     document.body.classList.toggle("dark", theme === "dark");
     localStorage.setItem(THEME_KEY, theme);
+    [$("#themeToggle"), $("#themeToggleSettings")].filter(Boolean).forEach((button) => {
+      button.textContent = theme === "dark" ? "Usar tema claro" : "Usar tema escuro";
+      button.setAttribute("aria-pressed", String(theme === "dark"));
+    });
     requestAnimationFrame(() => {
       renderHistoryChart();
       renderCategoryChart(getMonthStats());
@@ -1750,6 +1762,7 @@
     $("#openTransactionModal").addEventListener("click", () => openTransactionModal());
     $("#openTransactionModalSecondary").addEventListener("click", () => openTransactionModal());
     $("#openTransactionModalDashboard").addEventListener("click", () => openTransactionModal());
+    $("#emptyAddDashboard").addEventListener("click", () => openTransactionModal());
     $("#openInstallmentPurchase").addEventListener("click", () => {
       openTransactionModal();
       $("#transactionPaymentMethod").value = "credit";
@@ -1846,7 +1859,7 @@
       event.target.value = "";
     });
     $("#clearData").addEventListener("click", clearData);
-    $("#themeToggle").addEventListener("click", () => applyTheme(document.body.classList.contains("dark") ? "light" : "dark"));
+    [$("#themeToggle"), $("#themeToggleSettings")].forEach((button) => button?.addEventListener("click", () => applyTheme(document.body.classList.contains("dark") ? "light" : "dark")));
 
     window.addEventListener("resize", debounce(() => {
       if ($("#dashboardSection").classList.contains("active") && dashboardView === "charts") {
