@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Despesa Mensal">
+  <defs>
+    <linearGradient id="bg" x1="8" y1="6" x2="57" y2="59" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#194b39"/>
+      <stop offset="1" stop-color="#0d261e"/>
+    </linearGradient>
+    <linearGradient id="coin" x1="22" y1="17" x2="43" y2="48" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f1cf67"/>
+      <stop offset="1" stop-color="#c99525"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="62" height="62" rx="18" fill="url(#bg)" stroke="#315447" stroke-width="2"/>
+  <circle cx="32" cy="32" r="20" fill="url(#coin)" stroke="#ffe9a5" stroke-width="1.5"/>
+  <circle cx="32" cy="32" r="16" fill="none" stroke="#af7e1e" stroke-opacity=".45"/>
+  <path d="M36.8 23.7c-1.2-1.1-2.8-1.7-4.6-1.7-2.5 0-4.1 1-4.1 2.6 0 4.2 10.1 2 10.1 9.3 0 3.6-2.5 5.9-6.2 6.3v3.3h-2.6v-3.4a11.8 11.8 0 0 1-6.2-3.3l2.3-2.8a9 9 0 0 0 5.9 2.5c1.9 0 3.2-.8 3.2-2.3 0-3.9-10.1-1.9-10.1-9.2 0-3.5 2.2-5.8 5.7-6.4v-3.2h2.6v3.2c2.5.3 4.8 1.3 6.2 2.7z" fill="#173c2f"/>
+  <path d="M22 48.5c3 2.2 6.4 3.3 10 3.3 3.7 0 7.1-1.1 10-3.3" fill="none" stroke="#fff1bc" stroke-linecap="round" stroke-opacity=".6"/>
+</svg>
+
