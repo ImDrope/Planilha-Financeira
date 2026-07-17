@@ -644,8 +644,29 @@
     </form>
   </dialog>
 
+  <dialog id="closeMonthModal" class="modal close-month-modal">
+    <form id="closeMonthForm" method="dialog" class="modal-card small-modal">
+      <div class="modal-header">
+        <div><p class="eyebrow">Fechamento mensal</p><h2 id="closeMonthModalTitle">Revisar fechamento</h2></div>
+        <button class="icon-button close-modal" type="button" aria-label="Fechar">×</button>
+      </div>
+      <p id="closeMonthModalDescription" class="muted">Confira os valores antes de concluir.</p>
+      <div class="close-month-summary">
+        <div><span>Receitas</span><strong id="closeMonthIncome" class="money-value amount-positive">R$ 0,00</strong></div>
+        <div><span>Despesas</span><strong id="closeMonthExpenses" class="money-value amount-negative">R$ 0,00</strong></div>
+        <div><span>Investimentos</span><strong id="closeMonthInvested" class="money-value">R$ 0,00</strong></div>
+        <div class="close-month-balance"><span>Saldo final</span><strong id="closeMonthBalance" class="money-value">R$ 0,00</strong></div>
+      </div>
+      <div class="close-month-details">
+        <div><span>Pendências a transferir</span><strong id="closeMonthPending">0 · R$ 0,00</strong></div>
+        <div><span>Pontuação financeira</span><strong id="closeMonthScore">0/100</strong></div>
+      </div>
+      <div class="close-month-note"><span aria-hidden="true">✓</span><p id="closeMonthNote">Um resumo permanente e o relatório PDF serão gerados.</p></div>
+      <div class="modal-actions"><button class="ghost-button close-modal" type="button">Cancelar</button><button id="confirmCloseMonth" class="primary-button" type="submit">Confirmar fechamento</button></div>
+    </form>
+  </dialog>
+
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="app.js"></script>
 </body>
 </html>
-

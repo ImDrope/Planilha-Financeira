@@ -903,23 +903,27 @@
     $("#closureList").innerHTML = closures.length ? closures.map((item) => `<div class="closure-item"><div><strong>${monthLabel(item.month)}</strong><small>Saldo ${formatCurrency(item.balance)} · pontuação ${item.score}/100</small></div><button class="row-action" data-download-closure="${item.month}" type="button">Baixar PDF</button></div>`).join("") : '<p class="empty-state">Nenhum mês fechado.</p>';
   }
 
-  function closeSelectedMonth() {
+  function openCloseMonthReview() {
     const stats = getMonthStats();
     const alreadyClosed = Boolean(state.closures[selectedMonth]);
     const pendingCount = state.transactions.filter((item) => monthFromDate(item.date) === selectedMonth && item.status === "pending").length;
-    const review = [
-      `${alreadyClosed ? "Atualizar" : "Fechar"} ${monthLabel(selectedMonth)}?`,
-      "",
-      `Receitas: ${formatCurrency(stats.income)}`,
-      `Despesas: ${formatCurrency(stats.totalExpenses)}`,
-      `Investimentos: ${formatCurrency(stats.invested)}`,
-      `Saldo final: ${formatCurrency(stats.balance)}`,
-      `Pendências a transferir: ${pendingCount} (${formatCurrency(stats.pendingExpenses)})`,
-      `Pontuação: ${stats.score}/100`,
-      "",
-      alreadyClosed ? "O resumo anterior será substituído." : "Um resumo permanente e o relatório PDF serão gerados."
-    ].join("\n");
-    if (!confirm(review)) return;
+    $("#closeMonthModalTitle").textContent = `${alreadyClosed ? "Atualizar" : "Fechar"} ${monthLabel(selectedMonth)}`;
+    $("#closeMonthModalDescription").textContent = "Confira os valores antes de concluir o fechamento deste período.";
+    $("#closeMonthIncome").textContent = formatCurrency(stats.income);
+    $("#closeMonthExpenses").textContent = formatCurrency(stats.totalExpenses);
+    $("#closeMonthInvested").textContent = formatCurrency(stats.invested);
+    $("#closeMonthBalance").textContent = formatCurrency(stats.balance);
+    $("#closeMonthBalance").closest(".close-month-balance").classList.toggle("negative", stats.balance < 0);
+    $("#closeMonthPending").textContent = `${pendingCount} · ${formatCurrency(stats.pendingExpenses)}`;
+    $("#closeMonthScore").textContent = `${stats.score}/100 · ${stats.level}`;
+    $("#closeMonthNote").textContent = alreadyClosed ? "O resumo anterior será substituído e um novo PDF será gerado." : "Um resumo permanente e o relatório PDF serão gerados.";
+    $("#confirmCloseMonth").textContent = alreadyClosed ? "Atualizar fechamento" : "Confirmar fechamento";
+    $("#closeMonthModal").showModal();
+  }
+
+  function closeSelectedMonth(event) {
+    event?.preventDefault();
+    const stats = getMonthStats();
     const previous = getMonthStats(getPreviousMonthKey(selectedMonth));
     const categoryChanges = expenseCategories.map((category) => ({ category, change: Number(stats.categoryTotals[category] || 0) - Number(previous.categoryTotals[category] || 0) })).sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
     state.closures[selectedMonth] = { month: selectedMonth, closedAt: todayISO(), income: stats.income, expenses: stats.totalExpenses, invested: stats.invested, balance: stats.balance, forecastBalance: stats.forecastBalance, pending: stats.pendingExpenses, score: stats.score, level: stats.level, categoryChanges: categoryChanges.slice(0, 3) };
@@ -929,7 +933,7 @@
       const transferKey = `carry_${item.id}_${monthFromDate(toISO(nextDate))}`;
       if (!state.transactions.some((tx) => tx.transferKey === transferKey)) state.transactions.push({ ...item, id: generateId("tx"), date: toISO(nextDate), transferKey, notes: `${item.notes ? `${item.notes} · ` : ""}Transferido de ${monthLabel(selectedMonth)}` });
     });
-    saveState(); renderAll(); downloadClosurePdf(selectedMonth); showToast("Mês fechado e relatório gerado.");
+    saveState(); $("#closeMonthModal").close(); renderAll(); downloadClosurePdf(selectedMonth); showToast("Mês fechado e relatório gerado.");
   }
 
   function pdfEscape(value) { return String(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\x20-\x7E]/g, " ").replace(/[()\\]/g, "\\$&"); }
@@ -1594,7 +1598,8 @@
       updateInvestmentEventHelp();
       $("#investmentEventModal").showModal();
     });
-    $("#closeMonthButton").addEventListener("click", closeSelectedMonth);
+    $("#closeMonthButton").addEventListener("click", openCloseMonthReview);
+    $("#closeMonthForm").addEventListener("submit", closeSelectedMonth);
     $("#openPlanModal").addEventListener("click", openPlanModal);
     $("#openPlanModalSecondary").addEventListener("click", openPlanModal);
     $("#openPlanModalMovement").addEventListener("click", openPlanModal);
@@ -1688,4 +1693,3 @@
 
   init();
 })();
-
