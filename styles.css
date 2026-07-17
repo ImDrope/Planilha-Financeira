@@ -566,6 +566,13 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 32%, transpa
 .row-action { border: 0; border-radius: 10px; padding: 8px 10px; color: var(--muted); background: var(--surface-soft); }
 .row-action:hover { color: var(--primary); background: var(--primary-soft); }
 .empty-state { margin: 0; padding: 30px; color: var(--muted); text-align: center; }
+.empty-state-action { display: grid; justify-items: center; gap: 9px; }
+.empty-state-action.hidden { display: none; }
+.empty-state-action strong { color: var(--text); font-size: 15px; }
+.empty-state-action > span:not(.empty-state-icon) { max-width: 480px; font-size: 12px; line-height: 1.55; }
+.empty-state-icon { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 15px; color: var(--primary); background: var(--primary-soft); font-size: 22px; }
+.empty-state-action .secondary-button { margin-top: 5px; }
+.field-help { display: block; margin-top: 6px; color: var(--muted); font-size: 10px; line-height: 1.4; }
 .transactions-mobile-list { display: none; }
 .transaction-mobile-card { display: grid; gap: 13px; padding: 16px; border-bottom: 1px solid var(--border); }
 .transaction-mobile-card:last-child { border-bottom: 0; }
