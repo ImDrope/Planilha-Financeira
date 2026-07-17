@@ -83,7 +83,7 @@
             <div class="wealth-card-head">
               <div>
                 <span>Patrimônio acompanhado</span>
-                <small>Investimentos informados + saldo positivo do mês</small>
+                <small>Investimentos informados + saldo do mês</small>
               </div>
               <span class="wealth-badge">BRL</span>
             </div>
@@ -522,11 +522,11 @@
         </label>
         <label>
           <span>Valor aportado</span>
-          <input id="investmentAmount" type="number" min="0" step="0.01" required />
+          <input id="investmentAmount" type="number" min="0" step="any" required />
         </label>
         <label>
           <span>Valor atual informado</span>
-          <input id="investmentCurrentValue" type="number" min="0" step="0.01" />
+          <input id="investmentCurrentValue" type="number" min="0" step="any" />
         </label>
         <label class="full-span">
           <span>Observações</span>
@@ -603,7 +603,7 @@
         <label><span>Evento</span><select id="investmentEventType"><option value="contribution">Aporte</option><option value="withdrawal">Resgate</option><option value="income">Rendimento recebido</option><option value="valuation">Atualização do valor atual</option></select></label>
         <p id="investmentEventHelp" class="investment-event-help">Aporte adiciona capital ao investimento e aumenta provisoriamente o valor atual.</p>
         <label><span>Data</span><input id="investmentEventDate" type="date" required /></label>
-        <label><span>Valor</span><input id="investmentEventAmount" type="number" min="0" step="0.01" required /></label>
+        <label><span>Valor</span><input id="investmentEventAmount" type="number" min="0" step="any" required /></label>
         <label><span>Observação</span><input id="investmentEventNotes" maxlength="120" /></label>
       </div>
       <div class="modal-actions"><button class="ghost-button close-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Salvar movimentação</button></div>
