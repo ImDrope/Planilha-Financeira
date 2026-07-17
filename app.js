@@ -1620,7 +1620,7 @@
     if (/\d/.test(password)) score += 1;
     if (/[^A-Za-z0-9]/.test(password)) score += 1;
     const widths = [0, 25, 50, 75, 100];
-    const labels = ["Use letras, números e símbolos.", "Senha fraca", "Senha razoável", "Senha boa", "Senha forte"];
+    const labels = ["Use pelo menos 8 caracteres, com uma letra e um número.", "Inclua uma letra e um número.", "Senha razoável", "Senha boa", "Senha forte"];
     const colors = ["var(--red)", "var(--red)", "var(--amber)", "var(--primary)", "var(--primary)"];
     $("#passwordStrengthFill").style.width = `${widths[score]}%`;
     $("#passwordStrengthFill").style.background = colors[score];
@@ -1662,6 +1662,7 @@
     const confirmation = $("#registerPasswordConfirm").value;
     const error = $("#registerError");
     error.textContent = "";
+    if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) { error.textContent = "A senha deve ter pelo menos 8 caracteres, incluindo uma letra e um número."; return; }
     if (password !== confirmation) { error.textContent = "As senhas informadas não são iguais."; return; }
     if (!$("#registerTerms").checked) { error.textContent = "Aceite os termos para continuar."; return; }
     pendingRegistration = { name, email };
