@@ -645,7 +645,7 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 32%, transpa
   list-style: none;
 }
 .forecast-disclosure > summary::-webkit-details-marker, .secondary-section-disclosure > summary::-webkit-details-marker { display: none; }
-.forecast-disclosure > summary::after, .secondary-section-disclosure > summary::after { content: "âŒ„"; color: var(--muted); font-size: 18px; transition: transform .2s ease; }
+.forecast-disclosure > summary::after, .secondary-section-disclosure > summary::after { content: "⌄"; color: var(--muted); font-size: 18px; transition: transform .2s ease; }
 .forecast-disclosure[open] > summary::after, .secondary-section-disclosure[open] > summary::after { transform: rotate(180deg); }
 .forecast-disclosure > summary span, .secondary-section-disclosure > summary h3 { font-weight: 800; }
 .forecast-disclosure > summary small, .secondary-section-disclosure > summary > span { margin-left: auto; color: var(--muted); font-size: 12px; }
@@ -704,7 +704,7 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 32%, transpa
 /* Privacy mask */
 .hide-values .money-value { font-size: 0 !important; color: transparent !important; }
 .hide-values .money-value::after {
-  content: "â€¢â€¢â€¢â€¢â€¢â€¢";
+  content: "••••••";
   font-size: 20px;
   letter-spacing: 0.09em;
   color: var(--mask-color, var(--text));

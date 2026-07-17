@@ -11,7 +11,7 @@
 </head>
 <body>
   <div class="app-shell">
-    <aside class="sidebar" aria-label="NavegaÃ§Ã£o principal">
+    <aside class="sidebar" aria-label="Navegação principal">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true"><img src="assets/logo-money.svg" alt="" /></div>
         <div>
@@ -21,26 +21,26 @@
       </div>
 
       <nav class="nav-list">
-        <button class="nav-item active" data-section="dashboard" aria-label="VisÃ£o geral">
-          <span class="nav-icon" aria-hidden="true">â–¦</span><span class="nav-label">VisÃ£o geral</span>
+        <button class="nav-item active" data-section="dashboard" aria-label="Visão geral">
+          <span class="nav-icon" aria-hidden="true">▦</span><span class="nav-label">Visão geral</span>
         </button>
         <button class="nav-item" data-section="movements" aria-label="Despesas">
-          <span class="nav-icon" aria-hidden="true">â†”</span><span class="nav-label">Despesas</span>
+          <span class="nav-icon" aria-hidden="true">↔</span><span class="nav-label">Despesas</span>
         </button>
         <button class="nav-item" data-section="investments" aria-label="Investimentos">
-          <span class="nav-icon" aria-hidden="true">âŒ</span><span class="nav-label">Investimentos</span>
+          <span class="nav-icon" aria-hidden="true">⌁</span><span class="nav-label">Investimentos</span>
         </button>
         <button class="nav-item" data-section="goals" aria-label="Metas">
-          <span class="nav-icon" aria-hidden="true">â™œ</span><span class="nav-label">Metas</span>
+          <span class="nav-icon" aria-hidden="true">♜</span><span class="nav-label">Metas</span>
         </button>
         <button class="nav-item" data-section="settings" aria-label="Dados e privacidade">
-          <span class="nav-icon" aria-hidden="true">âš™</span><span class="nav-label">Dados</span>
+          <span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Dados</span>
         </button>
       </nav>
 
       <div class="sidebar-footer">
         <div class="privacy-badge">
-          <span aria-hidden="true">â—</span>
+          <span aria-hidden="true">●</span>
           Dados salvos neste navegador
         </div>
         <button id="themeToggle" class="ghost-button full-width" type="button">Alternar tema</button>
@@ -51,20 +51,20 @@
       <header class="topbar">
         <div class="page-heading">
           <p class="eyebrow">Despesa Mensal</p>
-          <h1 id="pageTitle">VisÃ£o geral</h1>
+          <h1 id="pageTitle">Visão geral</h1>
         </div>
         <div class="topbar-actions">
-          <div class="month-navigation" aria-label="NavegaÃ§Ã£o entre meses">
-            <button id="previousMonth" class="month-arrow" type="button" aria-label="MÃªs anterior">â€¹</button>
+          <div class="month-navigation" aria-label="Navegação entre meses">
+            <button id="previousMonth" class="month-arrow" type="button" aria-label="Mês anterior">‹</button>
             <label class="month-picker">
-              <span class="sr-only">MÃªs analisado</span>
-              <strong id="monthDisplay">MÃªs atual</strong>
-              <input id="monthSelector" type="month" aria-label="Selecionar mÃªs" />
+              <span class="sr-only">Mês analisado</span>
+              <strong id="monthDisplay">Mês atual</strong>
+              <input id="monthSelector" type="month" aria-label="Selecionar mês" />
             </label>
-            <button id="nextMonth" class="month-arrow" type="button" aria-label="PrÃ³ximo mÃªs">â€º</button>
+            <button id="nextMonth" class="month-arrow" type="button" aria-label="Próximo mês">›</button>
           </div>
-          <button id="privacyToggle" class="icon-button privacy-toggle" type="button" aria-label="Ocultar valores" title="Ocultar valores">â—‰</button>
-          <button id="openTransactionModal" class="primary-button top-add-button" type="button">+ Nova movimentaÃ§Ã£o</button>
+          <button id="privacyToggle" class="icon-button privacy-toggle" type="button" aria-label="Ocultar valores" title="Ocultar valores">◉</button>
+          <button id="openTransactionModal" class="primary-button top-add-button" type="button">+ Nova movimentação</button>
         </div>
       </header>
 
@@ -72,11 +72,11 @@
         <div class="section-title-row dashboard-title-row">
           <div>
             <p class="eyebrow">Resumo financeiro</p>
-            <h2>VisÃ£o geral</h2>
+            <h2>Visão geral</h2>
           </div>
           <div class="panel-actions">
-            <button id="closeMonthButton" class="soft-action-button" type="button">âœ“ Fechar mÃªs</button>
-            <button id="openPlanModal" class="soft-action-button" type="button"><span aria-hidden="true">âœŽ</span> Planejar mÃªs</button>
+            <button id="closeMonthButton" class="soft-action-button" type="button">✓ Fechar mês</button>
+            <button id="openPlanModal" class="soft-action-button" type="button"><span aria-hidden="true">✎</span> Planejar mês</button>
           </div>
         </div>
 
@@ -84,8 +84,8 @@
           <article class="wealth-card">
             <div class="wealth-card-head">
               <div>
-                <span>PatrimÃ´nio acompanhado</span>
-                <small>Investimentos informados + saldo do mÃªs</small>
+                <span>Patrimônio acompanhado</span>
+                <small>Investimentos informados + saldo do mês</small>
               </div>
               <span class="wealth-badge">BRL</span>
             </div>
@@ -96,7 +96,7 @@
                 <strong id="patrimonyInvestmentMetric" class="money-value">R$ 0,00</strong>
               </div>
               <div>
-                <span>Liquidez do mÃªs</span>
+                <span>Liquidez do mês</span>
                 <strong id="patrimonyLiquidityMetric" class="money-value">R$ 0,00</strong>
               </div>
             </div>
@@ -105,9 +105,9 @@
           <article class="score-summary-card">
             <div class="score-mini-ring" id="dashboardScoreRing"><strong id="scoreMetric">0</strong><span>/100</span></div>
             <div>
-              <span class="metric-label">SaÃºde financeira</span>
+              <span class="metric-label">Saúde financeira</span>
               <h3 id="scoreDetail">Reorganizando</h3>
-              <p id="heroSubmessage">Cadastre sua renda, metas e movimentaÃ§Ãµes.</p>
+              <p id="heroSubmessage">Cadastre sua renda, metas e movimentações.</p>
             </div>
           </article>
         </div>
@@ -119,49 +119,49 @@
             <small id="incomeDetail">Renda principal + entradas extras</small>
           </article>
           <article class="summary-card expense">
-            <div class="summary-card-top"><span class="summary-icon">â–£</span><span class="metric-label">Despesas</span></div>
+            <div class="summary-card-top"><span class="summary-icon">▣</span><span class="metric-label">Despesas</span></div>
             <strong id="expensesMetric" class="money-value">R$ 0,00</strong>
-            <small id="expenseDetail">Fixas, variÃ¡veis e recorrentes</small>
+            <small id="expenseDetail">Fixas, variáveis e recorrentes</small>
           </article>
           <article class="summary-card balance">
-            <div class="summary-card-top"><span class="summary-icon">âœ¦</span><span class="metric-label">Saldo</span></div>
+            <div class="summary-card-top"><span class="summary-icon">✦</span><span class="metric-label">Saldo</span></div>
             <strong id="balanceMetric" class="money-value">R$ 0,00</strong>
-            <small id="balanceDetail">ApÃ³s gastos e investimentos</small>
+            <small id="balanceDetail">Após gastos e investimentos</small>
           </article>
         </div>
 
         <details id="forecastDisclosure" class="forecast-disclosure" open>
-          <summary><span>PrevisÃ£o do mÃªs</span><small>Saldo previsto, pendÃªncias e receitas esperadas</small></summary>
+          <summary><span>Previsão do mês</span><small>Saldo previsto, pendências e receitas esperadas</small></summary>
           <div class="forecast-grid">
             <article class="forecast-card"><span>Saldo atual</span><strong id="actualBalanceMetric" class="money-value">R$ 0,00</strong><small>Somente valores realizados</small></article>
-            <article class="forecast-card"><span>Saldo previsto</span><strong id="forecastBalanceMetric" class="money-value">R$ 0,00</strong><small>Inclui pendÃªncias e parcelas</small></article>
+            <article class="forecast-card"><span>Saldo previsto</span><strong id="forecastBalanceMetric" class="money-value">R$ 0,00</strong><small>Inclui pendências e parcelas</small></article>
             <article class="forecast-card"><span>Total pendente</span><strong id="pendingMetric" class="money-value">R$ 0,00</strong><small id="overdueMetric">Nenhuma conta vencida</small></article>
             <article class="forecast-card"><span>Receitas esperadas</span><strong id="expectedIncomeMetric" class="money-value">R$ 0,00</strong><small id="futureCommitmentMetric">Sem compromissos futuros</small></article>
           </div>
         </details>
 
-        <div class="dashboard-view-toggle" role="tablist" aria-label="VisualizaÃ§Ã£o do dashboard">
-          <button class="dashboard-view-button active" data-dashboard-view-button="table" type="button"><span aria-hidden="true">â–¦</span> Tabela</button>
-          <button class="dashboard-view-button" data-dashboard-view-button="charts" type="button"><span aria-hidden="true">â—”</span> GrÃ¡ficos</button>
+        <div class="dashboard-view-toggle" role="tablist" aria-label="Visualização do dashboard">
+          <button class="dashboard-view-button active" data-dashboard-view-button="table" type="button"><span aria-hidden="true">▦</span> Tabela</button>
+          <button class="dashboard-view-button" data-dashboard-view-button="charts" type="button"><span aria-hidden="true">◔</span> Gráficos</button>
         </div>
 
         <div id="dashboardTableView" class="dashboard-view active" data-dashboard-view="table">
-          <div class="transaction-tabs" role="tablist" aria-label="Filtrar registros rÃ¡pidos">
+          <div class="transaction-tabs" role="tablist" aria-label="Filtrar registros rápidos">
             <button class="transaction-tab active" data-dashboard-filter="all" type="button">Todos</button>
             <button class="transaction-tab" data-dashboard-filter="income" type="button">Receita</button>
             <button class="transaction-tab" data-dashboard-filter="fixed" type="button">Fixa</button>
-            <button class="transaction-tab" data-dashboard-filter="variable" type="button">VariÃ¡vel</button>
+            <button class="transaction-tab" data-dashboard-filter="variable" type="button">Variável</button>
           </div>
 
           <article class="panel dashboard-table-panel">
             <div class="panel-heading dashboard-table-heading">
               <div>
-                <p class="eyebrow">Registros do mÃªs</p>
+                <p class="eyebrow">Registros do mês</p>
                 <h3 id="dashboardTableTitle">Todos os registros</h3>
               </div>
               <div class="panel-actions">
-                <button class="soft-action-button" data-section-link="movements" type="button"><span aria-hidden="true">â˜·</span> Filtros</button>
-                <button id="openTransactionModalDashboard" class="soft-action-button" type="button"><span aria-hidden="true">ï¼‹</span> Adicionar</button>
+                <button class="soft-action-button" data-section-link="movements" type="button"><span aria-hidden="true">☷</span> Filtros</button>
+                <button id="openTransactionModalDashboard" class="soft-action-button" type="button"><span aria-hidden="true">＋</span> Adicionar</button>
               </div>
             </div>
             <div class="table-wrap dashboard-table-wrap">
@@ -181,11 +181,11 @@
               </div>
             </article>
             <article class="panel">
-              <div class="panel-heading"><div><p class="eyebrow">Leitura automÃ¡tica</p><h3>Como estÃ¡ o mÃªs</h3></div></div>
+              <div class="panel-heading"><div><p class="eyebrow">Leitura automática</p><h3>Como está o mês</h3></div></div>
               <div id="monthlyAnalysis" class="analysis-content"></div>
             </article>
             <article class="panel">
-              <div class="panel-heading"><div><p class="eyebrow">GamificaÃ§Ã£o</p><h3>Conquistas recentes</h3></div><button class="link-button" data-section-link="goals" type="button">Ver detalhes</button></div>
+              <div class="panel-heading"><div><p class="eyebrow">Gamificação</p><h3>Conquistas recentes</h3></div><button class="link-button" data-section-link="goals" type="button">Ver detalhes</button></div>
               <div id="achievementPreview" class="achievement-preview"></div>
             </article>
           </div>
@@ -194,16 +194,16 @@
         <div id="dashboardChartsView" class="dashboard-view" data-dashboard-view="charts">
           <div class="dashboard-grid charts-reference-grid">
             <article class="panel chart-panel wide">
-              <div class="panel-heading"><div><p class="eyebrow">HistÃ³rico</p><h3>Receitas, gastos e investimentos</h3></div><span class="legend-note">Ãšltimos 6 meses</span></div>
-              <div class="chart-wrap"><canvas id="historyChart" aria-label="GrÃ¡fico do histÃ³rico mensal"></canvas><p id="historyChartEmpty" class="empty-state hidden">Adicione dados para visualizar o histÃ³rico.</p></div>
+              <div class="panel-heading"><div><p class="eyebrow">Histórico</p><h3>Receitas, gastos e investimentos</h3></div><span class="legend-note">Últimos 6 meses</span></div>
+              <div class="chart-wrap"><canvas id="historyChart" aria-label="Gráfico do histórico mensal"></canvas><p id="historyChartEmpty" class="empty-state hidden">Adicione dados para visualizar o histórico.</p></div>
             </article>
             <article class="panel chart-panel">
-              <div class="panel-heading"><div><p class="eyebrow">Categorias</p><h3>DistribuiÃ§Ã£o dos gastos</h3></div></div>
-              <div class="chart-wrap donut-wrap"><canvas id="categoryChart" aria-label="GrÃ¡fico de gastos por categoria"></canvas><div id="donutCenter" class="donut-center"><small>Total</small><strong>R$ 0</strong></div><p id="categoryChartEmpty" class="empty-state hidden">Nenhuma despesa neste mÃªs.</p></div>
+              <div class="panel-heading"><div><p class="eyebrow">Categorias</p><h3>Distribuição dos gastos</h3></div></div>
+              <div class="chart-wrap donut-wrap"><canvas id="categoryChart" aria-label="Gráfico de gastos por categoria"></canvas><div id="donutCenter" class="donut-center"><small>Total</small><strong>R$ 0</strong></div><p id="categoryChartEmpty" class="empty-state hidden">Nenhuma despesa neste mês.</p></div>
               <div id="categoryLegend" class="category-legend"></div>
             </article>
             <article class="panel">
-              <div class="panel-heading"><div><p class="eyebrow">Ãšltimos registros</p><h3>MovimentaÃ§Ãµes recentes</h3></div><button class="link-button" data-section-link="movements" type="button">Ver todas</button></div>
+              <div class="panel-heading"><div><p class="eyebrow">Últimos registros</p><h3>Movimentações recentes</h3></div><button class="link-button" data-section-link="movements" type="button">Ver todas</button></div>
               <div id="recentTransactions" class="compact-list"></div>
             </article>
           </div>
@@ -214,52 +214,52 @@
         <div class="section-title-row">
           <div><p class="eyebrow">Planejamento mensal</p><h2>Despesas</h2></div>
           <div class="panel-actions">
-            <button id="openRecurringModal" class="soft-action-button" type="button">+ RecorrÃªncias</button>
-            <button id="openPlanModalMovement" class="soft-action-button" type="button"><span aria-hidden="true">âœŽ</span> Editar planejamento</button>
+            <button id="openRecurringModal" class="soft-action-button" type="button">+ Recorrências</button>
+            <button id="openPlanModalMovement" class="soft-action-button" type="button"><span aria-hidden="true">✎</span> Editar planejamento</button>
           </div>
         </div>
 
         <div class="movement-summary-grid page-summary-grid">
           <article class="summary-card income"><div class="summary-card-top"><span class="summary-icon">$</span><span class="metric-label">Receita realizada</span></div><strong id="movementIncomeMetric" class="money-value">R$ 0,00</strong><small>Renda principal e entradas recebidas</small></article>
-          <article class="summary-card expense"><div class="summary-card-top"><span class="summary-icon">â–£</span><span class="metric-label">Despesas pagas</span></div><strong id="movementExpenseMetric" class="money-value">R$ 0,00</strong><small>Somente valores realizados</small></article>
-          <article class="summary-card pending-summary"><div class="summary-card-top"><span class="summary-icon">â—·</span><span class="metric-label">Despesas pendentes</span></div><strong id="movementPendingMetric" class="money-value">R$ 0,00</strong><small id="movementOverdueDetail">Nenhuma conta vencida</small></article>
-          <article class="summary-card balance"><div class="summary-card-top"><span class="summary-icon">âœ¦</span><span class="metric-label">Saldo atual</span></div><strong id="movementBalanceMetric" class="money-value">R$ 0,00</strong><small>Considera apenas valores realizados</small></article>
-          <article class="summary-card forecast-summary"><div class="summary-card-top"><span class="summary-icon">â†</span><span class="metric-label">Saldo previsto</span></div><strong id="movementForecastMetric" class="money-value">R$ 0,00</strong><small>Inclui receitas e despesas pendentes</small></article>
+          <article class="summary-card expense"><div class="summary-card-top"><span class="summary-icon">▣</span><span class="metric-label">Despesas pagas</span></div><strong id="movementExpenseMetric" class="money-value">R$ 0,00</strong><small>Somente valores realizados</small></article>
+          <article class="summary-card pending-summary"><div class="summary-card-top"><span class="summary-icon">◷</span><span class="metric-label">Despesas pendentes</span></div><strong id="movementPendingMetric" class="money-value">R$ 0,00</strong><small id="movementOverdueDetail">Nenhuma conta vencida</small></article>
+          <article class="summary-card balance"><div class="summary-card-top"><span class="summary-icon">✦</span><span class="metric-label">Saldo atual</span></div><strong id="movementBalanceMetric" class="money-value">R$ 0,00</strong><small>Considera apenas valores realizados</small></article>
+          <article class="summary-card forecast-summary"><div class="summary-card-top"><span class="summary-icon">↝</span><span class="metric-label">Saldo previsto</span></div><strong id="movementForecastMetric" class="money-value">R$ 0,00</strong><small>Inclui receitas e despesas pendentes</small></article>
         </div>
 
         <div class="section-toolbar budget-toolbar">
           <div class="filter-row">
-            <label><span>Buscar</span><input id="transactionSearch" type="search" placeholder="DescriÃ§Ã£o ou categoria" /></label>
+            <label><span>Buscar</span><input id="transactionSearch" type="search" placeholder="Descrição ou categoria" /></label>
             <label><span>Tipo</span><select id="transactionTypeFilter"><option value="all">Todos</option><option value="income">Receitas</option><option value="expense">Despesas</option></select></label>
             <label><span>Status</span><select id="transactionStatusFilter"><option value="all">Todos</option><option value="paid">Pago/recebido</option><option value="pending">Pendente</option></select></label>
           </div>
-          <button class="soft-action-button" id="openTransactionModalSecondary" type="button"><span aria-hidden="true">ï¼‹</span> Adicionar</button>
+          <button class="soft-action-button" id="openTransactionModalSecondary" type="button"><span aria-hidden="true">＋</span> Adicionar</button>
         </div>
 
         <article class="panel table-panel reference-table-panel transactions-panel">
-          <div class="panel-heading table-card-heading"><div><p class="eyebrow">Todos os registros</p><h3>MovimentaÃ§Ãµes do mÃªs</h3></div><span class="legend-note">Edite ou remova pelos botÃµes da Ãºltima coluna</span></div>
+          <div class="panel-heading table-card-heading"><div><p class="eyebrow">Todos os registros</p><h3>Movimentações do mês</h3></div><span class="legend-note">Edite ou remova pelos botões da última coluna</span></div>
           <div class="table-wrap">
-            <table><thead><tr><th>Data</th><th>DescriÃ§Ã£o</th><th>Categoria</th><th>ClassificaÃ§Ã£o</th><th>Status</th><th class="align-right">Valor</th><th aria-label="AÃ§Ãµes"></th></tr></thead><tbody id="transactionsTableBody"></tbody></table>
+            <table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Classificação</th><th>Status</th><th class="align-right">Valor</th><th aria-label="Ações"></th></tr></thead><tbody id="transactionsTableBody"></tbody></table>
           </div>
           <div id="transactionsMobileList" class="transactions-mobile-list"></div>
           <div id="transactionsEmpty" class="empty-state empty-state-action">
-            <span class="empty-state-icon" aria-hidden="true">â†”</span>
-            <strong>Nenhuma movimentaÃ§Ã£o encontrada</strong>
-            <span>Registre uma receita ou despesa para comeÃ§ar a acompanhar o mÃªs.</span>
-            <button id="emptyAddTransaction" class="secondary-button" type="button">Adicionar primeira movimentaÃ§Ã£o</button>
+            <span class="empty-state-icon" aria-hidden="true">↔</span>
+            <strong>Nenhuma movimentação encontrada</strong>
+            <span>Registre uma receita ou despesa para começar a acompanhar o mês.</span>
+            <button id="emptyAddTransaction" class="secondary-button" type="button">Adicionar primeira movimentação</button>
           </div>
         </article>
 
         <details class="secondary-section-disclosure">
-          <summary><div><p class="eyebrow">OrÃ§amento por categoria</p><h3>Limites e consumo</h3></div><span>Ver detalhes</span></summary>
+          <summary><div><p class="eyebrow">Orçamento por categoria</p><h3>Limites e consumo</h3></div><span>Ver detalhes</span></summary>
           <article class="panel reference-table-panel disclosure-panel"><div id="categoryBudgetList" class="category-budget-list"></div></article>
         </details>
 
         <details class="secondary-section-disclosure credit-disclosure">
-          <summary><div><p class="eyebrow">CrÃ©dito e parcelamentos</p><h3>Compras parceladas</h3></div><span id="invoiceCommitment">Sem parcelas futuras</span></summary>
+          <summary><div><p class="eyebrow">Crédito e parcelamentos</p><h3>Compras parceladas</h3></div><span id="invoiceCommitment">Sem parcelas futuras</span></summary>
           <article class="panel table-panel reference-table-panel disclosure-panel">
-            <div class="panel-heading table-card-heading"><div><p class="eyebrow">Planejamento futuro</p><h3>Parcelas atuais e futuras</h3></div><button id="openInstallmentPurchase" class="soft-action-button" type="button">ï¼‹ Nova compra parcelada</button></div>
-            <div class="table-wrap"><table><thead><tr><th>MÃªs</th><th class="align-right">Total previsto</th><th class="align-right">Parcelas</th></tr></thead><tbody id="invoiceTableBody"></tbody></table></div>
+            <div class="panel-heading table-card-heading"><div><p class="eyebrow">Planejamento futuro</p><h3>Parcelas atuais e futuras</h3></div><button id="openInstallmentPurchase" class="soft-action-button" type="button">＋ Nova compra parcelada</button></div>
+            <div class="table-wrap"><table><thead><tr><th>Mês</th><th class="align-right">Total previsto</th><th class="align-right">Parcelas</th></tr></thead><tbody id="invoiceTableBody"></tbody></table></div>
             <p id="invoiceEmpty" class="empty-state">Nenhuma compra parcelada registrada.</p>
           </article>
         </details>
@@ -267,18 +267,18 @@
 
       <section id="investmentsSection" class="app-section">
         <div class="section-title-row">
-          <div><p class="eyebrow">PatrimÃ´nio manual</p><h2>Investimentos</h2></div>
+          <div><p class="eyebrow">Patrimônio manual</p><h2>Investimentos</h2></div>
           <div class="investment-header-actions">
             <div class="panel-actions">
-              <button id="openInvestmentEventModal" class="soft-action-button" type="button">ï¼‹ Movimentar investimento</button>
-              <button id="openInvestmentModal" class="primary-button" type="button"><span aria-hidden="true">ï¼‹</span> Novo investimento</button>
+              <button id="openInvestmentEventModal" class="soft-action-button" type="button">＋ Movimentar investimento</button>
+              <button id="openInvestmentModal" class="primary-button" type="button"><span aria-hidden="true">＋</span> Novo investimento</button>
             </div>
-            <small id="investmentEventHint">Cadastre um investimento antes de registrar movimentaÃ§Ãµes.</small>
+            <small id="investmentEventHint">Cadastre um investimento antes de registrar movimentações.</small>
           </div>
         </div>
 
         <article class="portfolio-hero-card">
-          <div><span>PatrimÃ´nio total informado</span><small>Valor atual de todos os investimentos cadastrados</small></div>
+          <div><span>Patrimônio total informado</span><small>Valor atual de todos os investimentos cadastrados</small></div>
           <strong id="portfolioHeroMetric" class="money-value">R$ 0,00</strong>
           <span class="wealth-badge">BRL</span>
         </article>
@@ -288,38 +288,38 @@
             <div><p class="eyebrow">Planejamento de aportes</p><h3>Meta mensal de investimento</h3></div>
             <strong id="investmentMetric" class="money-value">R$ 0,00</strong>
           </div>
-          <p id="investmentDetail" class="legend-note">Meta ainda nÃ£o definida</p>
-          <div class="progress-row"><div><span>Progresso do mÃªs</span><strong id="investmentProgressText">R$ 0 de R$ 0</strong></div><div class="progress-track"><div id="investmentProgressBar" class="progress-fill alt"></div></div></div>
+          <p id="investmentDetail" class="legend-note">Meta ainda não definida</p>
+          <div class="progress-row"><div><span>Progresso do mês</span><strong id="investmentProgressText">R$ 0 de R$ 0</strong></div><div class="progress-track"><div id="investmentProgressBar" class="progress-fill alt"></div></div></div>
         </article>
 
         <div class="portfolio-card-grid">
-          <article class="portfolio-stat-card liquidity"><div class="portfolio-stat-title"><span class="portfolio-icon">â–¤</span><span>Liquidez do mÃªs</span></div><strong id="portfolioLiquidityMetric" class="money-value">R$ 0,00</strong><small>Saldo positivo disponÃ­vel</small></article>
-          <article class="portfolio-stat-card contributed"><div class="portfolio-stat-title"><span class="portfolio-icon">â–¥</span><span>Total aportado</span></div><strong id="investmentContributedTotal" class="money-value">R$ 0,00</strong><small>HistÃ³rico de aportes</small></article>
-          <article class="portfolio-stat-card investments"><div class="portfolio-stat-title"><span class="portfolio-icon">âŒ</span><span>Investimentos</span></div><strong id="investmentCurrentTotal" class="money-value">R$ 0,00</strong><small>Valor atual informado</small></article>
-          <article class="portfolio-stat-card result"><div class="portfolio-stat-title"><span class="portfolio-icon">â–­</span><span>Resultado</span></div><strong id="investmentResultTotal" class="money-value">R$ 0,00</strong><small>Valor atual menos aportes</small></article>
+          <article class="portfolio-stat-card liquidity"><div class="portfolio-stat-title"><span class="portfolio-icon">▤</span><span>Liquidez do mês</span></div><strong id="portfolioLiquidityMetric" class="money-value">R$ 0,00</strong><small>Saldo positivo disponível</small></article>
+          <article class="portfolio-stat-card contributed"><div class="portfolio-stat-title"><span class="portfolio-icon">▥</span><span>Total aportado</span></div><strong id="investmentContributedTotal" class="money-value">R$ 0,00</strong><small>Histórico de aportes</small></article>
+          <article class="portfolio-stat-card investments"><div class="portfolio-stat-title"><span class="portfolio-icon">⌁</span><span>Investimentos</span></div><strong id="investmentCurrentTotal" class="money-value">R$ 0,00</strong><small>Valor atual informado</small></article>
+          <article class="portfolio-stat-card result"><div class="portfolio-stat-title"><span class="portfolio-icon">▭</span><span>Resultado</span></div><strong id="investmentResultTotal" class="money-value">R$ 0,00</strong><small>Valor atual menos aportes</small></article>
         </div>
 
-        <div class="investment-month-strip"><span>Aportes no mÃªs selecionado</span><strong id="investmentMonthTotal" class="money-value">R$ 0,00</strong></div>
+        <div class="investment-month-strip"><span>Aportes no mês selecionado</span><strong id="investmentMonthTotal" class="money-value">R$ 0,00</strong></div>
         <div id="investmentValuationAlert" class="investment-valuation-alert hidden" role="status"></div>
 
         <article class="panel chart-panel wide">
-          <div class="panel-heading"><div><p class="eyebrow">EvoluÃ§Ã£o patrimonial</p><h3>Ãšltimos 12 meses</h3></div></div>
-          <div class="chart-wrap"><canvas id="patrimonyChart" aria-label="GrÃ¡fico de evoluÃ§Ã£o patrimonial"></canvas><p id="patrimonyChartEmpty" class="empty-state">Registre aportes ou valores atuais para visualizar.</p></div>
+          <div class="panel-heading"><div><p class="eyebrow">Evolução patrimonial</p><h3>Últimos 12 meses</h3></div></div>
+          <div class="chart-wrap"><canvas id="patrimonyChart" aria-label="Gráfico de evolução patrimonial"></canvas><p id="patrimonyChartEmpty" class="empty-state">Registre aportes ou valores atuais para visualizar.</p></div>
         </article>
 
         <article class="panel table-panel reference-table-panel">
           <div class="panel-heading table-card-heading"><div><p class="eyebrow">Carteira cadastrada</p><h3>Investimentos</h3></div></div>
-          <div class="table-wrap"><table><thead><tr><th>Investimento</th><th>Tipo</th><th>Objetivo</th><th class="align-right">Quantidade</th><th class="align-right">Aportes</th><th class="align-right">Resgates</th><th class="align-right">Rendimentos</th><th class="align-right">Valor atual</th><th class="align-right">Rentabilidade</th><th aria-label="AÃ§Ãµes"></th></tr></thead><tbody id="investmentsTableBody"></tbody></table></div>
+          <div class="table-wrap"><table><thead><tr><th>Investimento</th><th>Tipo</th><th>Objetivo</th><th class="align-right">Quantidade</th><th class="align-right">Aportes</th><th class="align-right">Resgates</th><th class="align-right">Rendimentos</th><th class="align-right">Valor atual</th><th class="align-right">Rentabilidade</th><th aria-label="Ações"></th></tr></thead><tbody id="investmentsTableBody"></tbody></table></div>
           <div id="investmentsEmpty" class="empty-state empty-state-action">
-            <span class="empty-state-icon" aria-hidden="true">âŒ</span>
-            <strong>VocÃª ainda nÃ£o cadastrou investimentos</strong>
-            <span>Cadastre o primeiro ativo para acompanhar aportes, quantidade e evoluÃ§Ã£o patrimonial.</span>
+            <span class="empty-state-icon" aria-hidden="true">⌁</span>
+            <strong>Você ainda não cadastrou investimentos</strong>
+            <span>Cadastre o primeiro ativo para acompanhar aportes, quantidade e evolução patrimonial.</span>
             <button id="emptyAddInvestment" class="secondary-button" type="button">Cadastrar primeiro investimento</button>
           </div>
         </article>
         <article class="panel table-panel reference-table-panel">
-          <div class="panel-heading table-card-heading"><div><p class="eyebrow">HistÃ³rico</p><h3>Eventos dos investimentos</h3></div></div>
-          <div class="table-wrap"><table><thead><tr><th>Data</th><th>Investimento</th><th>Evento</th><th class="align-right">Valor</th><th>ObservaÃ§Ã£o</th><th aria-label="AÃ§Ãµes"></th></tr></thead><tbody id="investmentEventsBody"></tbody></table></div>
+          <div class="panel-heading table-card-heading"><div><p class="eyebrow">Histórico</p><h3>Eventos dos investimentos</h3></div></div>
+          <div class="table-wrap"><table><thead><tr><th>Data</th><th>Investimento</th><th>Evento</th><th class="align-right">Valor</th><th>Observação</th><th aria-label="Ações"></th></tr></thead><tbody id="investmentEventsBody"></tbody></table></div>
           <p id="investmentEventsEmpty" class="empty-state">Nenhum evento registrado.</p>
         </article>
       </section>
@@ -327,10 +327,10 @@
       <section id="goalsSection" class="app-section">
         <div class="section-toolbar">
           <div>
-            <p class="eyebrow">EvoluÃ§Ã£o</p>
+            <p class="eyebrow">Evolução</p>
             <h2>Metas e conquistas</h2>
           </div>
-          <button id="openPlanModalSecondary" class="secondary-button" type="button">Editar metas do mÃªs</button>
+          <button id="openPlanModalSecondary" class="secondary-button" type="button">Editar metas do mês</button>
         </div>
 
         <div class="goals-layout">
@@ -342,17 +342,17 @@
               </div>
             </div>
             <div>
-              <p class="eyebrow">Seu nÃ­vel atual</p>
+              <p class="eyebrow">Seu nível atual</p>
               <h3 id="levelTitle">Reorganizando</h3>
-              <p id="levelDescription">Configure o mÃªs e registre seus dados para comeÃ§ar a pontuar.</p>
+              <p id="levelDescription">Configure o mês e registre seus dados para começar a pontuar.</p>
             </div>
           </article>
 
           <article class="panel">
             <div class="panel-heading">
               <div>
-                <p class="eyebrow">Como sua pontuaÃ§Ã£o foi calculada</p>
-                <h3>Desafios do mÃªs</h3>
+                <p class="eyebrow">Como sua pontuação foi calculada</p>
+                <h3>Desafios do mês</h3>
               </div>
             </div>
             <div id="scoreBreakdown" class="challenge-list"></div>
@@ -381,12 +381,12 @@
         <div class="settings-grid">
           <article class="panel">
             <h3>Fechamentos mensais</h3>
-            <p>Resumos permanentes, comparaÃ§Ãµes e relatÃ³rios dos meses jÃ¡ encerrados.</p>
+            <p>Resumos permanentes, comparações e relatórios dos meses já encerrados.</p>
             <div id="closureList" class="closure-list"></div>
           </article>
           <article class="panel">
             <h3>Armazenamento local</h3>
-            <p>As informaÃ§Ãµes ficam salvas apenas no navegador deste dispositivo. O projeto nÃ£o envia dados para servidores externos.</p>
+            <p>As informações ficam salvas apenas no navegador deste dispositivo. O projeto não envia dados para servidores externos.</p>
             <div class="button-stack">
               <button id="exportData" class="secondary-button" type="button">Exportar backup em JSON</button>
               <label class="secondary-button file-button">
@@ -398,14 +398,14 @@
 
           <article class="panel danger-panel">
             <h3>Apagar dados</h3>
-            <p>Esta aÃ§Ã£o remove movimentaÃ§Ãµes, investimentos, metas e configuraÃ§Ãµes salvas neste navegador.</p>
+            <p>Esta ação remove movimentações, investimentos, metas e configurações salvas neste navegador.</p>
             <button id="clearData" class="danger-button" type="button">Apagar todos os dados</button>
           </article>
 
           <article class="panel">
-            <h3>PublicaÃ§Ã£o no GitHub</h3>
-            <p>O site pode ser publicado com GitHub Pages. Os dados continuarÃ£o locais, mas o cÃ³digo e a pÃ¡gina serÃ£o acessÃ­veis conforme a visibilidade configurada no serviÃ§o.</p>
-            <p class="muted">Para autenticaÃ§Ã£o real e sincronizaÃ§Ã£o entre dispositivos, serÃ¡ necessÃ¡rio adicionar um backend em uma prÃ³xima etapa.</p>
+            <h3>Publicação no GitHub</h3>
+            <p>O site pode ser publicado com GitHub Pages. Os dados continuarão locais, mas o código e a página serão acessíveis conforme a visibilidade configurada no serviço.</p>
+            <p class="muted">Para autenticação real e sincronização entre dispositivos, será necessário adicionar um backend em uma próxima etapa.</p>
           </article>
         </div>
       </section>
@@ -417,9 +417,9 @@
       <div class="modal-header">
         <div>
           <p class="eyebrow">Novo registro</p>
-          <h2 id="transactionModalTitle">Adicionar movimentaÃ§Ã£o</h2>
+          <h2 id="transactionModalTitle">Adicionar movimentação</h2>
         </div>
-        <button class="icon-button close-modal" type="button" aria-label="Fechar">Ã—</button>
+        <button class="icon-button close-modal" type="button" aria-label="Fechar">×</button>
       </div>
 
       <input id="transactionId" type="hidden" />
@@ -436,7 +436,7 @@
           <input id="transactionDate" type="date" required />
         </label>
         <label class="full-span">
-          <span>DescriÃ§Ã£o</span>
+          <span>Descrição</span>
           <input id="transactionDescription" type="text" maxlength="80" placeholder="Ex.: Supermercado" required />
         </label>
         <label>
@@ -448,10 +448,10 @@
           <select id="transactionCategory" required></select>
         </label>
         <label id="expenseClassField">
-          <span>ClassificaÃ§Ã£o</span>
+          <span>Classificação</span>
           <select id="transactionExpenseClass">
             <option value="fixed">Fixa</option>
-            <option value="variable">VariÃ¡vel</option>
+            <option value="variable">Variável</option>
             <option value="recurring">Recorrente</option>
           </select>
         </label>
@@ -466,28 +466,28 @@
           <span>Forma de pagamento</span>
           <select id="transactionPaymentMethod">
             <option value="pix">Pix</option>
-            <option value="debit">DÃ©bito</option>
-            <option value="credit">CrÃ©dito</option>
+            <option value="debit">Débito</option>
+            <option value="credit">Crédito</option>
             <option value="cash">Dinheiro</option>
-            <option value="transfer">TransferÃªncia</option>
+            <option value="transfer">Transferência</option>
             <option value="other">Outro</option>
           </select>
         </label>
         <div id="creditPurchaseFields" class="full-span credit-purchase-fields hidden">
           <label>
-            <span>NÃºmero de parcelas</span>
+            <span>Número de parcelas</span>
             <input id="transactionInstallmentCount" type="number" min="1" max="48" value="1" />
           </label>
-          <small>O valor total serÃ¡ dividido a partir do mÃªs da compra. NÃ£o Ã© necessÃ¡rio cadastrar um cartÃ£o.</small>
+          <small>O valor total será dividido a partir do mês da compra. Não é necessário cadastrar um cartão.</small>
         </div>
         <label class="full-span">
-          <span>ObservaÃ§Ãµes</span>
+          <span>Observações</span>
           <textarea id="transactionNotes" rows="3" maxlength="240" placeholder="Opcional"></textarea>
         </label>
       </div>
       <div class="modal-actions">
         <button class="ghost-button close-modal" type="button">Cancelar</button>
-        <button class="primary-button" type="submit">Salvar movimentaÃ§Ã£o</button>
+        <button class="primary-button" type="submit">Salvar movimentação</button>
       </div>
     </form>
   </dialog>
@@ -499,7 +499,7 @@
           <p class="eyebrow">Controle manual</p>
           <h2 id="investmentModalTitle">Adicionar investimento</h2>
         </div>
-        <button class="icon-button close-modal" type="button" aria-label="Fechar">Ã—</button>
+        <button class="icon-button close-modal" type="button" aria-label="Fechar">×</button>
       </div>
 
       <input id="investmentId" type="hidden" />
@@ -511,12 +511,12 @@
         <label>
           <span>Tipo</span>
           <select id="investmentType" required>
-            <option value="Reserva de emergÃªncia">Reserva de emergÃªncia</option>
+            <option value="Reserva de emergência">Reserva de emergência</option>
             <option value="Renda fixa">Renda fixa</option>
-            <option value="AÃ§Ãµes">AÃ§Ãµes</option>
+            <option value="Ações">Ações</option>
             <option value="FIIs">FIIs</option>
             <option value="Criptomoedas">Criptomoedas</option>
-            <option value="PrevidÃªncia">PrevidÃªncia</option>
+            <option value="Previdência">Previdência</option>
             <option value="Outros">Outros</option>
           </select>
         </label>
@@ -525,7 +525,7 @@
           <input id="investmentName" type="text" maxlength="80" placeholder="Ex.: CDB Reserva" required />
         </label>
         <label>
-          <span>InstituiÃ§Ã£o</span>
+          <span>Instituição</span>
           <input id="investmentInstitution" type="text" maxlength="60" placeholder="Ex.: Banco ou corretora" />
         </label>
         <label>
@@ -542,12 +542,12 @@
           <small class="field-help">Opcional. Pode ser atualizado ao comprar ou vender unidades.</small>
         </label>
         <label>
-          <span>Valor atual total da posiÃ§Ã£o</span>
+          <span>Valor atual total da posição</span>
           <input id="investmentCurrentValue" type="number" min="0" step="any" />
-          <small class="field-help">Informe o valor total, nÃ£o apenas o preÃ§o de uma cota ou moeda.</small>
+          <small class="field-help">Informe o valor total, não apenas o preço de uma cota ou moeda.</small>
         </label>
         <label class="full-span">
-          <span>ObservaÃ§Ãµes</span>
+          <span>Observações</span>
           <textarea id="investmentNotes" rows="3" maxlength="240" placeholder="Opcional"></textarea>
         </label>
       </div>
@@ -563,15 +563,15 @@
       <div class="modal-header">
         <div>
           <p class="eyebrow">Planejamento</p>
-          <h2>Configurar mÃªs</h2>
+          <h2>Configurar mês</h2>
         </div>
-        <button class="icon-button close-modal" type="button" aria-label="Fechar">Ã—</button>
+        <button class="icon-button close-modal" type="button" aria-label="Fechar">×</button>
       </div>
       <div class="form-grid one-column">
         <label>
           <span>Renda principal recebida</span>
           <input id="planSalary" type="number" min="0" step="0.01" placeholder="0,00" />
-          <small>SalÃ¡rio ou renda principal. Entradas extras sÃ£o registradas nas movimentaÃ§Ãµes.</small>
+          <small>Salário ou renda principal. Entradas extras são registradas nas movimentações.</small>
         </label>
         <label>
           <span>Limite total de gastos</span>
@@ -595,52 +595,52 @@
 
   <dialog id="recurringModal" class="modal">
     <form id="recurringForm" method="dialog" class="modal-card">
-      <div class="modal-header"><div><p class="eyebrow">AutomaÃ§Ã£o</p><h2>Nova recorrÃªncia</h2></div><button class="icon-button close-modal" type="button" aria-label="Fechar">Ã—</button></div>
+      <div class="modal-header"><div><p class="eyebrow">Automação</p><h2>Nova recorrência</h2></div><button class="icon-button close-modal" type="button" aria-label="Fechar">×</button></div>
       <input id="recurringId" type="hidden" />
       <div class="form-grid">
         <label><span>Tipo</span><select id="recurringType"><option value="expense">Despesa</option><option value="income">Receita</option></select></label>
-        <label><span>FrequÃªncia</span><select id="recurringFrequency"><option value="monthly">Mensal</option><option value="weekly">Semanal</option><option value="annual">Anual</option></select></label>
-        <label class="full-span"><span>DescriÃ§Ã£o</span><input id="recurringDescription" required maxlength="80" /></label>
+        <label><span>Frequência</span><select id="recurringFrequency"><option value="monthly">Mensal</option><option value="weekly">Semanal</option><option value="annual">Anual</option></select></label>
+        <label class="full-span"><span>Descrição</span><input id="recurringDescription" required maxlength="80" /></label>
         <label><span>Valor</span><input id="recurringAmount" type="number" min="0.01" step="0.01" required /></label>
         <label><span>Categoria</span><select id="recurringCategory"></select></label>
         <label><span>Data inicial</span><input id="recurringStart" type="date" required /></label>
         <label><span>Data final (opcional)</span><input id="recurringEnd" type="date" /></label>
         <label><span>Dia do vencimento</span><input id="recurringDueDay" type="number" min="1" max="31" value="10" /></label>
-        <label><span>Status dos lanÃ§amentos</span><select id="recurringStatus"><option value="pending">Pendente</option><option value="paid">Pago/recebido</option></select></label>
+        <label><span>Status dos lançamentos</span><select id="recurringStatus"><option value="pending">Pendente</option><option value="paid">Pago/recebido</option></select></label>
       </div>
-      <div class="modal-actions"><button class="ghost-button close-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Salvar e gerar lanÃ§amentos</button></div>
+      <div class="modal-actions"><button class="ghost-button close-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Salvar e gerar lançamentos</button></div>
       <div id="recurringList" class="management-list"></div>
     </form>
   </dialog>
 
   <dialog id="investmentEventModal" class="modal">
     <form id="investmentEventForm" method="dialog" class="modal-card small-modal">
-      <div class="modal-header"><div><p class="eyebrow">HistÃ³rico</p><h2>Movimentar investimento</h2></div><button class="icon-button close-modal" type="button" aria-label="Fechar">Ã—</button></div>
+      <div class="modal-header"><div><p class="eyebrow">Histórico</p><h2>Movimentar investimento</h2></div><button class="icon-button close-modal" type="button" aria-label="Fechar">×</button></div>
       <div class="form-grid one-column">
         <label><span>Investimento</span><select id="investmentEventAsset" required></select></label>
-        <label><span>Evento</span><select id="investmentEventType"><option value="contribution">Aporte</option><option value="withdrawal">Resgate</option><option value="income">Rendimento recebido</option><option value="valuation">AtualizaÃ§Ã£o do valor atual</option></select></label>
+        <label><span>Evento</span><select id="investmentEventType"><option value="contribution">Aporte</option><option value="withdrawal">Resgate</option><option value="income">Rendimento recebido</option><option value="valuation">Atualização do valor atual</option></select></label>
         <p id="investmentEventHelp" class="investment-event-help">Aporte adiciona capital ao investimento e aumenta provisoriamente o valor atual.</p>
         <label><span>Data</span><input id="investmentEventDate" type="date" required /></label>
         <label><span>Valor</span><input id="investmentEventAmount" type="number" min="0" step="any" required /></label>
-        <label><span>ObservaÃ§Ã£o</span><input id="investmentEventNotes" maxlength="120" /></label>
+        <label><span>Observação</span><input id="investmentEventNotes" maxlength="120" /></label>
       </div>
-      <div class="modal-actions"><button class="ghost-button close-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Salvar movimentaÃ§Ã£o</button></div>
+      <div class="modal-actions"><button class="ghost-button close-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Salvar movimentação</button></div>
     </form>
   </dialog>
 
   <dialog id="onboardingModal" class="modal onboarding-modal">
     <form id="onboardingForm" method="dialog" class="modal-card">
-      <div class="modal-header"><div><p class="eyebrow">Bem-vindo</p><h2>Vamos configurar seu primeiro mÃªs</h2></div></div>
-      <p class="muted">VocÃª poderÃ¡ alterar tudo depois. Seus dados continuam salvos somente neste navegador.</p>
+      <div class="modal-header"><div><p class="eyebrow">Bem-vindo</p><h2>Vamos configurar seu primeiro mês</h2></div></div>
+      <p class="muted">Você poderá alterar tudo depois. Seus dados continuam salvos somente neste navegador.</p>
       <div class="form-grid">
         <label><span>Renda principal</span><input id="onboardingSalary" type="number" min="0" step="0.01" /></label>
         <label><span>Limite mensal</span><input id="onboardingBudget" type="number" min="0" step="0.01" /></label>
         <label><span>Meta de investimento</span><input id="onboardingInvestment" type="number" min="0" step="0.01" /></label>
         <label><span>Primeira despesa recorrente</span><input id="onboardingRecurringName" maxlength="80" placeholder="Ex.: Aluguel (opcional)" /></label>
-        <label><span>Valor da recorrÃªncia</span><input id="onboardingRecurringAmount" type="number" min="0" step="0.01" /></label>
+        <label><span>Valor da recorrência</span><input id="onboardingRecurringAmount" type="number" min="0" step="0.01" /></label>
         <label><span>Dia do vencimento</span><input id="onboardingRecurringDay" type="number" min="1" max="31" value="10" /></label>
       </div>
-      <div class="modal-actions"><button id="skipOnboarding" class="ghost-button" type="button">Configurar depois</button><button class="primary-button" type="submit">ComeÃ§ar</button></div>
+      <div class="modal-actions"><button id="skipOnboarding" class="ghost-button" type="button">Configurar depois</button><button class="primary-button" type="submit">Começar</button></div>
     </form>
   </dialog>
 

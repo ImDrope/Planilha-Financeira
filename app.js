@@ -7,8 +7,8 @@
   const PRIVACY_KEY = "financeQuestValuesHidden";
 
   const expenseCategories = [
-    "Moradia", "AlimentaÃ§Ã£o", "Transporte", "Assinaturas", "Lazer",
-    "SaÃºde", "Compras", "Trabalho", "EducaÃ§Ã£o", "Outros"
+    "Moradia", "Alimentação", "Transporte", "Assinaturas", "Lazer",
+    "Saúde", "Compras", "Trabalho", "Educação", "Outros"
   ];
   const incomeCategories = ["Freelance", "Reembolso", "Venda", "Presente", "Outras receitas"];
 
@@ -62,7 +62,7 @@
       const investmentEvents = Array.isArray(parsed.investmentEvents) ? parsed.investmentEvents : [];
       migratedInvestments.forEach((item) => {
         if (!investmentEvents.some((event) => event.assetId === item.id) && Number(item.amount || 0) > 0) {
-          investmentEvents.push({ id: `evt_migrated_${item.id}`, assetId: item.id, type: "contribution", date: item.date, amount: Number(item.amount || 0), notes: "Aporte migrado da versÃ£o anterior" });
+          investmentEvents.push({ id: `evt_migrated_${item.id}`, assetId: item.id, type: "contribution", date: item.date, amount: Number(item.amount || 0), notes: "Aporte migrado da versão anterior" });
         }
         if (!investmentEvents.some((event) => event.assetId === item.id && event.type === "valuation")) {
           investmentEvents.push({ id: `evt_value_${item.id}`, assetId: item.id, type: "valuation", date: item.date, amount: Number(item.currentValue ?? item.amount ?? 0), notes: "Valor atual migrado" });
@@ -129,7 +129,7 @@
   }
 
   function formatDate(dateString) {
-    if (!dateString) return "â€”";
+    if (!dateString) return "—";
     const [year, month, day] = dateString.split("-").map(Number);
     return new Intl.DateTimeFormat("pt-BR").format(new Date(year, month - 1, day));
   }
@@ -323,7 +323,7 @@
   function calculateScore({ plan, income, totalExpenses, invested, balance, pendingCount, transactionCount }) {
     const items = [
       {
-        label: "Fechar o mÃªs com saldo positivo",
+        label: "Fechar o mês com saldo positivo",
         points: 30,
         completed: income > 0 && balance >= 0
       },
@@ -338,12 +338,12 @@
         completed: Number(plan.budget) > 0 && totalExpenses <= Number(plan.budget)
       },
       {
-        label: "NÃ£o deixar contas pendentes",
+        label: "Não deixar contas pendentes",
         points: 15,
         completed: transactionCount > 0 && pendingCount === 0
       },
       {
-        label: "Registrar pelo menos cinco movimentaÃ§Ãµes",
+        label: "Registrar pelo menos cinco movimentações",
         points: 10,
         completed: transactionCount >= 5
       }
@@ -351,19 +351,19 @@
 
     const score = items.reduce((sum, item) => sum + (item.completed ? item.points : 0), 0);
     let level = "Reorganizando";
-    let description = "DÃª os primeiros passos configurando sua renda, metas e registros.";
+    let description = "Dê os primeiros passos configurando sua renda, metas e registros.";
     if (score >= 90) {
-      level = "Mestre das finanÃ§as";
-      description = "Excelente consistÃªncia: suas metas, gastos e investimentos estÃ£o muito bem alinhados.";
+      level = "Mestre das finanças";
+      description = "Excelente consistência: suas metas, gastos e investimentos estão muito bem alinhados.";
     } else if (score >= 75) {
       level = "Estrategista";
-      description = "VocÃª estÃ¡ tomando decisÃµes consistentes e mantendo o mÃªs sob controle.";
+      description = "Você está tomando decisões consistentes e mantendo o mês sob controle.";
     } else if (score >= 60) {
       level = "Organizado";
-      description = "Sua rotina financeira estÃ¡ ganhando estrutura. Continue acompanhando as metas.";
+      description = "Sua rotina financeira está ganhando estrutura. Continue acompanhando as metas.";
     } else if (score >= 40) {
       level = "Aprendiz financeiro";
-      description = "A base estÃ¡ montada. Ajustes em orÃ§amento e investimentos podem elevar sua pontuaÃ§Ã£o.";
+      description = "A base está montada. Ajustes em orçamento e investimentos podem elevar sua pontuação.";
     }
 
     return { score, scoreItems: items, level, levelDescription: description };
@@ -461,7 +461,7 @@
       all: "Todos os registros",
       income: "Receitas extras",
       fixed: "Despesas fixas",
-      variable: "VariÃ¡veis e recorrentes"
+      variable: "Variáveis e recorrentes"
     };
     const rows = stats.transactions
       .filter((item) => {
@@ -479,9 +479,9 @@
         <td>${formatDate(item.date)}</td>
         <td><strong>${escapeHtml(item.description)}</strong><small>${escapeHtml(item.category)}</small></td>
         <td class="align-right money-value ${item.type === "income" ? "amount-positive" : "amount-negative"}">
-          ${item.type === "income" ? "+" : "âˆ’"}${formatCurrency(item.amount)}
+          ${item.type === "income" ? "+" : "−"}${formatCurrency(item.amount)}
         </td>
-        <td><button class="row-action icon-only" data-edit-transaction="${item.id}" type="button" aria-label="Editar movimentaÃ§Ã£o">âœŽ</button></td>
+        <td><button class="row-action icon-only" data-edit-transaction="${item.id}" type="button" aria-label="Editar movimentação">✎</button></td>
       </tr>
     `).join("");
   }
@@ -490,7 +490,7 @@
     valuesHidden = hidden;
     document.body.classList.toggle("hide-values", valuesHidden);
     const button = $("#privacyToggle");
-    button.textContent = valuesHidden ? "â—Œ" : "â—‰";
+    button.textContent = valuesHidden ? "◌" : "◉";
     button.setAttribute("aria-label", valuesHidden ? "Exibir valores" : "Ocultar valores");
     button.title = valuesHidden ? "Exibir valores" : "Ocultar valores";
   }
@@ -522,7 +522,7 @@
     const expenseRatio = stats.income > 0 ? (stats.totalExpenses / stats.income) * 100 : 0;
     const monthClosed = Boolean(state.closures[selectedMonth]);
     const closeButton = $("#closeMonthButton");
-    closeButton.textContent = monthClosed ? "âœ“ MÃªs fechado Â· atualizar" : "âœ“ Fechar mÃªs";
+    closeButton.textContent = monthClosed ? "✓ Mês fechado · atualizar" : "✓ Fechar mês";
     closeButton.classList.toggle("completed", monthClosed);
 
     $("#patrimonyMetric").textContent = formatCurrency(trackedPatrimony);
@@ -538,12 +538,12 @@
     $("#investmentMetric").textContent = formatCurrency(stats.invested);
     $("#investmentDetail").textContent = stats.plan.investmentGoal > 0
       ? `${Math.min(100, (stats.invested / stats.plan.investmentGoal) * 100).toFixed(0)}% da meta mensal`
-      : "Meta ainda nÃ£o definida";
+      : "Meta ainda não definida";
 
     $("#expensesMetric").textContent = formatCurrency(stats.totalExpenses);
     $("#expenseDetail").textContent = stats.income > 0
-      ? `${expenseRatio.toFixed(1).replace(".", ",")}% das receitas do mÃªs`
-      : "Fixas, variÃ¡veis e recorrentes";
+      ? `${expenseRatio.toFixed(1).replace(".", ",")}% das receitas do mês`
+      : "Fixas, variáveis e recorrentes";
 
     $("#balanceMetric").textContent = formatCurrency(stats.balance);
     $("#balanceMetric").className = `money-value ${stats.balance >= 0 ? "amount-positive" : "amount-negative"}`;
@@ -555,7 +555,7 @@
     $("#forecastBalanceMetric").className = `money-value ${stats.forecastBalance >= 0 ? "amount-positive" : "amount-negative"}`;
     $("#pendingMetric").textContent = formatCurrency(stats.pendingExpenses);
     $("#overdueMetric").textContent = stats.overdueCount
-      ? `${stats.overdueCount} conta(s) vencida(s) Â· ${formatCurrency(stats.overdueTotal)}`
+      ? `${stats.overdueCount} conta(s) vencida(s) · ${formatCurrency(stats.overdueTotal)}`
       : "Nenhuma conta vencida";
     $("#expectedIncomeMetric").textContent = formatCurrency(stats.expectedIncome);
     const futureCommitment = futureCreditCommitment();
@@ -565,11 +565,11 @@
 
     const subtitle = $("#heroSubmessage");
     if (stats.income === 0 && stats.totalExpenses === 0 && stats.invested === 0) {
-      subtitle.textContent = `Configure ${monthLabel(selectedMonth)} para comeÃ§ar a pontuar.`;
+      subtitle.textContent = `Configure ${monthLabel(selectedMonth)} para começar a pontuar.`;
     } else if (stats.balance >= 0) {
-      subtitle.textContent = `O mÃªs estÃ¡ positivo em ${formatCurrency(stats.balance)}.`;
+      subtitle.textContent = `O mês está positivo em ${formatCurrency(stats.balance)}.`;
     } else {
-      subtitle.textContent = `Revise o orÃ§amento: faltam ${formatCurrency(Math.abs(stats.balance))} para equilibrar o mÃªs.`;
+      subtitle.textContent = `Revise o orçamento: faltam ${formatCurrency(Math.abs(stats.balance))} para equilibrar o mês.`;
     }
 
     renderProgress(stats);
@@ -603,7 +603,7 @@
       .slice(0, 4);
 
     if (!items.length) {
-      container.innerHTML = '<p class="empty-state">Nenhum registro neste mÃªs.</p>';
+      container.innerHTML = '<p class="empty-state">Nenhum registro neste mês.</p>';
       return;
     }
 
@@ -611,10 +611,10 @@
       <div class="compact-item">
         <div>
           <strong>${escapeHtml(item.description)}</strong>
-          <small>${formatDate(item.date)} Â· ${escapeHtml(item.category)}</small>
+          <small>${formatDate(item.date)} · ${escapeHtml(item.category)}</small>
         </div>
         <strong class="${item.type === "income" ? "amount-positive" : "amount-negative"}">
-          ${item.type === "income" ? "+" : "âˆ’"}${formatCurrency(item.amount)}
+          ${item.type === "income" ? "+" : "−"}${formatCurrency(item.amount)}
         </strong>
       </div>
     `).join("");
@@ -625,19 +625,19 @@
     const items = [];
 
     if (stats.income === 0 && stats.totalExpenses === 0 && stats.invested === 0) {
-      items.push("Ainda nÃ£o hÃ¡ dados suficientes para analisar este mÃªs.");
+      items.push("Ainda não há dados suficientes para analisar este mês.");
       items.push("Comece definindo sua renda principal, limite de gastos e meta de investimento.");
     } else {
       items.push(stats.balance >= 0
-        ? `O resultado do mÃªs estÃ¡ positivo em ${formatCurrency(stats.balance)} apÃ³s gastos e investimentos.`
-        : `O resultado do mÃªs estÃ¡ negativo em ${formatCurrency(Math.abs(stats.balance))}.`);
+        ? `O resultado do mês está positivo em ${formatCurrency(stats.balance)} após gastos e investimentos.`
+        : `O resultado do mês está negativo em ${formatCurrency(Math.abs(stats.balance))}.`);
 
       if (previous.totalExpenses > 0) {
         const diff = stats.totalExpenses - previous.totalExpenses;
         const pct = Math.abs(diff / previous.totalExpenses) * 100;
         items.push(diff > 0
-          ? `Seus gastos aumentaram ${pct.toFixed(1).replace(".", ",")}% em relaÃ§Ã£o ao mÃªs anterior.`
-          : `Seus gastos diminuÃ­ram ${pct.toFixed(1).replace(".", ",")}% em relaÃ§Ã£o ao mÃªs anterior.`);
+          ? `Seus gastos aumentaram ${pct.toFixed(1).replace(".", ",")}% em relação ao mês anterior.`
+          : `Seus gastos diminuíram ${pct.toFixed(1).replace(".", ",")}% em relação ao mês anterior.`);
       }
 
       const topCategory = Object.entries(stats.categoryTotals).sort((a, b) => b[1] - a[1])[0];
@@ -648,8 +648,8 @@
       if (stats.plan.investmentGoal > 0) {
         const remaining = Math.max(0, stats.plan.investmentGoal - stats.invested);
         items.push(remaining === 0
-          ? `A meta de investimento foi atingida neste mÃªs.`
-          : `Faltam ${formatCurrency(remaining)} para alcanÃ§ar sua meta de investimento.`);
+          ? `A meta de investimento foi atingida neste mês.`
+          : `Faltam ${formatCurrency(remaining)} para alcançar sua meta de investimento.`);
       }
     }
 
@@ -812,7 +812,7 @@
     $("#movementExpenseMetric").textContent = formatCurrency(stats.totalExpenses);
     $("#movementPendingMetric").textContent = formatCurrency(stats.pendingExpenses);
     $("#movementOverdueDetail").textContent = stats.overdueCount
-      ? `${stats.overdueCount} conta(s) vencida(s) Â· ${formatCurrency(stats.overdueTotal)}`
+      ? `${stats.overdueCount} conta(s) vencida(s) · ${formatCurrency(stats.overdueTotal)}`
       : "Nenhuma conta vencida";
     $("#movementBalanceMetric").textContent = formatCurrency(stats.balance);
     $("#movementBalanceMetric").className = `money-value ${stats.balance >= 0 ? "amount-positive" : "amount-negative"}`;
@@ -840,7 +840,7 @@
         <td>${item.type === "expense" ? `<span class="class-badge">${classLabel(item.expenseClass)}</span>` : "Receita extra"}</td>
         <td><span class="status-badge ${item.status}">${item.status === "paid" ? "Pago/recebido" : "Pendente"}</span></td>
         <td class="align-right money-value ${item.type === "income" ? "amount-positive" : "amount-negative"}">
-          ${item.type === "income" ? "+" : "âˆ’"}${formatCurrency(item.amount)}
+          ${item.type === "income" ? "+" : "−"}${formatCurrency(item.amount)}
         </td>
         <td>
           <div class="row-actions">
@@ -854,8 +854,8 @@
     $("#transactionsMobileList").innerHTML = rows.map((item) => `
       <article class="transaction-mobile-card">
         <div class="transaction-mobile-head">
-          <div><strong>${escapeHtml(item.description)}</strong><small>${formatDate(item.date)} Â· ${escapeHtml(item.category)}</small></div>
-          <strong class="money-value ${item.type === "income" ? "amount-positive" : "amount-negative"}">${item.type === "income" ? "+" : "âˆ’"}${formatCurrency(item.amount)}</strong>
+          <div><strong>${escapeHtml(item.description)}</strong><small>${formatDate(item.date)} · ${escapeHtml(item.category)}</small></div>
+          <strong class="money-value ${item.type === "income" ? "amount-positive" : "amount-negative"}">${item.type === "income" ? "+" : "−"}${formatCurrency(item.amount)}</strong>
         </div>
         <div class="transaction-mobile-meta">
           <span class="${item.type === "expense" ? "class-badge" : "class-badge income-class"}">${item.type === "expense" ? classLabel(item.expenseClass) : "Receita extra"}</span>
@@ -878,7 +878,7 @@
       const spent = Number(stats.categoryTotals[category] || 0);
       const pct = limit > 0 ? spent / limit * 100 : 0;
       const status = pct >= 100 ? "danger" : pct >= 90 ? "warning" : pct >= 70 ? "attention" : "";
-      return `<div class="category-budget-row ${status}"><div><strong>${escapeHtml(category)}</strong><small>${limit > 0 ? `${formatCurrency(spent)} de ${formatCurrency(limit)}` : "Sem limite definido"}</small></div><div class="progress-track"><div class="progress-fill" style="width:${Math.min(100, pct)}%"></div></div><span>${limit > 0 ? `${pct.toFixed(0)}%` : "â€”"}</span></div>`;
+      return `<div class="category-budget-row ${status}"><div><strong>${escapeHtml(category)}</strong><small>${limit > 0 ? `${formatCurrency(spent)} de ${formatCurrency(limit)}` : "Sem limite definido"}</small></div><div class="progress-track"><div class="progress-fill" style="width:${Math.min(100, pct)}%"></div></div><span>${limit > 0 ? `${pct.toFixed(0)}%` : "—"}</span></div>`;
     }).join("");
   }
 
@@ -894,13 +894,13 @@
     const freq = { monthly: "Mensal", weekly: "Semanal", annual: "Anual" };
     $("#recurringList").innerHTML = state.recurrences.length ? state.recurrences.map((item) => {
       const skipped = (item.skippedMonths || []).includes(selectedMonth);
-      return `<div class="management-item"><div><strong>${escapeHtml(item.description)}</strong><small>${freq[item.frequency]} Â· vence dia ${item.dueDay} Â· ${formatCurrency(item.amount)}</small></div><div class="row-actions"><button class="row-action" data-skip-recurrence="${item.id}" type="button">${skipped ? "Reativar mÃªs" : "Ignorar este mÃªs"}</button><button class="row-action" data-delete-recurrence="${item.id}" type="button">Excluir</button></div></div>`;
-    }).join("") : '<p class="empty-state">Nenhuma recorrÃªncia cadastrada.</p>';
+      return `<div class="management-item"><div><strong>${escapeHtml(item.description)}</strong><small>${freq[item.frequency]} · vence dia ${item.dueDay} · ${formatCurrency(item.amount)}</small></div><div class="row-actions"><button class="row-action" data-skip-recurrence="${item.id}" type="button">${skipped ? "Reativar mês" : "Ignorar este mês"}</button><button class="row-action" data-delete-recurrence="${item.id}" type="button">Excluir</button></div></div>`;
+    }).join("") : '<p class="empty-state">Nenhuma recorrência cadastrada.</p>';
   }
 
   function renderClosures() {
     const closures = Object.values(state.closures).sort((a, b) => b.month.localeCompare(a.month));
-    $("#closureList").innerHTML = closures.length ? closures.map((item) => `<div class="closure-item"><div><strong>${monthLabel(item.month)}</strong><small>Saldo ${formatCurrency(item.balance)} Â· pontuaÃ§Ã£o ${item.score}/100</small></div><button class="row-action" data-download-closure="${item.month}" type="button">Baixar PDF</button></div>`).join("") : '<p class="empty-state">Nenhum mÃªs fechado.</p>';
+    $("#closureList").innerHTML = closures.length ? closures.map((item) => `<div class="closure-item"><div><strong>${monthLabel(item.month)}</strong><small>Saldo ${formatCurrency(item.balance)} · pontuação ${item.score}/100</small></div><button class="row-action" data-download-closure="${item.month}" type="button">Baixar PDF</button></div>`).join("") : '<p class="empty-state">Nenhum mês fechado.</p>';
   }
 
   function closeSelectedMonth() {
@@ -914,10 +914,10 @@
       `Despesas: ${formatCurrency(stats.totalExpenses)}`,
       `Investimentos: ${formatCurrency(stats.invested)}`,
       `Saldo final: ${formatCurrency(stats.balance)}`,
-      `PendÃªncias a transferir: ${pendingCount} (${formatCurrency(stats.pendingExpenses)})`,
-      `PontuaÃ§Ã£o: ${stats.score}/100`,
+      `Pendências a transferir: ${pendingCount} (${formatCurrency(stats.pendingExpenses)})`,
+      `Pontuação: ${stats.score}/100`,
       "",
-      alreadyClosed ? "O resumo anterior serÃ¡ substituÃ­do." : "Um resumo permanente e o relatÃ³rio PDF serÃ£o gerados."
+      alreadyClosed ? "O resumo anterior será substituído." : "Um resumo permanente e o relatório PDF serão gerados."
     ].join("\n");
     if (!confirm(review)) return;
     const previous = getMonthStats(getPreviousMonthKey(selectedMonth));
@@ -927,9 +927,9 @@
       const next = addMonths(new Date(`${item.date}T12:00:00`), 1);
       const nextDate = safeDate(next.getFullYear(), next.getMonth(), new Date(`${item.date}T12:00:00`).getDate());
       const transferKey = `carry_${item.id}_${monthFromDate(toISO(nextDate))}`;
-      if (!state.transactions.some((tx) => tx.transferKey === transferKey)) state.transactions.push({ ...item, id: generateId("tx"), date: toISO(nextDate), transferKey, notes: `${item.notes ? `${item.notes} Â· ` : ""}Transferido de ${monthLabel(selectedMonth)}` });
+      if (!state.transactions.some((tx) => tx.transferKey === transferKey)) state.transactions.push({ ...item, id: generateId("tx"), date: toISO(nextDate), transferKey, notes: `${item.notes ? `${item.notes} · ` : ""}Transferido de ${monthLabel(selectedMonth)}` });
     });
-    saveState(); renderAll(); downloadClosurePdf(selectedMonth); showToast("MÃªs fechado e relatÃ³rio gerado.");
+    saveState(); renderAll(); downloadClosurePdf(selectedMonth); showToast("Mês fechado e relatório gerado.");
   }
 
   function pdfEscape(value) { return String(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\x20-\x7E]/g, " ").replace(/[()\\]/g, "\\$&"); }
@@ -956,14 +956,14 @@
 
     commands.push(pdfRect(0, 642, 595, 200, "0.12 0.39 0.29"));
     commands.push(pdfText("DESPESA MENSAL", 42, 795, 10, "F2", "0.78 0.91 0.85"));
-    commands.push(pdfText("RelatÃ³rio mensal", 42, 750, 28, "F2", "1 1 1"));
+    commands.push(pdfText("Relatório mensal", 42, 750, 28, "F2", "1 1 1"));
     commands.push(pdfText(monthLabel(month), 42, 720, 14, "F1", "0.88 0.96 0.92"));
     commands.push(pdfRect(431, 706, 122, 72, "0.24 0.52 0.41"));
-    commands.push(pdfText("SAÃšDE FINANCEIRA", 446, 756, 7, "F2", "0.82 0.93 0.88"));
+    commands.push(pdfText("SAÚDE FINANCEIRA", 446, 756, 7, "F2", "0.82 0.93 0.88"));
     commands.push(pdfText(`${item.score}/100`, 446, 730, 20, "F2", "1 1 1"));
     commands.push(pdfText(item.level || "", 446, 714, 8, "F1", "0.90 0.96 0.93"));
 
-    commands.push(pdfText("Resumo do perÃ­odo", 42, 610, 16, "F2"));
+    commands.push(pdfText("Resumo do período", 42, 610, 16, "F2"));
     card(42, 515, "Receitas", pdfCurrency(item.income), "0.12 0.48 0.34");
     card(306, 515, "Despesas", pdfCurrency(item.expenses), "0.66 0.22 0.27");
     card(42, 427, "Investimentos", pdfCurrency(item.invested), "0.25 0.38 0.68");
@@ -973,12 +973,12 @@
     commands.push(pdfRect(42, 315, 511, 52, "0.94 0.96 0.95"));
     commands.push(pdfText("SALDO PREVISTO", 58, 346, 8, "F2", "0.42 0.47 0.44"));
     commands.push(pdfText(pdfCurrency(item.forecastBalance), 58, 326, 14, "F2"));
-    commands.push(pdfText("PENDÃŠNCIAS TRANSFERIDAS", 305, 346, 8, "F2", "0.42 0.47 0.44"));
+    commands.push(pdfText("PENDÊNCIAS TRANSFERIDAS", 305, 346, 8, "F2", "0.42 0.47 0.44"));
     commands.push(pdfText(pdfCurrency(item.pending), 305, 326, 14, "F2"));
 
-    commands.push(pdfText("Maiores variaÃ§Ãµes por categoria", 42, 276, 16, "F2"));
+    commands.push(pdfText("Maiores variações por categoria", 42, 276, 16, "F2"));
     const changes = (item.categoryChanges || []).slice(0, 3);
-    if (!changes.length) commands.push(pdfText("NÃ£o houve variaÃ§Ãµes relevantes neste perÃ­odo.", 42, 242, 11, "F1", "0.42 0.47 0.44"));
+    if (!changes.length) commands.push(pdfText("Não houve variações relevantes neste período.", 42, 242, 11, "F1", "0.42 0.47 0.44"));
     changes.forEach((change, index) => {
       const y = 236 - index * 38;
       const changePositive = Number(change.change || 0) <= 0;
@@ -1011,7 +1011,7 @@
   }
 
   function classLabel(value) {
-    return ({ fixed: "Fixa", variable: "VariÃ¡vel", recurring: "Recorrente" })[value] || "â€”";
+    return ({ fixed: "Fixa", variable: "Variável", recurring: "Recorrente" })[value] || "—";
   }
 
   function renderInvestments() {
@@ -1031,13 +1031,13 @@
     const movementButton = $("#openInvestmentEventModal");
     movementButton.disabled = rows.length === 0;
     $("#investmentEventHint").textContent = rows.length
-      ? "Registre aportes, resgates, rendimentos ou atualizaÃ§Ãµes de valor."
-      : "Cadastre um investimento antes de registrar movimentaÃ§Ãµes.";
+      ? "Registre aportes, resgates, rendimentos ou atualizações de valor."
+      : "Cadastre um investimento antes de registrar movimentações.";
 
     const valuationIssues = rows.map((item) => ({ item, totals: getAssetTotals(item.id) })).filter(({ totals: asset }) => asset.isStale || asset.isEstimated);
     const valuationAlert = $("#investmentValuationAlert");
     valuationAlert.classList.toggle("hidden", valuationIssues.length === 0);
-    valuationAlert.innerHTML = valuationIssues.length ? `<strong>Valores que merecem revisÃ£o</strong><span>${valuationIssues.map(({ item, totals: asset }) => `${escapeHtml(item.name)}: ${asset.isStale ? "valor atual desatualizado" : "valor estimado apÃ³s movimentaÃ§Ãµes"}`).join(" Â· ")}</span>` : "";
+    valuationAlert.innerHTML = valuationIssues.length ? `<strong>Valores que merecem revisão</strong><span>${valuationIssues.map(({ item, totals: asset }) => `${escapeHtml(item.name)}: ${asset.isStale ? "valor atual desatualizado" : "valor estimado após movimentações"}`).join(" · ")}</span>` : "";
 
     $("#investmentsEmpty").classList.toggle("hidden", rows.length > 0);
     $("#investmentsTableBody").innerHTML = rows.map((item) => {
@@ -1046,10 +1046,10 @@
       const unitValue = quantity > 0 ? asset.current / quantity : 0;
       return `
         <tr>
-          <td><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.institution || "â€”")}</small></td>
+          <td><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.institution || "—")}</small></td>
           <td>${escapeHtml(item.type)}</td>
-          <td>${escapeHtml(item.objective || "â€”")}</td>
-          <td class="align-right">${quantity > 0 ? formatQuantity(quantity) : "â€”"}</td>
+          <td>${escapeHtml(item.objective || "—")}</td>
+          <td class="align-right">${quantity > 0 ? formatQuantity(quantity) : "—"}</td>
           <td class="align-right money-value">${formatCurrency(asset.contributions)}</td>
           <td class="align-right money-value">${formatCurrency(asset.withdrawals)}</td>
           <td class="align-right money-value amount-positive">${formatCurrency(asset.income)}</td>
@@ -1068,7 +1068,7 @@
     $("#investmentEventsEmpty").classList.toggle("hidden", rows.length > 0);
     $("#investmentEventsBody").innerHTML = rows.map((event) => {
       const asset = state.investments.find((item) => item.id === event.assetId);
-      return `<tr><td>${formatDate(event.date)}</td><td>${escapeHtml(asset?.name || "Investimento removido")}</td><td>${label[event.type] || event.type}</td><td class="align-right money-value">${formatCurrency(event.amount)}</td><td>${escapeHtml(event.notes || "â€”")}</td><td><button class="row-action" data-delete-investment-event="${event.id}" type="button">Excluir</button></td></tr>`;
+      return `<tr><td>${formatDate(event.date)}</td><td>${escapeHtml(asset?.name || "Investimento removido")}</td><td>${label[event.type] || event.type}</td><td class="align-right money-value">${formatCurrency(event.amount)}</td><td>${escapeHtml(event.notes || "—")}</td><td><button class="row-action" data-delete-investment-event="${event.id}" type="button">Excluir</button></td></tr>`;
     }).join("");
   }
 
@@ -1112,14 +1112,14 @@
     const monthsWithRecords = allMonths.filter((month) => monthTransactions(month).length > 0).length;
 
     return [
-      { icon: "âœ“", title: "Primeiro mÃªs positivo", description: "Feche um mÃªs com saldo igual ou superior a zero.", unlocked: positiveMonths >= 1 },
-      { icon: "âš¡", title: "Trinca positiva", description: "Complete trÃªs meses positivos.", unlocked: positiveMonths >= 3 },
-      { icon: "â—†", title: "Primeiro aporte", description: "Registre seu primeiro investimento.", unlocked: totalInvested > 0 },
-      { icon: "â—Ž", title: "Meta alcanÃ§ada", description: "Atinja a meta de investimento do mÃªs.", unlocked: monthStats.plan.investmentGoal > 0 && monthStats.invested >= monthStats.plan.investmentGoal },
-      { icon: "â–£", title: "OrÃ§amento respeitado", description: "Fique dentro do limite total de gastos.", unlocked: monthStats.plan.budget > 0 && monthStats.totalExpenses <= monthStats.plan.budget },
-      { icon: "â˜…", title: "MÃªs impecÃ¡vel", description: "Alcance 90 pontos ou mais.", unlocked: monthStats.score >= 90 },
-      { icon: "â†—", title: "ConsistÃªncia", description: "Registre movimentaÃ§Ãµes em trÃªs meses diferentes.", unlocked: monthsWithRecords >= 3 },
-      { icon: "âˆž", title: "Investidor constante", description: "Some R$ 5.000 em aportes registrados.", unlocked: totalInvested >= 5000 }
+      { icon: "✓", title: "Primeiro mês positivo", description: "Feche um mês com saldo igual ou superior a zero.", unlocked: positiveMonths >= 1 },
+      { icon: "⚡", title: "Trinca positiva", description: "Complete três meses positivos.", unlocked: positiveMonths >= 3 },
+      { icon: "◆", title: "Primeiro aporte", description: "Registre seu primeiro investimento.", unlocked: totalInvested > 0 },
+      { icon: "◎", title: "Meta alcançada", description: "Atinja a meta de investimento do mês.", unlocked: monthStats.plan.investmentGoal > 0 && monthStats.invested >= monthStats.plan.investmentGoal },
+      { icon: "▣", title: "Orçamento respeitado", description: "Fique dentro do limite total de gastos.", unlocked: monthStats.plan.budget > 0 && monthStats.totalExpenses <= monthStats.plan.budget },
+      { icon: "★", title: "Mês impecável", description: "Alcance 90 pontos ou mais.", unlocked: monthStats.score >= 90 },
+      { icon: "↗", title: "Consistência", description: "Registre movimentações em três meses diferentes.", unlocked: monthsWithRecords >= 3 },
+      { icon: "∞", title: "Investidor constante", description: "Some R$ 5.000 em aportes registrados.", unlocked: totalInvested >= 5000 }
     ];
   }
 
@@ -1149,7 +1149,7 @@
     $("#scoreBreakdown").innerHTML = stats.scoreItems.map((item) => `
       <div class="challenge-item ${item.completed ? "completed" : ""}">
         <div>
-          <span class="challenge-check">${item.completed ? "âœ“" : "â—‹"}</span>
+          <span class="challenge-check">${item.completed ? "✓" : "○"}</span>
           <span>${escapeHtml(item.label)}</span>
         </div>
         <span class="challenge-points">+${item.points}</span>
@@ -1176,7 +1176,7 @@
     $("#transactionStatus").value = "paid";
     $("#transactionInstallmentCount").value = "1";
     $("#transactionInstallmentCount").disabled = false;
-    $("#transactionModalTitle").textContent = id ? "Editar movimentaÃ§Ã£o" : "Adicionar movimentaÃ§Ã£o";
+    $("#transactionModalTitle").textContent = id ? "Editar movimentação" : "Adicionar movimentação";
     populateCategories("expense");
     toggleExpenseFields();
 
@@ -1261,7 +1261,7 @@
   function handleRecurringSubmit(event) {
     event.preventDefault();
     const item = { id: generateId("rec"), type: $("#recurringType").value, frequency: $("#recurringFrequency").value, description: $("#recurringDescription").value.trim(), amount: Number($("#recurringAmount").value), category: $("#recurringCategory").value, start: $("#recurringStart").value, end: $("#recurringEnd").value || null, dueDay: Number($("#recurringDueDay").value || 1), status: $("#recurringStatus").value, skippedMonths: [], active: true };
-    state.recurrences.push(item); generateRecurringTransactions(); saveState(); renderAll(); renderRecurringList(); $("#recurringForm").reset(); $("#recurringStart").value = todayISO(); showToast("RecorrÃªncia criada e lanÃ§amentos gerados.");
+    state.recurrences.push(item); generateRecurringTransactions(); saveState(); renderAll(); renderRecurringList(); $("#recurringForm").reset(); $("#recurringStart").value = todayISO(); showToast("Recorrência criada e lançamentos gerados.");
   }
 
   function createInstallmentPurchase({ purchaseDate, count, total, description, category, expenseClass, notes }) {
@@ -1279,7 +1279,7 @@
         description: count > 1 ? `${description} (${index + 1}/${count})` : description,
         amount, category, expenseClass, status: "pending", paymentMethod: "credit",
         installmentGroup: group, installmentNumber: index + 1, installmentCount: count,
-        notes: notes || (count > 1 ? "Compra parcelada" : "Compra no crÃ©dito")
+        notes: notes || (count > 1 ? "Compra parcelada" : "Compra no crédito")
       });
     }
   }
@@ -1299,11 +1299,11 @@
   }
 
   function handleInvestmentEventSubmit(event) {
-    event.preventDefault(); const assetId = $("#investmentEventAsset").value; if (!state.investments.some((asset) => asset.id === assetId)) return alert("Cadastre um investimento primeiro."); state.investmentEvents.push({ id: generateId("evt"), assetId, type: $("#investmentEventType").value, date: $("#investmentEventDate").value, amount: Number($("#investmentEventAmount").value), notes: $("#investmentEventNotes").value.trim(), createdAt: new Date().toISOString() }); saveState(); $("#investmentEventModal").close(); renderAll(); showToast("MovimentaÃ§Ã£o do investimento registrada.");
+    event.preventDefault(); const assetId = $("#investmentEventAsset").value; if (!state.investments.some((asset) => asset.id === assetId)) return alert("Cadastre um investimento primeiro."); state.investmentEvents.push({ id: generateId("evt"), assetId, type: $("#investmentEventType").value, date: $("#investmentEventDate").value, amount: Number($("#investmentEventAmount").value), notes: $("#investmentEventNotes").value.trim(), createdAt: new Date().toISOString() }); saveState(); $("#investmentEventModal").close(); renderAll(); showToast("Movimentação do investimento registrada.");
   }
 
   function handleOnboardingSubmit(event) {
-    event.preventDefault(); state.plans[selectedMonth] = { ...getPlan(), salary: Number($("#onboardingSalary").value || 0), budget: Number($("#onboardingBudget").value || 0), investmentGoal: Number($("#onboardingInvestment").value || 0) }; const recurringName = $("#onboardingRecurringName").value.trim(); if (recurringName) state.recurrences.push({ id: generateId("rec"), type: "expense", frequency: "monthly", description: recurringName, amount: Number($("#onboardingRecurringAmount").value || 0), category: "Moradia", start: todayISO(), end: null, dueDay: Number($("#onboardingRecurringDay").value || 10), status: "pending", skippedMonths: [], active: true }); state.onboardingCompleted = true; generateRecurringTransactions(); saveState(); $("#onboardingModal").close(); renderAll(); showToast("ConfiguraÃ§Ã£o inicial concluÃ­da.");
+    event.preventDefault(); state.plans[selectedMonth] = { ...getPlan(), salary: Number($("#onboardingSalary").value || 0), budget: Number($("#onboardingBudget").value || 0), investmentGoal: Number($("#onboardingInvestment").value || 0) }; const recurringName = $("#onboardingRecurringName").value.trim(); if (recurringName) state.recurrences.push({ id: generateId("rec"), type: "expense", frequency: "monthly", description: recurringName, amount: Number($("#onboardingRecurringAmount").value || 0), category: "Moradia", start: todayISO(), end: null, dueDay: Number($("#onboardingRecurringDay").value || 10), status: "pending", skippedMonths: [], active: true }); state.onboardingCompleted = true; generateRecurringTransactions(); saveState(); $("#onboardingModal").close(); renderAll(); showToast("Configuração inicial concluída.");
   }
 
   function handleTransactionSubmit(event) {
@@ -1326,7 +1326,7 @@
       saveState();
       elements.transactionModal.close();
       renderAll();
-      showToast(count > 1 ? `${count} parcelas distribuÃ­das nas faturas.` : "Compra adicionada Ã  fatura.");
+      showToast(count > 1 ? `${count} parcelas distribuídas nas faturas.` : "Compra adicionada à fatura.");
       return;
     }
 
@@ -1362,7 +1362,7 @@
     selectedMonth = monthFromDate(item.date);
     elements.monthSelector.value = selectedMonth;
     renderAll();
-    showToast(existingIndex >= 0 ? "MovimentaÃ§Ã£o atualizada." : "MovimentaÃ§Ã£o adicionada.");
+    showToast(existingIndex >= 0 ? "Movimentação atualizada." : "Movimentação adicionada.");
   }
 
   function handleInvestmentSubmit(event) {
@@ -1437,17 +1437,17 @@
     saveState();
     elements.planModal.close();
     renderAll();
-    showToast("Planejamento do mÃªs salvo.");
+    showToast("Planejamento do mês salvo.");
   }
 
   function deleteTransaction(id) {
     const item = state.transactions.find((entry) => entry.id === id);
     if (!item) return;
-    if (!confirm(`Excluir "${item.description}" no valor de ${formatCurrency(item.amount)}? Esta aÃ§Ã£o nÃ£o pode ser desfeita.`)) return;
+    if (!confirm(`Excluir "${item.description}" no valor de ${formatCurrency(item.amount)}? Esta ação não pode ser desfeita.`)) return;
     state.transactions = state.transactions.filter((item) => item.id !== id);
     saveState();
     renderAll();
-    showToast("MovimentaÃ§Ã£o excluÃ­da.");
+    showToast("Movimentação excluída.");
   }
 
   function deleteInvestment(id) {
@@ -1456,12 +1456,12 @@
     state.investmentEvents = state.investmentEvents.filter((item) => item.assetId !== id);
     saveState();
     renderAll();
-    showToast("Investimento excluÃ­do.");
+    showToast("Investimento excluído.");
   }
 
   function navigate(section) {
     const titles = {
-      dashboard: "VisÃ£o geral",
+      dashboard: "Visão geral",
       movements: "Despesas",
       investments: "Investimentos",
       goals: "Metas e conquistas",
@@ -1495,20 +1495,20 @@
       try {
         const parsed = JSON.parse(reader.result);
         if (!parsed || !Array.isArray(parsed.transactions) || !Array.isArray(parsed.investments)) {
-          throw new Error("Formato invÃ¡lido");
+          throw new Error("Formato inválido");
         }
         const summary = [
           "Importar este backup e substituir os dados atuais?",
           "",
-          `MovimentaÃ§Ãµes: ${parsed.transactions.length}`,
+          `Movimentações: ${parsed.transactions.length}`,
           `Investimentos: ${parsed.investments.length}`,
-          `RecorrÃªncias: ${Array.isArray(parsed.recurrences) ? parsed.recurrences.length : 0}`,
+          `Recorrências: ${Array.isArray(parsed.recurrences) ? parsed.recurrences.length : 0}`,
           `Fechamentos: ${Object.keys(parsed.closures || {}).length}`,
           "",
-          "RecomendaÃ§Ã£o: exporte um backup dos dados atuais antes de continuar."
+          "Recomendação: exporte um backup dos dados atuais antes de continuar."
         ].join("\n");
         if (!confirm(summary)) {
-          showToast("ImportaÃ§Ã£o cancelada. Seus dados foram mantidos.");
+          showToast("Importação cancelada. Seus dados foram mantidos.");
           return;
         }
         state = {
@@ -1528,14 +1528,14 @@
         showToast("Backup importado com sucesso.");
       } catch (error) {
         console.error(error);
-        alert("NÃ£o foi possÃ­vel importar este arquivo. Verifique se ele Ã© um backup vÃ¡lido do Despesa Mensal.");
+        alert("Não foi possível importar este arquivo. Verifique se ele é um backup válido do Despesa Mensal.");
       }
     };
     reader.readAsText(file);
   }
 
   function clearData() {
-    const confirmed = confirm("Esta aÃ§Ã£o apagarÃ¡ todos os dados financeiros salvos neste navegador. Continuar?");
+    const confirmed = confirm("Esta ação apagará todos os dados financeiros salvos neste navegador. Continuar?");
     if (!confirmed) return;
     state = structuredClone(defaultState);
     saveState();
@@ -1640,8 +1640,8 @@
     $("#investmentEventsBody").addEventListener("click", (event) => { const remove = event.target.closest("[data-delete-investment-event]"); if (remove && confirm("Excluir este evento?")) { state.investmentEvents = state.investmentEvents.filter((item) => item.id !== remove.dataset.deleteInvestmentEvent); saveState(); renderAll(); } });
     $("#recurringList").addEventListener("click", (event) => {
       const skip = event.target.closest("[data-skip-recurrence]"); const remove = event.target.closest("[data-delete-recurrence]");
-      if (skip) { const item = state.recurrences.find((entry) => entry.id === skip.dataset.skipRecurrence); if (!item) return; item.skippedMonths ||= []; const wasSkipped = item.skippedMonths.includes(selectedMonth); if (wasSkipped) item.skippedMonths = item.skippedMonths.filter((month) => month !== selectedMonth); else { item.skippedMonths.push(selectedMonth); state.transactions = state.transactions.filter((tx) => !(tx.recurrenceId === item.id && monthFromDate(tx.date) === selectedMonth && tx.status === "pending")); } generateRecurringTransactions(); saveState(); renderAll(); renderRecurringList(); showToast(wasSkipped ? `RecorrÃªncia reativada em ${monthLabel(selectedMonth)}.` : `RecorrÃªncia ignorada em ${monthLabel(selectedMonth)}.`); }
-      if (remove && confirm("Excluir esta recorrÃªncia e os lanÃ§amentos futuros pendentes?")) { const id = remove.dataset.deleteRecurrence; state.recurrences = state.recurrences.filter((item) => item.id !== id); state.transactions = state.transactions.filter((tx) => !(tx.recurrenceId === id && tx.status === "pending" && tx.date >= todayISO())); saveState(); renderAll(); renderRecurringList(); }
+      if (skip) { const item = state.recurrences.find((entry) => entry.id === skip.dataset.skipRecurrence); if (!item) return; item.skippedMonths ||= []; const wasSkipped = item.skippedMonths.includes(selectedMonth); if (wasSkipped) item.skippedMonths = item.skippedMonths.filter((month) => month !== selectedMonth); else { item.skippedMonths.push(selectedMonth); state.transactions = state.transactions.filter((tx) => !(tx.recurrenceId === item.id && monthFromDate(tx.date) === selectedMonth && tx.status === "pending")); } generateRecurringTransactions(); saveState(); renderAll(); renderRecurringList(); showToast(wasSkipped ? `Recorrência reativada em ${monthLabel(selectedMonth)}.` : `Recorrência ignorada em ${monthLabel(selectedMonth)}.`); }
+      if (remove && confirm("Excluir esta recorrência e os lançamentos futuros pendentes?")) { const id = remove.dataset.deleteRecurrence; state.recurrences = state.recurrences.filter((item) => item.id !== id); state.transactions = state.transactions.filter((tx) => !(tx.recurrenceId === id && tx.status === "pending" && tx.date >= todayISO())); saveState(); renderAll(); renderRecurringList(); }
     });
     $("#closureList").addEventListener("click", (event) => { const download = event.target.closest("[data-download-closure]"); if (download) downloadClosurePdf(download.dataset.downloadClosure); });
 
