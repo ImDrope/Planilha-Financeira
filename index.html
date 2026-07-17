@@ -212,7 +212,7 @@
         <div class="section-title-row">
           <div><p class="eyebrow">Planejamento mensal</p><h2>Despesas</h2></div>
           <div class="panel-actions">
-            <button id="openRecurringModal" class="soft-action-button" type="button">↻ Recorrências</button>
+            <button id="openRecurringModal" class="soft-action-button" type="button">+ Recorrências</button>
             <button id="openPlanModalMovement" class="soft-action-button" type="button"><span aria-hidden="true">✎</span> Editar planejamento</button>
           </div>
         </div>
@@ -240,7 +240,12 @@
             <table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Classificação</th><th>Status</th><th class="align-right">Valor</th><th aria-label="Ações"></th></tr></thead><tbody id="transactionsTableBody"></tbody></table>
           </div>
           <div id="transactionsMobileList" class="transactions-mobile-list"></div>
-          <p id="transactionsEmpty" class="empty-state">Nenhuma movimentação encontrada.</p>
+          <div id="transactionsEmpty" class="empty-state empty-state-action">
+            <span class="empty-state-icon" aria-hidden="true">↔</span>
+            <strong>Nenhuma movimentação encontrada</strong>
+            <span>Registre uma receita ou despesa para começar a acompanhar o mês.</span>
+            <button id="emptyAddTransaction" class="secondary-button" type="button">Adicionar primeira movimentação</button>
+          </div>
         </article>
 
         <details class="secondary-section-disclosure">
@@ -302,8 +307,13 @@
 
         <article class="panel table-panel reference-table-panel">
           <div class="panel-heading table-card-heading"><div><p class="eyebrow">Carteira cadastrada</p><h3>Investimentos</h3></div></div>
-          <div class="table-wrap"><table><thead><tr><th>Investimento</th><th>Tipo</th><th>Objetivo</th><th class="align-right">Aportes</th><th class="align-right">Resgates</th><th class="align-right">Rendimentos</th><th class="align-right">Valor atual</th><th class="align-right">Rentabilidade</th><th aria-label="Ações"></th></tr></thead><tbody id="investmentsTableBody"></tbody></table></div>
-          <p id="investmentsEmpty" class="empty-state">Nenhum investimento cadastrado.</p>
+          <div class="table-wrap"><table><thead><tr><th>Investimento</th><th>Tipo</th><th>Objetivo</th><th class="align-right">Quantidade</th><th class="align-right">Aportes</th><th class="align-right">Resgates</th><th class="align-right">Rendimentos</th><th class="align-right">Valor atual</th><th class="align-right">Rentabilidade</th><th aria-label="Ações"></th></tr></thead><tbody id="investmentsTableBody"></tbody></table></div>
+          <div id="investmentsEmpty" class="empty-state empty-state-action">
+            <span class="empty-state-icon" aria-hidden="true">⌁</span>
+            <strong>Você ainda não cadastrou investimentos</strong>
+            <span>Cadastre o primeiro ativo para acompanhar aportes, quantidade e evolução patrimonial.</span>
+            <button id="emptyAddInvestment" class="secondary-button" type="button">Cadastrar primeiro investimento</button>
+          </div>
         </article>
         <article class="panel table-panel reference-table-panel">
           <div class="panel-heading table-card-heading"><div><p class="eyebrow">Histórico</p><h3>Eventos dos investimentos</h3></div></div>
@@ -521,12 +531,18 @@
           <input id="investmentObjective" type="text" maxlength="80" placeholder="Ex.: Reserva, viagem, aposentadoria" />
         </label>
         <label>
-          <span>Valor aportado</span>
+          <span>Valor total aportado</span>
           <input id="investmentAmount" type="number" min="0" step="any" required />
         </label>
         <label>
-          <span>Valor atual informado</span>
+          <span>Quantidade de cotas ou moedas</span>
+          <input id="investmentQuantity" type="number" min="0" step="any" placeholder="Ex.: 10 ou 0,0025" />
+          <small class="field-help">Opcional. Pode ser atualizado ao comprar ou vender unidades.</small>
+        </label>
+        <label>
+          <span>Valor atual total da posição</span>
           <input id="investmentCurrentValue" type="number" min="0" step="any" />
+          <small class="field-help">Informe o valor total, não apenas o preço de uma cota ou moeda.</small>
         </label>
         <label class="full-span">
           <span>Observações</span>
