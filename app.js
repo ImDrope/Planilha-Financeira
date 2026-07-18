@@ -1321,7 +1321,18 @@
   }
 
   function handleOnboardingSubmit(event) {
-    event.preventDefault(); state.plans[selectedMonth] = { ...getPlan(), salary: Number($("#onboardingSalary").value || 0), budget: Number($("#onboardingBudget").value || 0), investmentGoal: Number($("#onboardingInvestment").value || 0) }; const recurringName = $("#onboardingRecurringName").value.trim(); if (recurringName) state.recurrences.push({ id: generateId("rec"), type: "expense", frequency: "monthly", description: recurringName, amount: Number($("#onboardingRecurringAmount").value || 0), category: "Moradia", start: todayISO(), end: null, dueDay: Number($("#onboardingRecurringDay").value || 10), status: "pending", skippedMonths: [], active: true }); state.onboardingCompleted = true; generateRecurringTransactions(); saveState(); $("#onboardingModal").close(); renderAll(); showToast("Configuração inicial concluída.");
+    event.preventDefault();
+    state.plans[selectedMonth] = {
+      ...getPlan(),
+      salary: Number($("#onboardingSalary").value || 0),
+      budget: Number($("#onboardingBudget").value || 0),
+      investmentGoal: Number($("#onboardingInvestment").value || 0)
+    };
+    state.onboardingCompleted = true;
+    saveState();
+    $("#onboardingModal").close();
+    renderAll();
+    showToast("Configuração inicial concluída.");
   }
 
   function handleTransactionSubmit(event) {

@@ -15,7 +15,7 @@
     <symbol id="icon-expenses" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6M9 16h3"/></symbol>
     <symbol id="icon-investments" viewBox="0 0 24 24"><path d="M4 18 9 13l4 3 7-9"/><path d="M15 7h5v5"/></symbol>
     <symbol id="icon-goals" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
-    <symbol id="icon-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24"><path d="M9.6 3.4 10.2 2h3.6l.6 1.4 1.7.7 1.4-.6 2.5 2.5-.6 1.4.7 1.7 1.4.6v3.6l-1.4.6-.7 1.7.6 1.4-2.5 2.5-1.4-.6-1.7.7-.6 1.4h-3.6l-.6-1.4-1.7-.7-1.4.6L4 18l.6-1.4-.7-1.7-1.4-.6v-3.6l1.4-.6.7-1.7L4 7l2.5-2.5 1.4.6 1.7-.7Z"/><circle cx="12" cy="12" r="3"/></symbol>
     <symbol id="icon-eye" viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></symbol>
     <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="icon-calendar-check" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18M8 15l2.5 2.5L16 13"/></symbol>
@@ -679,10 +679,8 @@
         <label><span>Renda principal</span><input id="onboardingSalary" type="number" min="0" step="0.01" /></label>
         <label><span>Limite mensal</span><input id="onboardingBudget" type="number" min="0" step="0.01" /></label>
         <label><span>Meta de investimento</span><input id="onboardingInvestment" type="number" min="0" step="0.01" /></label>
-        <label><span>Primeira despesa recorrente</span><input id="onboardingRecurringName" maxlength="80" placeholder="Ex.: Aluguel (opcional)" /></label>
-        <label><span>Valor da recorrência</span><input id="onboardingRecurringAmount" type="number" min="0" step="0.01" /></label>
-        <label><span>Dia do vencimento</span><input id="onboardingRecurringDay" type="number" min="1" max="31" value="10" /></label>
       </div>
+      <p class="onboarding-followup">Depois, você poderá cadastrar contas recorrentes e seus vencimentos diretamente na aba Despesas.</p>
       <div class="modal-actions"><button id="skipOnboarding" class="ghost-button" type="button">Configurar depois</button><button class="primary-button" type="submit">Começar</button></div>
     </form>
   </dialog>
