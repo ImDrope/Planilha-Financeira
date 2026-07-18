@@ -34,6 +34,10 @@
     <symbol id="icon-document" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6V3Z"/><path d="M14 3v5h5M9 12h6M9 16h6"/></symbol>
     <symbol id="icon-logout" viewBox="0 0 24 24"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></symbol>
     <symbol id="icon-key" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4"/><path d="M12 12h9M17 12v3M20 12v2"/></symbol>
+    <symbol id="icon-liquidity" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="M7 10h6M7 14h4M16 11.5h2"/></symbol>
+    <symbol id="icon-contribution" viewBox="0 0 24 24"><path d="M12 3v11M8 10l4 4 4-4"/><path d="M5 17v3h14v-3"/></symbol>
+    <symbol id="icon-portfolio" viewBox="0 0 24 24"><path d="M4 20V10M10 20v-6M16 20V7"/><path d="m4 8 5-4 4 3 7-4M17 3h3v3"/></symbol>
+    <symbol id="icon-result" viewBox="0 0 24 24"><path d="M4 7h7M7.5 3.5v7M14 17h6"/><circle cx="12" cy="12" r="9"/></symbol>
   </svg>
   <div class="app-shell">
     <aside class="sidebar" aria-label="Navegação principal">
@@ -336,10 +340,10 @@
         </article>
 
         <div class="portfolio-card-grid">
-          <article class="portfolio-stat-card liquidity"><div class="portfolio-stat-title"><span class="portfolio-icon">▤</span><span>Liquidez do mês</span></div><strong id="portfolioLiquidityMetric" class="money-value">R$ 0,00</strong><small>Saldo positivo disponível</small></article>
-          <article class="portfolio-stat-card contributed"><div class="portfolio-stat-title"><span class="portfolio-icon">▥</span><span>Total aportado</span></div><strong id="investmentContributedTotal" class="money-value">R$ 0,00</strong><small>Histórico de aportes</small></article>
-          <article class="portfolio-stat-card investments"><div class="portfolio-stat-title"><span class="portfolio-icon">⌁</span><span>Investimentos</span></div><strong id="investmentCurrentTotal" class="money-value">R$ 0,00</strong><small>Valor atual informado</small></article>
-          <article class="portfolio-stat-card result"><div class="portfolio-stat-title"><span class="portfolio-icon">▭</span><span>Resultado</span></div><strong id="investmentResultTotal" class="money-value">R$ 0,00</strong><small>Valor atual menos aportes</small></article>
+          <article class="portfolio-stat-card liquidity"><div class="portfolio-stat-title"><span class="portfolio-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-liquidity"/></svg></span><span>Liquidez do mês</span></div><strong id="portfolioLiquidityMetric" class="money-value">R$ 0,00</strong><small>Saldo positivo disponível</small></article>
+          <article class="portfolio-stat-card contributed"><div class="portfolio-stat-title"><span class="portfolio-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-contribution"/></svg></span><span>Total aportado</span></div><strong id="investmentContributedTotal" class="money-value">R$ 0,00</strong><small>Histórico de aportes</small></article>
+          <article class="portfolio-stat-card investments"><div class="portfolio-stat-title"><span class="portfolio-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-portfolio"/></svg></span><span>Investimentos</span></div><strong id="investmentCurrentTotal" class="money-value">R$ 0,00</strong><small>Valor atual informado</small></article>
+          <article class="portfolio-stat-card result"><div class="portfolio-stat-title"><span class="portfolio-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-result"/></svg></span><span>Resultado</span></div><strong id="investmentResultTotal" class="money-value">R$ 0,00</strong><small>Valor atual menos aportes</small></article>
         </div>
 
         <div class="investment-month-strip"><span>Aportes no mês selecionado</span><strong id="investmentMonthTotal" class="money-value">R$ 0,00</strong></div>
