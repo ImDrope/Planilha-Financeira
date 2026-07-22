@@ -40,6 +40,8 @@
   let resendTimer = null;
   let verificationAttempts = 0;
   let authInitialized = false;
+  let cloudStateReady = false;
+  let cloudSaveTimer = null;
 
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -56,11 +58,7 @@
     toast: $("#toast")
   };
 
-  function loadState() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) return structuredClone(defaultState);
-      const parsed = JSON.parse(saved);
+  function normalizeState(parsed = {}) {
       const migratedInvestments = (Array.isArray(parsed.investments) ? parsed.investments : []).map((item) => ({
         ...item,
         objective: item.objective || "",
@@ -89,6 +87,13 @@
         closures: parsed.closures || {},
         onboardingCompleted: Boolean(parsed.onboardingCompleted || Object.keys(parsed.plans || {}).length || (parsed.transactions || []).length)
       };
+  }
+
+  function loadState() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return structuredClone(defaultState);
+      return normalizeState(JSON.parse(saved));
     } catch (error) {
       console.error("Falha ao carregar dados:", error);
       return structuredClone(defaultState);
@@ -97,6 +102,42 @@
 
   function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if (!demoUser || !cloudStateReady) return;
+    clearTimeout(cloudSaveTimer);
+    cloudSaveTimer = setTimeout(async () => {
+      try {
+        await cloud.saveFinancialState(state);
+      } catch (error) {
+        console.error("Falha ao sincronizar dados:", error);
+        showToast("Dados salvos neste dispositivo; sincronização pendente.");
+      }
+    }, 700);
+  }
+
+  function hasMeaningfulLocalData(candidate) {
+    return Boolean(
+      Object.keys(candidate?.plans || {}).length
+      || candidate?.transactions?.length
+      || candidate?.investments?.length
+      || candidate?.investmentEvents?.length
+      || candidate?.recurrences?.length
+      || Object.keys(candidate?.closures || {}).length
+      || candidate?.onboardingCompleted
+    );
+  }
+
+  async function hydrateFinancialState() {
+    cloudStateReady = false;
+    const remote = await cloud.loadFinancialState();
+    if (remote?.state_data) {
+      state = normalizeState(remote.state_data);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } else {
+      await cloud.saveFinancialState(state);
+      if (hasMeaningfulLocalData(state)) showToast("Dados deste dispositivo importados para sua conta.");
+    }
+    cloudStateReady = true;
+    renderAll();
   }
 
   function currentMonthKey() {
@@ -1627,6 +1668,8 @@
 
   function requireAuthentication(message = "Entre com a conta vinculada à sua compra para continuar.") {
     demoUser = null;
+    cloudStateReady = false;
+    clearTimeout(cloudSaveTimer);
     document.body.classList.add("cloud-auth-required");
     updateProfileButton();
     updateAuthNotice("Acesso protegido", message);
@@ -1653,6 +1696,7 @@
         return false;
       }
       demoUser = profileFromCloudUser(session.user);
+      await hydrateFinancialState();
       releaseAuthenticationGate();
       updateProfileButton();
       if ($("#authModal").open) $("#authModal").close();
