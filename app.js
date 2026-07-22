@@ -13,6 +13,7 @@
     "Moradia", "Alimentação", "Transporte", "Assinaturas", "Lazer",
     "Saúde", "Compras", "Trabalho", "Educação", "Outros"
   ];
+  const planningCategories = expenseCategories.filter((category) => !["Compras", "Trabalho"].includes(category));
   const incomeCategories = ["Freelance", "Reembolso", "Venda", "Presente", "Outras receitas"];
 
   const categoryColors = ["#5f47ff", "#168c5b", "#d13c55", "#c27a0a", "#2675d8", "#8d57c8", "#33a6a6", "#d0652a", "#718096", "#d34fb8"];
@@ -955,7 +956,7 @@
   function renderCategoryBudgets() {
     const stats = getMonthStats();
     const plan = stats.plan;
-    $("#categoryBudgetFields").innerHTML = expenseCategories.map((category) => `<label><span>${escapeHtml(category)}</span><input data-category-budget="${escapeHtml(category)}" type="number" min="0" step="0.01" value="${categoryBudgetFor(plan, category) || ""}" placeholder="0,00" /></label>`).join("");
+    $("#categoryBudgetFields").innerHTML = planningCategories.map((category) => `<label><span>${escapeHtml(category)}</span><input data-category-budget="${escapeHtml(category)}" type="number" min="0" step="0.01" value="${categoryBudgetFor(plan, category) || ""}" placeholder="0,00" /></label>`).join("");
     $("#categoryBudgetList").innerHTML = expenseCategories.map((category) => {
       const limit = categoryBudgetFor(plan, category);
       const spent = Number(stats.categoryTotals[category] || 0);
