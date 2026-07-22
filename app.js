@@ -1763,8 +1763,7 @@
       return;
     }
     try {
-      const recoveryRequested = new URLSearchParams(window.location.hash.slice(1)).get("type") === "recovery"
-        || new URLSearchParams(window.location.search).get("type") === "recovery";
+      const recoveryRequested = cloud.passwordRecoveryRequested();
       cloud.onAuthStateChange((event, nextSession) => {
         if (event === "PASSWORD_RECOVERY") {
           passwordRecoveryActive = true;
@@ -1970,6 +1969,7 @@
     setAuthBusy(form, true);
     try {
       await cloud.completePasswordReset(password);
+      cloud.clearPasswordRecoveryRequest();
       passwordRecoveryActive = false;
       window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/([?&])type=recovery(&|$)/, "$1").replace(/[?&]$/, ""));
       if (await acceptCloudSession(await cloud.getSession())) {
