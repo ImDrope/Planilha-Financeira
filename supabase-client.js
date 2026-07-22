@@ -31,9 +31,11 @@
       [/email not confirmed/i, "Confirme seu e-mail antes de entrar."],
       [/user already registered/i, "Já existe uma conta com este e-mail."],
       [/password should be at least/i, "A senha não atende aos requisitos mínimos."],
-      [/token has expired|otp.*expired/i, "Este código expirou. Solicite um novo."],
-      [/token.*invalid|invalid.*otp/i, "Código inválido. Confira os seis dígitos."],
-      [/rate limit/i, "Muitas tentativas. Aguarde alguns minutos e tente novamente."],
+      [/email rate limit|over_email_send_rate_limit/i, "O limite de envio de e-mails foi atingido. Aguarde até 1 hora antes de tentar novamente."],
+      [/over_request_rate_limit|too many requests|rate limit/i, "Muitas tentativas. Aguarde alguns minutos e tente novamente."],
+      [/token has expired|otp.*expired/i, "Este link expirou. Solicite um novo e-mail."],
+      [/token.*invalid|invalid.*otp/i, "Este link de confirmação não é válido. Solicite um novo."],
+      [/same password|new password should be different/i, "A nova senha precisa ser diferente da senha atual."],
       [/failed to fetch|network/i, "Não foi possível conectar. Verifique sua internet."]
     ];
     return translations.find(([pattern]) => pattern.test(message))?.[1] || message;
@@ -87,6 +89,12 @@
     });
     if (error) throw error;
     return data;
+  }
+
+  async function completePasswordReset(password) {
+    const { data, error } = await requireClient().auth.updateUser({ password });
+    if (error) throw error;
+    return data.user;
   }
 
   async function updateProfile(name) {
@@ -174,6 +182,7 @@
     signIn,
     signOut,
     requestPasswordReset,
+    completePasswordReset,
     updateProfile,
     acceptTerms,
     changePassword,

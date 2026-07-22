@@ -196,6 +196,13 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .topbar h1, .section-title-row h2, .section-toolbar h2, .panel h3 { margin: 0; }
 .topbar h1 { font-size: 24px; letter-spacing: -0.035em; }
 .topbar-actions { display: flex; align-items: center; gap: 11px; }
+.sync-status { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; font-weight: 750; white-space: nowrap; }
+.sync-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.sync-status[data-state="syncing"] .sync-status-dot { background: #d89a1d; animation: sync-pulse 1s ease-in-out infinite; }
+.sync-status[data-state="synced"] .sync-status-dot { background: var(--primary); }
+.sync-status[data-state="offline"], .sync-status[data-state="error"] { color: var(--red); }
+.sync-status[data-state="offline"] .sync-status-dot, .sync-status[data-state="error"] .sync-status-dot { background: var(--red); }
+@keyframes sync-pulse { 50% { opacity: .35; transform: scale(.8); } }
 .profile-button {
   position: relative;
   width: 48px;
@@ -916,6 +923,7 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 32%, transpa
     grid-template-columns: minmax(0, 1fr) 48px 48px;
     gap: 10px;
   }
+  .sync-status { display: none; }
   .month-navigation { grid-column: 1; }
   .privacy-toggle { grid-column: 2; }
   .profile-button { grid-column: 3; }
