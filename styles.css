@@ -1136,3 +1136,9 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 32%, transpa
   .legal-header { margin: 0 -18px; padding: 18px; }
   .legal-content { font-size: 13px; }
 }
+
+
+/* Investment identity spacing */
+#investmentsTableBody td:first-child > strong,
+#investmentsTableBody td:first-child > small { display: block; }
+#investmentsTableBody td:first-child > small { margin-top: 8px; line-height: 1.35; }
