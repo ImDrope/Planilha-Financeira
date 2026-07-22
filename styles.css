@@ -1081,3 +1081,12 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 32%, transpa
   .transaction-tabs { gap: 5px; }
   .transaction-tab { min-height: 44px; padding: 8px 5px; font-size: 13px; }
 }
+.cloud-auth-required #authModal .close-modal {
+  display: none;
+}
+
+.cloud-auth-required > :not(#authModal):not(.toast) {
+  pointer-events: none;
+  user-select: none;
+}
+

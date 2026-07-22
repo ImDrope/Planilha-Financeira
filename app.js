@@ -5,8 +5,9 @@
   const DATA_VERSION = 5;
   const THEME_KEY = "financeQuestTheme";
   const PRIVACY_KEY = "financeQuestValuesHidden";
-  const DEMO_VERIFICATION_CODE = "123456";
   const RESEND_DELAY_SECONDS = 45;
+  const cloud = window.DespesaMensalCloud;
+  const cloudRequired = Boolean(window.DESPESA_MENSAL_CONFIG?.supabaseUrl);
 
   const expenseCategories = [
     "Moradia", "Alimentação", "Transporte", "Assinaturas", "Lazer",
@@ -38,6 +39,9 @@
   let pendingRegistration = null;
   let resendTimer = null;
   let verificationAttempts = 0;
+  let authInitialized = false;
+  let cloudStateReady = false;
+  let cloudSaveTimer = null;
 
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -54,11 +58,7 @@
     toast: $("#toast")
   };
 
-  function loadState() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) return structuredClone(defaultState);
-      const parsed = JSON.parse(saved);
+  function normalizeState(parsed = {}) {
       const migratedInvestments = (Array.isArray(parsed.investments) ? parsed.investments : []).map((item) => ({
         ...item,
         objective: item.objective || "",
@@ -87,6 +87,13 @@
         closures: parsed.closures || {},
         onboardingCompleted: Boolean(parsed.onboardingCompleted || Object.keys(parsed.plans || {}).length || (parsed.transactions || []).length)
       };
+  }
+
+  function loadState() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return structuredClone(defaultState);
+      return normalizeState(JSON.parse(saved));
     } catch (error) {
       console.error("Falha ao carregar dados:", error);
       return structuredClone(defaultState);
@@ -95,6 +102,42 @@
 
   function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if (!demoUser || !cloudStateReady) return;
+    clearTimeout(cloudSaveTimer);
+    cloudSaveTimer = setTimeout(async () => {
+      try {
+        await cloud.saveFinancialState(state);
+      } catch (error) {
+        console.error("Falha ao sincronizar dados:", error);
+        showToast("Dados salvos neste dispositivo; sincronização pendente.");
+      }
+    }, 700);
+  }
+
+  function hasMeaningfulLocalData(candidate) {
+    return Boolean(
+      Object.keys(candidate?.plans || {}).length
+      || candidate?.transactions?.length
+      || candidate?.investments?.length
+      || candidate?.investmentEvents?.length
+      || candidate?.recurrences?.length
+      || Object.keys(candidate?.closures || {}).length
+      || candidate?.onboardingCompleted
+    );
+  }
+
+  async function hydrateFinancialState() {
+    cloudStateReady = false;
+    const remote = await cloud.loadFinancialState();
+    if (remote?.state_data) {
+      state = normalizeState(remote.state_data);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } else {
+      await cloud.saveFinancialState(state);
+      if (hasMeaningfulLocalData(state)) showToast("Dados deste dispositivo importados para sua conta.");
+    }
+    cloudStateReady = true;
+    renderAll();
   }
 
   function currentMonthKey() {
@@ -1603,6 +1646,91 @@
     return String(name || "DM").trim().split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "DM";
   }
 
+  function profileFromCloudUser(user) {
+    const email = String(user?.email || "");
+    const fallbackName = email.split("@")[0].replace(/[._-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+    return { id: user?.id, name: user?.user_metadata?.full_name || fallbackName || "Usuário", email };
+  }
+
+  function setAuthBusy(form, busy) {
+    form.querySelectorAll("input, button").forEach((control) => { control.disabled = busy; });
+    form.setAttribute("aria-busy", String(busy));
+  }
+
+  function updateAuthNotice(title, message) {
+    const notice = $("#authEnvironmentNotice");
+    notice.querySelector("strong").textContent = title;
+    const paragraph = notice.querySelector("p");
+    const detail = [...paragraph.childNodes].find((node) => node.nodeType === Node.TEXT_NODE);
+    if (detail) detail.textContent = message;
+    else paragraph.append(document.createTextNode(message));
+  }
+
+  function requireAuthentication(message = "Entre com a conta vinculada à sua compra para continuar.") {
+    demoUser = null;
+    cloudStateReady = false;
+    clearTimeout(cloudSaveTimer);
+    document.body.classList.add("cloud-auth-required");
+    updateProfileButton();
+    updateAuthNotice("Acesso protegido", message);
+    setAuthView("login");
+    if (!$("#authModal").open) $("#authModal").showModal();
+  }
+
+  function releaseAuthenticationGate() {
+    document.body.classList.remove("cloud-auth-required");
+    updateAuthNotice("Conta protegida", "Seus dados são vinculados somente ao seu usuário.");
+  }
+
+  async function acceptCloudSession(session, showError = true) {
+    if (!session?.user) {
+      requireAuthentication();
+      return false;
+    }
+    try {
+      const entitlement = await cloud.getEntitlement();
+      if (!cloud.hasActiveEntitlement(entitlement)) {
+        await cloud.signOut();
+        if (showError) $("#loginError").textContent = "Este e-mail ainda não possui acesso ativo. Use o mesmo e-mail informado na compra.";
+        requireAuthentication("Sua conta foi identificada, mas o acesso comercial ainda não está ativo.");
+        return false;
+      }
+      demoUser = profileFromCloudUser(session.user);
+      await hydrateFinancialState();
+      releaseAuthenticationGate();
+      updateProfileButton();
+      if ($("#authModal").open) $("#authModal").close();
+      if (!state.onboardingCompleted) setTimeout(() => $("#onboardingModal").showModal(), 200);
+      return true;
+    } catch (error) {
+      console.error("Falha ao validar acesso:", error);
+      if (showError) $("#loginError").textContent = cloud.friendlyError(error);
+      requireAuthentication("Não foi possível validar seu acesso agora. Tente novamente.");
+      return false;
+    }
+  }
+
+  async function initializeCloudAuth() {
+    if (!cloudRequired || !cloud?.configured) {
+      requireAuthentication("A conexão segura não carregou. Atualize a página ou verifique sua internet.");
+      $("#loginError").textContent = "Serviço de autenticação indisponível.";
+      return;
+    }
+    try {
+      const session = await cloud.getSession();
+      await acceptCloudSession(session, false);
+      cloud.onAuthStateChange((event, nextSession) => {
+        if (event === "SIGNED_OUT") requireAuthentication();
+        if (event === "TOKEN_REFRESHED" && nextSession?.user && demoUser) demoUser = profileFromCloudUser(nextSession.user);
+      });
+    } catch (error) {
+      console.error("Falha ao iniciar autenticação:", error);
+      requireAuthentication("Não foi possível conectar com segurança. Tente novamente.");
+    } finally {
+      authInitialized = true;
+    }
+  }
+
   function setAuthView(view) {
     $$('[data-auth-view]').forEach((section) => section.classList.toggle("hidden", section.dataset.authView !== view));
     const titles = { login: "Acesse sua conta", register: "Crie sua conta", verify: "Confirme seu e-mail", forgot: "Recupere seu acesso", "reset-sent": "Confira seu e-mail", profile: "Sua conta", account: "Minha conta", security: "Segurança", terms: "Termos e privacidade" };
@@ -1637,7 +1765,7 @@
     } else {
       setAuthView("login");
     }
-    $("#authModal").showModal();
+    if (!$("#authModal").open) $("#authModal").showModal();
   }
 
   function updatePasswordRequirements() {
@@ -1684,7 +1812,7 @@
     $$('[data-otp]')[0]?.focus();
   }
 
-  function handleRegisterSubmit(event) {
+  async function handleRegisterSubmit(event) {
     event.preventDefault();
     const name = $("#registerName").value.trim();
     const email = $("#registerEmail").value.trim().toLowerCase();
@@ -1695,63 +1823,102 @@
     if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) { error.textContent = "A senha deve ter pelo menos 8 caracteres, incluindo uma letra e um número."; return; }
     if (password !== confirmation) { error.textContent = "As senhas informadas não são iguais."; return; }
     if (!$("#registerTerms").checked) { error.textContent = "Aceite os termos para continuar."; return; }
-    pendingRegistration = { name, email };
-    $("#verificationEmail").textContent = maskEmail(email);
-    clearOtp();
-    $("#verificationForm button[type='submit']").disabled = false;
-    setAuthView("verify");
-    startResendCountdown();
+    setAuthBusy(event.currentTarget, true);
+    try {
+      await cloud.signUp({ name, email, password });
+      pendingRegistration = { name, email };
+      $("#verificationEmail").textContent = maskEmail(email);
+      clearOtp();
+      $("#verificationForm button[type='submit']").disabled = false;
+      setAuthView("verify");
+      startResendCountdown();
+    } catch (requestError) {
+      error.textContent = cloud.friendlyError(requestError);
+    } finally {
+      setAuthBusy(event.currentTarget, false);
+      updatePasswordRequirements();
+    }
   }
 
-  function handleVerificationSubmit(event) {
+  async function handleVerificationSubmit(event) {
     event.preventDefault();
     const code = $$('[data-otp]').map((input) => input.value).join("");
     const error = $("#verificationError");
-    if (code !== DEMO_VERIFICATION_CODE) {
+    if (!pendingRegistration?.email || code.length !== 6) { error.textContent = "Digite os seis dígitos enviados ao seu e-mail."; return; }
+    setAuthBusy(event.currentTarget, true);
+    try {
+      const data = await cloud.verifySignup({ email: pendingRegistration.email, token: code });
+      await cloud.acceptTerms();
+      const allowed = await acceptCloudSession(data.session);
+      if (!allowed) return;
+      pendingRegistration = null;
+      clearInterval(resendTimer);
+      $("#registerForm").reset();
+      updatePasswordRequirements();
+      showToast("E-mail confirmado. Sua conta está protegida.");
+    } catch (requestError) {
       verificationAttempts += 1;
       const remaining = Math.max(0, 5 - verificationAttempts);
-      error.textContent = remaining ? `Código incorreto. Restam ${remaining} tentativa${remaining === 1 ? "" : "s"}.` : "Limite de tentativas atingido. Reenvie o código.";
+      error.textContent = `${cloud.friendlyError(requestError)}${remaining ? ` Restam ${remaining} tentativa${remaining === 1 ? "" : "s"}.` : " Solicite um novo código."}`;
       if (!remaining) $("#verificationForm button[type='submit']").disabled = true;
-      return;
+    } finally {
+      setAuthBusy(event.currentTarget, false);
+      if (verificationAttempts >= 5) $("#verificationForm button[type='submit']").disabled = true;
     }
-    demoUser = { ...pendingRegistration };
-    pendingRegistration = null;
-    clearInterval(resendTimer);
-    updateProfileButton();
-    $("#authModal").close();
-    $("#registerForm").reset();
-    updatePasswordRequirements();
-    showToast("E-mail confirmado. Conta de demonstração pronta.");
   }
 
-  function handleLoginSubmit(event) {
+  async function handleLoginSubmit(event) {
     event.preventDefault();
     const email = $("#loginEmail").value.trim().toLowerCase();
-    const localName = email.split("@")[0].replace(/[._-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
-    demoUser = { name: localName || "Usuário", email };
-    updateProfileButton();
-    $("#authModal").close();
-    $("#loginForm").reset();
-    showToast("Login de demonstração realizado.");
+    const error = $("#loginError");
+    error.textContent = "";
+    setAuthBusy(event.currentTarget, true);
+    try {
+      const data = await cloud.signIn({ email, password: $("#loginPassword").value });
+      if (await acceptCloudSession(data.session)) {
+        $("#loginForm").reset();
+        showToast("Login realizado com segurança.");
+      }
+    } catch (requestError) {
+      error.textContent = cloud.friendlyError(requestError);
+    } finally {
+      setAuthBusy(event.currentTarget, false);
+    }
   }
 
-  function handleForgotSubmit(event) {
+  async function handleForgotSubmit(event) {
     event.preventDefault();
     const email = $("#forgotEmail").value.trim().toLowerCase();
-    $("#resetEmail").textContent = maskEmail(email);
-    setAuthView("reset-sent");
+    setAuthBusy(event.currentTarget, true);
+    try {
+      await cloud.requestPasswordReset(email);
+      $("#resetEmail").textContent = maskEmail(email);
+      setAuthView("reset-sent");
+    } catch (requestError) {
+      showToast(cloud.friendlyError(requestError));
+    } finally {
+      setAuthBusy(event.currentTarget, false);
+    }
   }
 
-  function handleAccountSubmit(event) {
+  async function handleAccountSubmit(event) {
     event.preventDefault();
     if (!demoUser) return setAuthView("login");
-    demoUser.name = $("#accountName").value.trim() || demoUser.name;
-    updateProfileButton();
-    setAuthView("profile");
-    showToast("Nome atualizado nesta sessão de demonstração.");
+    setAuthBusy(event.currentTarget, true);
+    try {
+      const user = await cloud.updateProfile($("#accountName").value.trim() || demoUser.name);
+      demoUser = profileFromCloudUser(user);
+      updateProfileButton();
+      setAuthView("profile");
+      showToast("Nome atualizado.");
+    } catch (requestError) {
+      showToast(cloud.friendlyError(requestError));
+    } finally {
+      setAuthBusy(event.currentTarget, false);
+    }
   }
 
-  function handleSecurityPasswordSubmit(event) {
+  async function handleSecurityPasswordSubmit(event) {
     event.preventDefault();
     const password = $("#newSecurityPassword").value;
     const confirmation = $("#confirmSecurityPassword").value;
@@ -1765,20 +1932,23 @@
       error.textContent = "As novas senhas não são iguais.";
       return;
     }
-    event.currentTarget.reset();
-    showToast("Senha validada. A atualização real será ativada com o Supabase.");
+    setAuthBusy(event.currentTarget, true);
+    try {
+      await cloud.changePassword({ email: demoUser.email, currentPassword: $("#currentPassword").value, newPassword: password });
+      event.currentTarget.reset();
+      showToast("Senha atualizada com segurança.");
+    } catch (requestError) {
+      error.textContent = cloud.friendlyError(requestError);
+    } finally {
+      setAuthBusy(event.currentTarget, false);
+    }
   }
 
   function handleSecurityEmailSubmit(event) {
     event.preventDefault();
     if (!demoUser) return setAuthView("login");
     const email = $("#newSecurityEmail").value.trim().toLowerCase();
-    pendingRegistration = { ...demoUser, email };
-    $("#verificationEmail").textContent = maskEmail(email);
-    clearOtp();
-    $("#verificationForm button[type='submit']").disabled = false;
-    setAuthView("verify");
-    startResendCountdown();
+    showToast(`A alteração para ${maskEmail(email)} será ativada após os testes de autenticação.`);
   }
 
   function handleOtpInput(event) {
@@ -1876,12 +2046,29 @@
       button.setAttribute("aria-label", show ? "Ocultar senha" : "Mostrar senha");
     }));
     $$('[data-otp]').forEach((input) => { input.addEventListener("input", handleOtpInput); input.addEventListener("keydown", handleOtpKeydown); input.addEventListener("paste", handleOtpPaste); });
-    $("#resendCode").addEventListener("click", () => { clearOtp(); $("#verificationForm button[type='submit']").disabled = false; startResendCountdown(); showToast("Novo código de demonstração enviado."); });
-    $("#logoutDemo").addEventListener("click", () => { demoUser = null; updateProfileButton(); $("#authModal").close(); showToast("Você saiu da conta de demonstração."); });
-    $("#logoutAllDemo").addEventListener("click", () => { demoUser = null; updateProfileButton(); $("#authModal").close(); showToast("Todas as sessões de demonstração foram encerradas."); });
-    $("#resendSecurityVerification").addEventListener("click", () => showToast("Confirmação reenviada no modo de demonstração."));
+    $("#resendCode").addEventListener("click", async () => {
+      if (!pendingRegistration?.email) return setAuthView("register");
+      try {
+        await cloud.resendSignup(pendingRegistration.email);
+        clearOtp(); $("#verificationForm button[type='submit']").disabled = false; startResendCountdown();
+        showToast("Novo código enviado.");
+      } catch (error) { $("#verificationError").textContent = cloud.friendlyError(error); }
+    });
+    $("#logoutDemo").addEventListener("click", async () => {
+      try { await cloud.signOut(); } catch (error) { console.error(error); }
+      requireAuthentication(); showToast("Você saiu da conta.");
+    });
+    $("#logoutAllDemo").addEventListener("click", async () => {
+      try { await cloud.signOut("global"); } catch (error) { console.error(error); }
+      requireAuthentication(); showToast("Todas as sessões foram encerradas.");
+    });
+    $("#resendSecurityVerification").addEventListener("click", () => showToast("Seu e-mail já está confirmado."));
     $$('[data-demo-document]').forEach((button) => button.addEventListener("click", () => showToast("Documento em preparação para a versão comercial.")));
-    $("#authModal").addEventListener("close", () => clearInterval(resendTimer));
+    $("#authModal").addEventListener("cancel", (event) => { if (cloudRequired && !demoUser) event.preventDefault(); });
+    $("#authModal").addEventListener("close", () => {
+      clearInterval(resendTimer);
+      if (cloudRequired && authInitialized && !demoUser) setTimeout(() => requireAuthentication(), 0);
+    });
 
     $("#transactionSearch").addEventListener("input", renderTransactions);
     $("#transactionTypeFilter").addEventListener("change", renderTransactions);
@@ -1938,7 +2125,7 @@
     };
   }
 
-  function init() {
+  async function init() {
     elements.monthSelector.value = selectedMonth;
     $("#transactionDate").value = todayISO();
     $("#investmentDate").value = todayISO();
@@ -1952,8 +2139,9 @@
     setDashboardFilter(dashboardFilter);
     if (window.matchMedia("(max-width: 760px)").matches) $("#forecastDisclosure").open = false;
     renderAll();
-    if (!state.onboardingCompleted) setTimeout(() => $("#onboardingModal").showModal(), 250);
+    await initializeCloudAuth();
   }
 
   init();
 })();
+
