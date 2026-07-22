@@ -1890,6 +1890,7 @@
 
   async function handleRegisterSubmit(event) {
     event.preventDefault();
+    const form = event.currentTarget;
     const name = $("#registerName").value.trim();
     const email = $("#registerEmail").value.trim().toLowerCase();
     const password = $("#registerPassword").value;
@@ -1899,7 +1900,7 @@
     if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) { error.textContent = "A senha deve ter pelo menos 8 caracteres, incluindo uma letra e um número."; return; }
     if (password !== confirmation) { error.textContent = "As senhas informadas não são iguais."; return; }
     if (!$("#registerTerms").checked) { error.textContent = "Aceite os termos para continuar."; return; }
-    setAuthBusy(event.currentTarget, true);
+    setAuthBusy(form, true);
     try {
       await cloud.signUp({ name, email, password });
       pendingRegistration = { name, email };
@@ -1910,17 +1911,18 @@
     } catch (requestError) {
       error.textContent = cloud.friendlyError(requestError);
     } finally {
-      setAuthBusy(event.currentTarget, false);
+      setAuthBusy(form, false);
       updatePasswordRequirements();
     }
   }
 
   async function handleLoginSubmit(event) {
     event.preventDefault();
+    const form = event.currentTarget;
     const email = $("#loginEmail").value.trim().toLowerCase();
     const error = $("#loginError");
     error.textContent = "";
-    setAuthBusy(event.currentTarget, true);
+    setAuthBusy(form, true);
     try {
       const data = await cloud.signIn({ email, password: $("#loginPassword").value });
       if (await acceptCloudSession(data.session)) {
@@ -1930,14 +1932,15 @@
     } catch (requestError) {
       error.textContent = cloud.friendlyError(requestError);
     } finally {
-      setAuthBusy(event.currentTarget, false);
+      setAuthBusy(form, false);
     }
   }
 
   async function handleForgotSubmit(event) {
     event.preventDefault();
+    const form = event.currentTarget;
     const email = $("#forgotEmail").value.trim().toLowerCase();
-    setAuthBusy(event.currentTarget, true);
+    setAuthBusy(form, true);
     try {
       await cloud.requestPasswordReset(email);
       $("#resetEmail").textContent = maskEmail(email);
@@ -1945,12 +1948,13 @@
     } catch (requestError) {
       showToast(cloud.friendlyError(requestError));
     } finally {
-      setAuthBusy(event.currentTarget, false);
+      setAuthBusy(form, false);
     }
   }
 
   async function handlePasswordResetSubmit(event) {
     event.preventDefault();
+    const form = event.currentTarget;
     const password = $("#resetNewPassword").value;
     const confirmation = $("#resetNewPasswordConfirm").value;
     const error = $("#passwordResetError");
@@ -1963,26 +1967,27 @@
       error.textContent = "As senhas informadas não são iguais.";
       return;
     }
-    setAuthBusy(event.currentTarget, true);
+    setAuthBusy(form, true);
     try {
       await cloud.completePasswordReset(password);
       passwordRecoveryActive = false;
       window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/([?&])type=recovery(&|$)/, "$1").replace(/[?&]$/, ""));
       if (await acceptCloudSession(await cloud.getSession())) {
-        event.currentTarget.reset();
+        form.reset();
         showToast("Senha atualizada. Sua conta já está protegida.");
       }
     } catch (requestError) {
       error.textContent = cloud.friendlyError(requestError);
     } finally {
-      setAuthBusy(event.currentTarget, false);
+      setAuthBusy(form, false);
     }
   }
 
   async function handleAccountSubmit(event) {
     event.preventDefault();
+    const form = event.currentTarget;
     if (!demoUser) return setAuthView("login");
-    setAuthBusy(event.currentTarget, true);
+    setAuthBusy(form, true);
     try {
       const user = await cloud.updateProfile($("#accountName").value.trim() || demoUser.name);
       demoUser = profileFromCloudUser(user);
@@ -1992,12 +1997,13 @@
     } catch (requestError) {
       showToast(cloud.friendlyError(requestError));
     } finally {
-      setAuthBusy(event.currentTarget, false);
+      setAuthBusy(form, false);
     }
   }
 
   async function handleSecurityPasswordSubmit(event) {
     event.preventDefault();
+    const form = event.currentTarget;
     const password = $("#newSecurityPassword").value;
     const confirmation = $("#confirmSecurityPassword").value;
     const error = $("#securityPasswordError");
@@ -2010,15 +2016,15 @@
       error.textContent = "As novas senhas não são iguais.";
       return;
     }
-    setAuthBusy(event.currentTarget, true);
+    setAuthBusy(form, true);
     try {
       await cloud.changePassword({ email: demoUser.email, currentPassword: $("#currentPassword").value, newPassword: password });
-      event.currentTarget.reset();
+      form.reset();
       showToast("Senha atualizada com segurança.");
     } catch (requestError) {
       error.textContent = cloud.friendlyError(requestError);
     } finally {
-      setAuthBusy(event.currentTarget, false);
+      setAuthBusy(form, false);
     }
   }
 
