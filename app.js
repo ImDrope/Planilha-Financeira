@@ -41,6 +41,9 @@
   let authInitialized = false;
   let cloudStateReady = false;
   let cloudSaveTimer = null;
+  let pendingCloudState = null;
+  let cloudSaveInFlight = null;
+  let passwordRecoveryActive = false;
 
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -102,15 +105,45 @@
   function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     if (!demoUser || !cloudStateReady) return;
+    pendingCloudState = structuredClone(state);
     clearTimeout(cloudSaveTimer);
-    cloudSaveTimer = setTimeout(async () => {
-      try {
-        await cloud.saveFinancialState(state);
-      } catch (error) {
-        console.error("Falha ao sincronizar dados:", error);
-        showToast("Dados salvos neste dispositivo; sincronização pendente.");
+    setSyncStatus("syncing", "Alterações pendentes");
+    cloudSaveTimer = setTimeout(flushCloudSave, 700);
+  }
+
+  function setSyncStatus(status, label) {
+    const element = $("#syncStatus");
+    if (!element) return;
+    element.dataset.state = status;
+    element.querySelector(".sync-status-label").textContent = label;
+  }
+
+  async function flushCloudSave() {
+    if (cloudSaveInFlight || !pendingCloudState || !demoUser || !cloudStateReady) return cloudSaveInFlight;
+    if (!navigator.onLine) {
+      setSyncStatus("offline", "Sem conexão · salvo localmente");
+      return null;
+    }
+    cloudSaveInFlight = (async () => {
+      while (pendingCloudState && demoUser && cloudStateReady && navigator.onLine) {
+        const snapshot = pendingCloudState;
+        pendingCloudState = null;
+        setSyncStatus("syncing", "Sincronizando…");
+        try {
+          await cloud.saveFinancialState(snapshot);
+          setSyncStatus("synced", "Salvo na nuvem");
+        } catch (error) {
+          pendingCloudState = snapshot;
+          console.error("Falha ao sincronizar dados:", error);
+          setSyncStatus(navigator.onLine ? "error" : "offline", navigator.onLine ? "Falha ao sincronizar" : "Sem conexão · salvo localmente");
+          break;
+        }
       }
-    }, 700);
+    })().finally(() => {
+      cloudSaveInFlight = null;
+      if (pendingCloudState && navigator.onLine && demoUser && cloudStateReady) setTimeout(flushCloudSave, 1000);
+    });
+    return cloudSaveInFlight;
   }
 
   function hasMeaningfulLocalData(candidate) {
@@ -127,6 +160,7 @@
 
   async function hydrateFinancialState() {
     cloudStateReady = false;
+    setSyncStatus("syncing", "Carregando seus dados…");
     const remote = await cloud.loadFinancialState();
     if (remote?.state_data) {
       state = normalizeState(remote.state_data);
@@ -136,6 +170,7 @@
       if (hasMeaningfulLocalData(state)) showToast("Dados deste dispositivo importados para sua conta.");
     }
     cloudStateReady = true;
+    setSyncStatus("synced", "Salvo na nuvem");
     renderAll();
   }
 
@@ -1653,6 +1688,15 @@
 
   function setAuthBusy(form, busy) {
     form.querySelectorAll("input, button").forEach((control) => { control.disabled = busy; });
+    form.querySelectorAll('button[type="submit"]').forEach((button) => {
+      if (busy) {
+        button.dataset.idleLabel = button.textContent;
+        button.textContent = "Aguarde…";
+      } else if (button.dataset.idleLabel) {
+        button.textContent = button.dataset.idleLabel;
+        delete button.dataset.idleLabel;
+      }
+    });
     form.setAttribute("aria-busy", String(busy));
   }
 
@@ -1669,6 +1713,8 @@
     demoUser = null;
     cloudStateReady = false;
     clearTimeout(cloudSaveTimer);
+    pendingCloudState = null;
+    setSyncStatus("local", "Salvo neste dispositivo");
     document.body.classList.add("cloud-auth-required");
     updateProfileButton();
     updateAuthNotice("Acesso protegido", message);
@@ -1717,12 +1763,33 @@
       return;
     }
     try {
-      const session = await cloud.getSession();
-      await acceptCloudSession(session, false);
+      const recoveryRequested = new URLSearchParams(window.location.hash.slice(1)).get("type") === "recovery"
+        || new URLSearchParams(window.location.search).get("type") === "recovery";
       cloud.onAuthStateChange((event, nextSession) => {
+        if (event === "PASSWORD_RECOVERY") {
+          passwordRecoveryActive = true;
+          demoUser = profileFromCloudUser(nextSession?.user);
+          document.body.classList.add("cloud-auth-required");
+          updateProfileButton();
+          updateAuthNotice("Recuperação segura", "Defina uma nova senha para concluir a recuperação da conta.");
+          setAuthView("password-reset");
+          if (!$("#authModal").open) $("#authModal").showModal();
+        }
         if (event === "SIGNED_OUT") requireAuthentication();
         if (event === "TOKEN_REFRESHED" && nextSession?.user && demoUser) demoUser = profileFromCloudUser(nextSession.user);
       });
+      const session = await cloud.getSession();
+      if (recoveryRequested && session?.user) {
+        passwordRecoveryActive = true;
+        demoUser = profileFromCloudUser(session.user);
+        document.body.classList.add("cloud-auth-required");
+        updateProfileButton();
+        updateAuthNotice("Recuperação segura", "Defina uma nova senha para concluir a recuperação da conta.");
+        setAuthView("password-reset");
+        if (!$("#authModal").open) $("#authModal").showModal();
+      } else {
+        await acceptCloudSession(session, false);
+      }
     } catch (error) {
       console.error("Falha ao iniciar autenticação:", error);
       requireAuthentication("Não foi possível conectar com segurança. Tente novamente.");
@@ -1733,7 +1800,7 @@
 
   function setAuthView(view) {
     $$('[data-auth-view]').forEach((section) => section.classList.toggle("hidden", section.dataset.authView !== view));
-    const titles = { login: "Acesse sua conta", register: "Crie sua conta", verify: "Confirme seu e-mail", forgot: "Recupere seu acesso", "reset-sent": "Confira seu e-mail", profile: "Sua conta", account: "Minha conta", security: "Segurança", terms: "Termos e privacidade" };
+    const titles = { login: "Acesse sua conta", register: "Crie sua conta", verify: "Confirme seu e-mail", forgot: "Recupere seu acesso", "reset-sent": "Confira seu e-mail", "password-reset": "Crie uma nova senha", profile: "Sua conta", account: "Minha conta", security: "Segurança", terms: "Termos e privacidade" };
     $("#authModalTitle").textContent = titles[view] || "Sua conta";
     $$('[data-auth-tab]').forEach((button) => {
       if (!button.closest(".auth-tabs")) return;
@@ -1882,6 +1949,36 @@
     }
   }
 
+  async function handlePasswordResetSubmit(event) {
+    event.preventDefault();
+    const password = $("#resetNewPassword").value;
+    const confirmation = $("#resetNewPasswordConfirm").value;
+    const error = $("#passwordResetError");
+    error.textContent = "";
+    if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) {
+      error.textContent = "Use pelo menos 8 caracteres, incluindo uma letra e um número.";
+      return;
+    }
+    if (password !== confirmation) {
+      error.textContent = "As senhas informadas não são iguais.";
+      return;
+    }
+    setAuthBusy(event.currentTarget, true);
+    try {
+      await cloud.completePasswordReset(password);
+      passwordRecoveryActive = false;
+      window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/([?&])type=recovery(&|$)/, "$1").replace(/[?&]$/, ""));
+      if (await acceptCloudSession(await cloud.getSession())) {
+        event.currentTarget.reset();
+        showToast("Senha atualizada. Sua conta já está protegida.");
+      }
+    } catch (requestError) {
+      error.textContent = cloud.friendlyError(requestError);
+    } finally {
+      setAuthBusy(event.currentTarget, false);
+    }
+  }
+
   async function handleAccountSubmit(event) {
     event.preventDefault();
     if (!demoUser) return setAuthView("login");
@@ -1994,6 +2091,7 @@
     $("#loginForm").addEventListener("submit", handleLoginSubmit);
     $("#registerForm").addEventListener("submit", handleRegisterSubmit);
     $("#forgotPasswordForm").addEventListener("submit", handleForgotSubmit);
+    $("#passwordResetForm").addEventListener("submit", handlePasswordResetSubmit);
     $("#accountForm").addEventListener("submit", handleAccountSubmit);
     $("#changePasswordForm").addEventListener("submit", handleSecurityPasswordSubmit);
     $("#changeEmailForm").addEventListener("submit", handleSecurityEmailSubmit);
@@ -2009,11 +2107,18 @@
     }));
     $("#resendCode").addEventListener("click", async () => {
       if (!pendingRegistration?.email) return setAuthView("register");
+      const button = $("#resendCode");
+      button.disabled = true;
+      button.textContent = "Enviando…";
       try {
         await cloud.resendSignup(pendingRegistration.email);
         $("#verificationError").textContent = ""; startResendCountdown();
         showToast("Novo link de confirmação enviado.");
-      } catch (error) { $("#verificationError").textContent = cloud.friendlyError(error); }
+      } catch (error) {
+        $("#verificationError").textContent = cloud.friendlyError(error);
+        button.disabled = false;
+        button.textContent = "Reenviar link";
+      }
     });
     $("#logoutDemo").addEventListener("click", async () => {
       try { await cloud.signOut(); } catch (error) { console.error(error); }
@@ -2025,11 +2130,16 @@
     });
     $("#resendSecurityVerification").addEventListener("click", () => showToast("Seu e-mail já está confirmado."));
     $$('[data-demo-document]').forEach((button) => button.addEventListener("click", () => showToast("Documento em preparação para a versão comercial.")));
-    $("#authModal").addEventListener("cancel", (event) => { if (cloudRequired && !demoUser) event.preventDefault(); });
+    $("#authModal").addEventListener("cancel", (event) => { if (passwordRecoveryActive || (cloudRequired && !demoUser)) event.preventDefault(); });
     $("#authModal").addEventListener("close", () => {
       clearInterval(resendTimer);
       if (cloudRequired && authInitialized && !demoUser) setTimeout(() => requireAuthentication(), 0);
     });
+    window.addEventListener("online", () => {
+      setSyncStatus("syncing", "Reconectando…");
+      flushCloudSave();
+    });
+    window.addEventListener("offline", () => setSyncStatus("offline", "Sem conexão · salvo localmente"));
 
     $("#transactionSearch").addEventListener("input", renderTransactions);
     $("#transactionTypeFilter").addEventListener("change", renderTransactions);
