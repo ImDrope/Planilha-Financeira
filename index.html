@@ -82,6 +82,10 @@
           <h1 id="pageTitle">Visão geral</h1>
         </div>
         <div class="topbar-actions">
+          <div id="syncStatus" class="sync-status" data-state="local" role="status" aria-live="polite">
+            <span class="sync-status-dot" aria-hidden="true"></span>
+            <span class="sync-status-label">Salvo neste dispositivo</span>
+          </div>
           <div class="month-navigation" aria-label="Navegação entre meses">
             <button id="previousMonth" class="month-arrow" type="button" aria-label="Mês anterior">‹</button>
             <label class="month-picker">
@@ -789,6 +793,19 @@
         <p class="muted">Se houver uma conta vinculada a <strong id="resetEmail">se***@email.com</strong>, as instruções chegarão em instantes.</p>
         <div class="auth-security-note">Por segurança, não informamos se o endereço está cadastrado.</div>
         <button class="primary-button auth-submit" type="button" data-auth-tab="login">Voltar para o login</button>
+      </section>
+
+      <section id="authPasswordResetView" class="auth-view auth-centered hidden" data-auth-view="password-reset">
+        <div class="auth-state-icon" aria-hidden="true">✓</div>
+        <p class="eyebrow">Recuperação confirmada</p>
+        <h2>Crie uma nova senha</h2>
+        <p class="muted">Use pelo menos 8 caracteres, incluindo uma letra e um número.</p>
+        <form id="passwordResetForm" class="auth-form auth-form-left">
+          <label><span>Nova senha</span><input id="resetNewPassword" type="password" autocomplete="new-password" minlength="8" required /></label>
+          <label><span>Confirmar nova senha</span><input id="resetNewPasswordConfirm" type="password" autocomplete="new-password" minlength="8" required /></label>
+          <p id="passwordResetError" class="auth-error" role="alert"></p>
+          <button class="primary-button auth-submit" type="submit">Salvar nova senha</button>
+        </form>
       </section>
 
       <section id="authProfileView" class="auth-view auth-centered hidden" data-auth-view="profile">
