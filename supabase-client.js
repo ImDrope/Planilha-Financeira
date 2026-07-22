@@ -125,6 +125,33 @@
     return data;
   }
 
+  async function getAuthenticatedUser() {
+    const { data, error } = await requireClient().auth.getUser();
+    if (error) throw error;
+    if (!data.user) throw new Error("Sua sessão expirou. Entre novamente.");
+    return data.user;
+  }
+
+  async function loadFinancialState() {
+    const user = await getAuthenticatedUser();
+    const { data, error } = await requireClient().from("financial_states")
+      .select("data_version,state_data,updated_at")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  }
+
+  async function saveFinancialState(state) {
+    const user = await getAuthenticatedUser();
+    const { data, error } = await requireClient().from("financial_states")
+      .upsert({ user_id: user.id, data_version: Number(state?.version || 1), state_data: state }, { onConflict: "user_id" })
+      .select("updated_at")
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
   function hasActiveEntitlement(entitlement) {
     if (!entitlement || !["active", "trial"].includes(entitlement.status)) return false;
     const now = Date.now();
@@ -150,6 +177,8 @@
     acceptTerms,
     changePassword,
     getEntitlement,
+    loadFinancialState,
+    saveFinancialState,
     hasActiveEntitlement,
     onAuthStateChange,
     client
