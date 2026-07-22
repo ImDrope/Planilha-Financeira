@@ -2,6 +2,10 @@
   "use strict";
 
   const config = window.DESPESA_MENSAL_CONFIG || {};
+  const RECOVERY_MARKER_KEY = "despesa-mensal-password-recovery";
+  const recoveryRequestedAtLoad = new URLSearchParams(window.location.hash.slice(1)).get("type") === "recovery"
+    || new URLSearchParams(window.location.search).get("type") === "recovery";
+  if (recoveryRequestedAtLoad) sessionStorage.setItem(RECOVERY_MARKER_KEY, "true");
   const configured = Boolean(
     window.supabase?.createClient
     && /^https:\/\/[a-z0-9]+\.supabase\.co$/.test(config.supabaseUrl || "")
@@ -18,6 +22,14 @@
         }
       })
     : null;
+
+  function passwordRecoveryRequested() {
+    return recoveryRequestedAtLoad || sessionStorage.getItem(RECOVERY_MARKER_KEY) === "true";
+  }
+
+  function clearPasswordRecoveryRequest() {
+    sessionStorage.removeItem(RECOVERY_MARKER_KEY);
+  }
 
   function requireClient() {
     if (!client) throw new Error("A conexão segura ainda não foi configurada.");
@@ -175,6 +187,8 @@
   window.DespesaMensalCloud = Object.freeze({
     configured,
     friendlyError,
+    passwordRecoveryRequested,
+    clearPasswordRecoveryRequest,
     getSession,
     signUp,
     verifySignup,
