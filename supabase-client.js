@@ -104,7 +104,8 @@
     if (userError) throw userError;
     const { error } = await api.from("profiles")
       .update({ accepted_terms_at: new Date().toISOString() })
-      .eq("id", userData.user.id);
+      .eq("id", userData.user.id)
+      .is("accepted_terms_at", null);
     if (error) throw error;
   }
 

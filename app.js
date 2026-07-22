@@ -1721,7 +1721,6 @@
       await acceptCloudSession(session, false);
       cloud.onAuthStateChange((event, nextSession) => {
         if (event === "SIGNED_OUT") requireAuthentication();
-        if (event === "SIGNED_IN" && nextSession?.user && !demoUser) acceptCloudSession(nextSession);
         if (event === "TOKEN_REFRESHED" && nextSession?.user && demoUser) demoUser = profileFromCloudUser(nextSession.user);
       });
     } catch (error) {
@@ -1804,6 +1803,22 @@
         resend.classList.remove("hidden");
       }
     }, 1000);
+  }
+
+  function ensureLinkVerificationView() {
+    const view = $("#authVerifyView");
+    if (!view?.querySelector("[data-otp]")) return;
+    view.innerHTML = `
+      <div class="auth-state-icon" aria-hidden="true">✉</div>
+      <p class="eyebrow">Confirme seu e-mail</p>
+      <h2>Confira sua caixa de entrada</h2>
+      <p class="muted">Enviamos um link de confirmação para <strong id="verificationEmail">se***@email.com</strong>.</p>
+      <div class="auth-security-note">Abra o e-mail e clique em <strong>Confirmar e-mail</strong>. Depois você será direcionado novamente à plataforma.</div>
+      <p id="verificationError" class="auth-error" role="alert"></p>
+      <button class="primary-button auth-submit" type="button" data-auth-tab="login">Voltar para o login</button>
+      <p class="auth-resend"><span id="resendCountdown">Reenviar link em 00:45</span><button id="resendCode" class="text-button hidden" type="button">Reenviar link</button></p>
+      <button class="text-button" type="button" data-auth-tab="register">Alterar e-mail</button>
+      <small class="auth-spam-note">Não encontrou? Verifique também sua caixa de spam.</small>`;
   }
 
   async function handleRegisterSubmit(event) {
@@ -2072,6 +2087,7 @@
   }
 
   async function init() {
+    ensureLinkVerificationView();
     elements.monthSelector.value = selectedMonth;
     $("#transactionDate").value = todayISO();
     $("#investmentDate").value = todayISO();
