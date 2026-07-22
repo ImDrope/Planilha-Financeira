@@ -2144,7 +2144,7 @@
       legalModal.showModal();
       legalModal.querySelector(".legal-card").scrollTop = 0;
     };
-    $('[data-legal-document]').forEach((button) => button.addEventListener("click", () => openLegalDocument(button.dataset.legalDocument)));
+    $$('[data-legal-document]').forEach((button) => button.addEventListener("click", () => openLegalDocument(button.dataset.legalDocument)));
     $("#closeLegalModal").addEventListener("click", () => legalModal.close());
     legalModal.addEventListener("click", (event) => { if (event.target === legalModal) legalModal.close(); });
     $("#authModal").addEventListener("cancel", (event) => { if (passwordRecoveryActive || (cloudRequired && !demoUser)) event.preventDefault(); });
