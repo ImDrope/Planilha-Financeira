@@ -2135,7 +2135,17 @@
       requireAuthentication(); showToast("Todas as sessões foram encerradas.");
     });
     $("#resendSecurityVerification").addEventListener("click", () => showToast("Seu e-mail já está confirmado."));
-    $$('[data-demo-document]').forEach((button) => button.addEventListener("click", () => showToast("Documento em preparação para a versão comercial.")));
+    const legalModal = $("#legalModal");
+    const openLegalDocument = (documentName) => {
+      const template = documentName === "privacy" ? $("#privacyTemplate") : $("#termsTemplate");
+      $("#legalModalTitle").textContent = documentName === "privacy" ? "Política de Privacidade" : "Termos de Uso";
+      $("#legalModalContent").replaceChildren(template.content.cloneNode(true));
+      legalModal.showModal();
+      legalModal.querySelector(".legal-card").scrollTop = 0;
+    };
+    $('[data-legal-document]').forEach((button) => button.addEventListener("click", () => openLegalDocument(button.dataset.legalDocument)));
+    $("#closeLegalModal").addEventListener("click", () => legalModal.close());
+    legalModal.addEventListener("click", (event) => { if (event.target === legalModal) legalModal.close(); });
     $("#authModal").addEventListener("cancel", (event) => { if (passwordRecoveryActive || (cloudRequired && !demoUser)) event.preventDefault(); });
     $("#authModal").addEventListener("close", () => {
       clearInterval(resendTimer);
