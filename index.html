@@ -755,7 +755,7 @@
             <li id="passwordRequirementNumber"><span aria-hidden="true">✓</span>Pelo menos um número</li>
           </ul>
           <label><span>Confirmar senha</span><span class="password-field"><input id="registerPasswordConfirm" type="password" autocomplete="new-password" minlength="8" placeholder="Digite novamente" required /><button type="button" data-toggle-password="registerPasswordConfirm" aria-label="Mostrar senha">◉</button></span></label>
-          <label class="check-label terms-check"><input id="registerTerms" type="checkbox" required /> Li e aceito os Termos de Uso e a Política de Privacidade.</label>
+          <label class="check-label terms-check"><input id="registerTerms" type="checkbox" required /> <span>Li e aceito os <button class="legal-inline-link" type="button" data-legal-document="terms">Termos de Uso</button> e a <button class="legal-inline-link" type="button" data-legal-document="privacy">Política de Privacidade</button>.</span></label>
           <p id="registerError" class="auth-error" role="alert"></p>
           <button id="registerSubmitButton" class="primary-button auth-submit" type="submit" disabled>Continuar</button>
         </form>
@@ -866,14 +866,95 @@
       <section id="authTermsView" class="auth-view hidden" data-auth-view="terms">
         <button class="auth-back-button" type="button" data-auth-tab="profile">← Voltar para o perfil</button>
         <div class="auth-section-heading"><span><svg class="ui-icon" aria-hidden="true"><use href="#icon-document"/></svg></span><div><p class="eyebrow">Transparência</p><h2>Termos e privacidade</h2></div></div>
+        <div class="legal-draft-notice"><strong>Versão preliminar</strong><span>Conteúdo para validação interna. A identificação do responsável e o canal oficial serão incluídos antes da abertura comercial.</span></div>
         <div class="legal-menu">
-          <button type="button" data-demo-document="terms"><span><strong>Termos de Uso</strong><small>Condições para utilização da plataforma</small></span><b>›</b></button>
-          <button type="button" data-demo-document="privacy"><span><strong>Política de Privacidade</strong><small>Como seus dados serão tratados</small></span><b>›</b></button>
+          <button type="button" data-legal-document="terms"><span><strong>Termos de Uso</strong><small>Condições para utilização da plataforma</small></span><b>›</b></button>
+          <button type="button" data-legal-document="privacy"><span><strong>Política de Privacidade</strong><small>Como seus dados são tratados</small></span><b>›</b></button>
         </div>
-        <p class="auth-security-note">Os documentos definitivos serão publicados antes da abertura comercial da plataforma.</p>
+        <p class="auth-security-note">Última atualização preliminar: 22 de julho de 2026. Estes documentos deverão passar por revisão jurídica antes da comercialização.</p>
       </section>
     </div>
   </dialog>
+
+  <dialog id="legalModal" class="modal legal-modal">
+    <article class="legal-card">
+      <header class="legal-header">
+        <div><p class="eyebrow">DESPESA MENSAL</p><h2 id="legalModalTitle">Documento</h2></div>
+        <button id="closeLegalModal" class="modal-close" type="button" aria-label="Fechar documento">×</button>
+      </header>
+      <div class="legal-draft-banner" role="note"><strong>Documento preliminar</strong><span>Não destinado à abertura comercial. A identificação do responsável e o contato oficial ainda serão incluídos.</span></div>
+      <div id="legalModalContent" class="legal-content"></div>
+    </article>
+  </dialog>
+
+  <template id="termsTemplate">
+    <p class="legal-updated">Versão preliminar — atualizada em 22 de julho de 2026</p>
+    <h3>1. Sobre estes Termos</h3>
+    <p>Estes Termos regulam o uso da plataforma Despesa Mensal, um serviço digital de organização financeira pessoal. Nesta versão preliminar, a identificação completa do responsável pela plataforma e o canal oficial de atendimento ainda serão inseridos antes da comercialização.</p>
+    <h3>2. Finalidade da plataforma</h3>
+    <p>A Despesa Mensal permite registrar receitas, despesas, recorrências, cartões, investimentos, metas e fechamentos mensais, além de gerar análises e relatórios a partir das informações fornecidas pelo próprio usuário.</p>
+    <p>A plataforma é uma ferramenta de organização. Ela não presta consultoria financeira, contábil, tributária ou de investimentos, não executa transações bancárias e não garante resultados econômicos.</p>
+    <h3>3. Cadastro, acesso e segurança</h3>
+    <ul>
+      <li>O usuário deve fornecer informações verdadeiras, manter sua senha protegida e usar uma conta de e-mail à qual tenha acesso.</li>
+      <li>O acesso é pessoal e não pode ser compartilhado, revendido ou transferido sem autorização.</li>
+      <li>O usuário deve comunicar suspeitas de acesso indevido e encerrar sessões em dispositivos que não controla.</li>
+      <li>Poderemos solicitar confirmação de e-mail e bloquear temporariamente tentativas excessivas para proteger a conta.</li>
+    </ul>
+    <h3>4. Acesso comercial</h3>
+    <p>Quando a comercialização for iniciada, o acesso poderá depender de uma compra válida em plataforma parceira. Preço, duração, renovação, cancelamento, reembolso e condições da oferta serão apresentados na página de venda e seguirão a legislação aplicável e as regras do intermediador de pagamento.</p>
+    <h3>5. Responsabilidades do usuário</h3>
+    <p>O usuário é responsável pela exatidão dos lançamentos, por revisar cálculos e relatórios antes de tomar decisões e por manter cópias de segurança quando necessário. É proibido tentar contornar controles de acesso, explorar vulnerabilidades, interferir no serviço, automatizar acessos abusivos ou utilizar a plataforma para fins ilícitos.</p>
+    <h3>6. Disponibilidade e alterações</h3>
+    <p>Buscamos manter o serviço disponível e preservar os dados, mas manutenções, falhas de fornecedores, conexão ou eventos fora do nosso controle podem causar indisponibilidade temporária. Funcionalidades poderão ser corrigidas, substituídas ou descontinuadas, com comunicação prévia quando a mudança afetar materialmente o uso.</p>
+    <h3>7. Conteúdo e propriedade intelectual</h3>
+    <p>A marca, o design, o código, os textos e os elementos da Despesa Mensal são protegidos pela legislação aplicável. O usuário recebe apenas uma licença pessoal, limitada, revogável e não exclusiva para utilizar o serviço. Os registros financeiros inseridos continuam pertencendo ao usuário.</p>
+    <h3>8. Suspensão e encerramento</h3>
+    <p>O acesso poderá ser suspenso em caso de fraude, violação destes Termos, risco de segurança, uso abusivo ou ausência de direito comercial ativo. Antes de uma exclusão definitiva, serão observados os direitos do usuário, os deveres legais de retenção e, quando possível, uma oportunidade razoável de exportação.</p>
+    <h3>9. Limitação responsável</h3>
+    <p>A Despesa Mensal não se responsabiliza por decisões financeiras tomadas exclusivamente com base em dados incorretos fornecidos pelo usuário, uso fora da finalidade prevista ou falhas de terceiros fora de seu controle. Nada nestes Termos exclui direitos obrigatórios previstos no Código de Defesa do Consumidor ou em outra legislação aplicável.</p>
+    <h3>10. Privacidade</h3>
+    <p>O tratamento de dados pessoais é explicado na Política de Privacidade, que integra estes Termos. O aceite é registrado para demonstrar a versão vigente no momento do cadastro.</p>
+    <h3>11. Mudanças e legislação</h3>
+    <p>Alterações relevantes serão comunicadas de maneira adequada e poderão exigir novo aceite. Aplicam-se as leis da República Federativa do Brasil, preservados os direitos legais do consumidor quanto ao foro competente.</p>
+    <h3>12. Contato</h3>
+    <p>O nome do responsável legal e o endereço eletrônico oficial de suporte serão publicados neste item antes da abertura comercial.</p>
+  </template>
+
+  <template id="privacyTemplate">
+    <p class="legal-updated">Versão preliminar — atualizada em 22 de julho de 2026</p>
+    <h3>1. Objetivo e responsável</h3>
+    <p>Esta Política explica como a Despesa Mensal trata dados pessoais conforme a Lei Geral de Proteção de Dados Pessoais (LGPD). A identificação formal do controlador e o canal de privacidade serão incluídos antes da abertura comercial.</p>
+    <h3>2. Dados tratados</h3>
+    <ul>
+      <li><strong>Conta:</strong> nome, e-mail, identificador interno, confirmação do e-mail, data de cadastro e aceite dos documentos.</li>
+      <li><strong>Autenticação e segurança:</strong> registros técnicos de sessão, tentativas, endereço IP e informações necessárias à prevenção de abuso. As senhas são processadas pelo serviço de autenticação e não ficam disponíveis em texto legível para a operação da plataforma.</li>
+      <li><strong>Dados financeiros inseridos:</strong> receitas, despesas, categorias, recorrências, cartões, limites, investimentos, metas, observações e fechamentos.</li>
+      <li><strong>Acesso comercial:</strong> e-mail do comprador, situação e origem do direito de acesso quando houver integração com plataformas de venda.</li>
+      <li><strong>Suporte:</strong> conteúdo das solicitações e informações necessárias para atendê-las.</li>
+      <li><strong>Armazenamento local:</strong> preferências, estado da interface e cópia local destinada ao funcionamento e sincronização.</li>
+    </ul>
+    <h3>3. Finalidades e bases legais</h3>
+    <p>Os dados poderão ser tratados para criar e autenticar a conta, prestar e sincronizar o serviço, confirmar o direito de acesso, gerar relatórios solicitados, oferecer suporte, prevenir fraude, proteger a plataforma, cumprir obrigações legais e exercer direitos em processos. Conforme o caso, as bases incluem execução de contrato ou procedimentos preliminares, cumprimento de obrigação legal, exercício regular de direitos, legítimo interesse avaliado e consentimento quando ele for especificamente exigido.</p>
+    <h3>4. Compartilhamento e operadores</h3>
+    <p>Utilizamos fornecedores estritamente necessários à operação, atualmente incluindo Supabase para autenticação e banco de dados, Resend para envio de e-mails transacionais e GitHub Pages para disponibilização da aplicação. Quando as vendas forem integradas, a plataforma de pagamento escolhida enviará os dados mínimos necessários para liberar ou revogar o acesso.</p>
+    <p>Esses fornecedores podem processar dados em outros países, sujeitos a mecanismos contratuais e salvaguardas aplicáveis. Não vendemos dados pessoais nem compartilhamos os registros financeiros para publicidade comportamental.</p>
+    <h3>5. Armazenamento e retenção</h3>
+    <p>Os dados permanecem enquanto a conta estiver ativa e pelo período necessário para prestar o serviço. Após o encerramento, poderão ser mantidos apenas dados exigidos por lei, necessários ao exercício de direitos ou presentes em cópias de segurança temporárias, sendo depois eliminados ou anonimizados conforme aplicável.</p>
+    <h3>6. Segurança</h3>
+    <p>Adotamos medidas técnicas e administrativas compatíveis com o risco, incluindo autenticação, confirmação de e-mail, conexão segura, controle de acesso por usuário e políticas de segurança no banco de dados. Nenhum sistema é absolutamente invulnerável; incidentes relevantes serão avaliados e comunicados nos termos da legislação.</p>
+    <h3>7. Direitos do titular</h3>
+    <p>Nos limites da LGPD, o titular pode solicitar confirmação e acesso, correção, informação sobre compartilhamento, anonimização, bloqueio ou eliminação de dados inadequados, portabilidade quando regulamentada, revisão de decisões automatizadas aplicáveis, oposição, revogação do consentimento e eliminação dos dados tratados com essa base, ressalvadas as hipóteses legais de conservação.</p>
+    <p>Poderemos pedir informações para confirmar a identidade do solicitante e proteger a conta. O canal oficial para essas solicitações será publicado antes da comercialização.</p>
+    <h3>8. Crianças e adolescentes</h3>
+    <p>A plataforma não é destinada a menores de 18 anos. Se identificarmos cadastro realizado em desacordo com essa regra, poderemos suspender a conta e adotar as providências cabíveis.</p>
+    <h3>9. Escolhas do usuário</h3>
+    <p>O usuário pode corrigir dados da conta, exportar seus registros, ocultar valores na interface e encerrar sessões. A exclusão definitiva da conta será disponibilizada antes da abertura comercial; até lá, solicitações serão tratadas pelo canal oficial quando ele for publicado.</p>
+    <h3>10. Alterações</h3>
+    <p>Esta Política poderá ser atualizada para refletir mudanças no serviço ou na legislação. Alterações relevantes serão comunicadas e a data da versão será atualizada.</p>
+    <h3>11. Contato</h3>
+    <p>O nome do controlador e o endereço eletrônico para privacidade e proteção de dados serão inseridos neste item antes da abertura comercial.</p>
+  </template>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
