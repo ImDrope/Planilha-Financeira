@@ -33,3 +33,7 @@ Os dados são salvos no `localStorage` e permanecem apenas no navegador e dispos
 ## GitHub Pages
 
 O projeto pode ser publicado diretamente no GitHub Pages. Como os dados ficam no navegador, publicar o código não envia os registros financeiros ao GitHub.
+
+## Preparação para o Supabase
+
+A fundação da futura sincronização está em `supabase/`: esquema, isolamento RLS, controle de acesso de compradores e roteiro de testes. Consulte `docs/SUPABASE_SETUP.md`. Nenhuma chave ou senha deve ser adicionada ao repositório; até a integração ser validada, o site publicado continua usando somente o armazenamento local.
