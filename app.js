@@ -38,7 +38,6 @@
   let demoUser = null;
   let pendingRegistration = null;
   let resendTimer = null;
-  let verificationAttempts = 0;
   let authInitialized = false;
   let cloudStateReady = false;
   let cloudSaveTimer = null;
@@ -1696,6 +1695,7 @@
         return false;
       }
       demoUser = profileFromCloudUser(session.user);
+      await cloud.acceptTerms();
       await hydrateFinancialState();
       releaseAuthenticationGate();
       updateProfileButton();
@@ -1721,6 +1721,7 @@
       await acceptCloudSession(session, false);
       cloud.onAuthStateChange((event, nextSession) => {
         if (event === "SIGNED_OUT") requireAuthentication();
+        if (event === "SIGNED_IN" && nextSession?.user && !demoUser) acceptCloudSession(nextSession);
         if (event === "TOKEN_REFRESHED" && nextSession?.user && demoUser) demoUser = profileFromCloudUser(nextSession.user);
       });
     } catch (error) {
@@ -1792,7 +1793,7 @@
     const resend = $("#resendCode");
     label.classList.remove("hidden");
     resend.classList.add("hidden");
-    const render = () => { label.textContent = `Reenviar código em 00:${String(remaining).padStart(2, "0")}`; };
+    const render = () => { label.textContent = `Reenviar link em 00:${String(remaining).padStart(2, "0")}`; };
     render();
     resendTimer = setInterval(() => {
       remaining -= 1;
@@ -1803,13 +1804,6 @@
         resend.classList.remove("hidden");
       }
     }, 1000);
-  }
-
-  function clearOtp() {
-    $$('[data-otp]').forEach((input) => { input.value = ""; });
-    $("#verificationError").textContent = "";
-    verificationAttempts = 0;
-    $$('[data-otp]')[0]?.focus();
   }
 
   async function handleRegisterSubmit(event) {
@@ -1828,8 +1822,7 @@
       await cloud.signUp({ name, email, password });
       pendingRegistration = { name, email };
       $("#verificationEmail").textContent = maskEmail(email);
-      clearOtp();
-      $("#verificationForm button[type='submit']").disabled = false;
+      $("#verificationError").textContent = "";
       setAuthView("verify");
       startResendCountdown();
     } catch (requestError) {
@@ -1837,33 +1830,6 @@
     } finally {
       setAuthBusy(event.currentTarget, false);
       updatePasswordRequirements();
-    }
-  }
-
-  async function handleVerificationSubmit(event) {
-    event.preventDefault();
-    const code = $$('[data-otp]').map((input) => input.value).join("");
-    const error = $("#verificationError");
-    if (!pendingRegistration?.email || code.length !== 6) { error.textContent = "Digite os seis dígitos enviados ao seu e-mail."; return; }
-    setAuthBusy(event.currentTarget, true);
-    try {
-      const data = await cloud.verifySignup({ email: pendingRegistration.email, token: code });
-      await cloud.acceptTerms();
-      const allowed = await acceptCloudSession(data.session);
-      if (!allowed) return;
-      pendingRegistration = null;
-      clearInterval(resendTimer);
-      $("#registerForm").reset();
-      updatePasswordRequirements();
-      showToast("E-mail confirmado. Sua conta está protegida.");
-    } catch (requestError) {
-      verificationAttempts += 1;
-      const remaining = Math.max(0, 5 - verificationAttempts);
-      error.textContent = `${cloud.friendlyError(requestError)}${remaining ? ` Restam ${remaining} tentativa${remaining === 1 ? "" : "s"}.` : " Solicite um novo código."}`;
-      if (!remaining) $("#verificationForm button[type='submit']").disabled = true;
-    } finally {
-      setAuthBusy(event.currentTarget, false);
-      if (verificationAttempts >= 5) $("#verificationForm button[type='submit']").disabled = true;
     }
   }
 
@@ -1951,24 +1917,6 @@
     showToast(`A alteração para ${maskEmail(email)} será ativada após os testes de autenticação.`);
   }
 
-  function handleOtpInput(event) {
-    const input = event.target;
-    input.value = input.value.replace(/\D/g, "").slice(-1);
-    if (input.value) input.nextElementSibling?.focus();
-  }
-
-  function handleOtpKeydown(event) {
-    if (event.key === "Backspace" && !event.target.value) event.target.previousElementSibling?.focus();
-  }
-
-  function handleOtpPaste(event) {
-    const digits = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-    if (!digits) return;
-    event.preventDefault();
-    $$('[data-otp]').forEach((input, index) => { input.value = digits[index] || ""; });
-    $$('[data-otp]')[Math.min(digits.length, 6) - 1]?.focus();
-  }
-
   function bindEvents() {
     elements.monthSelector.addEventListener("change", () => {
       selectedMonth = elements.monthSelector.value || currentMonthKey();
@@ -2030,7 +1978,6 @@
 
     $("#loginForm").addEventListener("submit", handleLoginSubmit);
     $("#registerForm").addEventListener("submit", handleRegisterSubmit);
-    $("#verificationForm").addEventListener("submit", handleVerificationSubmit);
     $("#forgotPasswordForm").addEventListener("submit", handleForgotSubmit);
     $("#accountForm").addEventListener("submit", handleAccountSubmit);
     $("#changePasswordForm").addEventListener("submit", handleSecurityPasswordSubmit);
@@ -2045,13 +1992,12 @@
       input.type = show ? "text" : "password";
       button.setAttribute("aria-label", show ? "Ocultar senha" : "Mostrar senha");
     }));
-    $$('[data-otp]').forEach((input) => { input.addEventListener("input", handleOtpInput); input.addEventListener("keydown", handleOtpKeydown); input.addEventListener("paste", handleOtpPaste); });
     $("#resendCode").addEventListener("click", async () => {
       if (!pendingRegistration?.email) return setAuthView("register");
       try {
         await cloud.resendSignup(pendingRegistration.email);
-        clearOtp(); $("#verificationForm button[type='submit']").disabled = false; startResendCountdown();
-        showToast("Novo código enviado.");
+        $("#verificationError").textContent = ""; startResendCountdown();
+        showToast("Novo link de confirmação enviado.");
       } catch (error) { $("#verificationError").textContent = cloud.friendlyError(error); }
     });
     $("#logoutDemo").addEventListener("click", async () => {
