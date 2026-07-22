@@ -1098,3 +1098,41 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 32%, transpa
   user-select: none;
 }
 
+
+
+/* Legal documents */
+.terms-check { align-items: flex-start; }
+.terms-check > span { line-height: 1.5; }
+.legal-inline-link {
+  display: inline; padding: 0; border: 0; color: var(--primary); background: transparent;
+  font: inherit; font-weight: 800; text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
+}
+.legal-draft-notice, .legal-draft-banner {
+  display: grid; gap: 4px; padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--amber) 34%, var(--border));
+  border-radius: 14px; color: var(--muted); background: var(--amber-soft); font-size: 12px; line-height: 1.45;
+}
+.legal-draft-notice strong, .legal-draft-banner strong { color: var(--text); }
+.legal-draft-notice { margin: 4px 0 16px; }
+.legal-modal { width: min(760px, calc(100vw - 28px)); max-height: min(860px, calc(100dvh - 28px)); padding: 0; overflow: hidden; }
+.legal-card { max-height: min(860px, calc(100dvh - 28px)); padding: 0 28px 30px; overflow-y: auto; background: var(--surface); }
+.legal-header {
+  position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between;
+  gap: 18px; margin: 0 -28px; padding: 22px 28px 16px; border-bottom: 1px solid var(--border); background: var(--surface);
+}
+.legal-header h2 { margin: 0; font-size: clamp(21px, 3vw, 28px); }
+.legal-header .eyebrow { margin-bottom: 3px; }
+.legal-draft-banner { margin: 20px 0; }
+.legal-content { color: var(--muted); font-size: 14px; line-height: 1.7; }
+.legal-content .legal-updated { margin: 0 0 22px; color: var(--primary); font-size: 12px; font-weight: 800; }
+.legal-content h3 { margin: 26px 0 8px; color: var(--text); font-size: 16px; }
+.legal-content p { margin: 0 0 12px; }
+.legal-content ul { margin: 8px 0 14px; padding-left: 21px; }
+.legal-content li { margin: 5px 0; }
+.legal-content strong { color: var(--text); }
+
+@media (max-width: 640px) {
+  .legal-modal { width: calc(100vw - 16px); max-height: calc(100dvh - 16px); }
+  .legal-card { max-height: calc(100dvh - 16px); padding: 0 18px 24px; }
+  .legal-header { margin: 0 -18px; padding: 18px; }
+  .legal-content { font-size: 13px; }
+}
