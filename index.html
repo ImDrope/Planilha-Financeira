@@ -450,7 +450,7 @@
 
           <article class="panel">
             <h3>Privacidade financeira</h3>
-            <p>Seus valores continuam armazenados apenas neste navegador durante a fase de demonstração.</p>
+            <p>Seus valores ficam protegidos na sua conta e disponíveis nos seus dispositivos.</p>
             <p class="muted">A futura sincronização usará contas individuais e políticas de acesso no banco de dados.</p>
           </article>
         </div>
@@ -720,7 +720,7 @@
         <button class="icon-button close-modal" type="button" aria-label="Fechar">×</button>
       </div>
 
-      <div class="auth-demo-notice" role="note"><span aria-hidden="true">i</span><p><strong>Modo de demonstração</strong>Nenhuma conta é criada e nenhuma senha é armazenada nesta etapa.</p></div>
+      <div id="authEnvironmentNotice" class="auth-demo-notice" role="note"><span aria-hidden="true">i</span><p><strong>Conta protegida</strong>Seus dados são vinculados somente ao seu usuário.</p></div>
 
       <section id="authLoginView" class="auth-view" data-auth-view="login">
         <div class="auth-tabs" role="tablist" aria-label="Acesso à conta">
@@ -729,7 +729,7 @@
         </div>
         <form id="loginForm" class="auth-form">
           <label><span>E-mail</span><input id="loginEmail" type="email" autocomplete="email" placeholder="seu@email.com" required /></label>
-          <label><span>Senha</span><span class="password-field"><input id="loginPassword" type="password" autocomplete="current-password" minlength="6" placeholder="Digite sua senha" required /><button type="button" data-toggle-password="loginPassword" aria-label="Mostrar senha">◉</button></span></label>
+          <label><span>Senha</span><span class="password-field"><input id="loginPassword" type="password" autocomplete="current-password" minlength="8" placeholder="Digite sua senha" required /><button type="button" data-toggle-password="loginPassword" aria-label="Mostrar senha">◉</button></span></label>
           <div class="auth-form-options"><label class="check-label"><input id="rememberLogin" type="checkbox" /> Lembrar de mim</label><button class="text-button" type="button" data-auth-action="forgot">Esqueci minha senha</button></div>
           <p id="loginError" class="auth-error" role="alert"></p>
           <button class="primary-button auth-submit" type="submit">Entrar</button>
@@ -762,7 +762,6 @@
         <p class="eyebrow">Confirme seu e-mail</p>
         <h2>Digite o código enviado</h2>
         <p class="muted">Enviamos um código de 6 dígitos para <strong id="verificationEmail">se***@email.com</strong>.</p>
-        <div class="auth-demo-code">Para testar o protótipo, use o código <strong>123456</strong>.</div>
         <form id="verificationForm" class="auth-form">
           <div class="otp-fields" aria-label="Código de verificação">
             <input data-otp type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="1" aria-label="Dígito 1" required />
@@ -803,10 +802,10 @@
 
       <section id="authProfileView" class="auth-view auth-centered hidden" data-auth-view="profile">
         <div class="profile-avatar-large" aria-hidden="true"><span id="profileInitials">DM</span></div>
-        <p class="eyebrow">Sessão de demonstração</p>
+        <p class="eyebrow">Conta protegida</p>
         <h2 id="profileName">Usuário</h2>
         <p id="profileEmail" class="muted">usuario@email.com</p>
-        <div class="auth-profile-status"><span aria-hidden="true">✓</span><div><strong>E-mail confirmado</strong><small>Perfil autenticado somente durante este teste.</small></div></div>
+        <div class="auth-profile-status"><span aria-hidden="true">✓</span><div><strong>E-mail confirmado</strong><small>Sessão protegida pelo Supabase.</small></div></div>
         <div class="profile-menu" aria-label="Menu da conta">
           <button type="button" data-auth-tab="account"><svg class="ui-icon" aria-hidden="true"><use href="#icon-user"/></svg><span><strong>Minha conta</strong><small>Nome e endereço de e-mail</small></span><b aria-hidden="true">›</b></button>
           <button type="button" data-auth-tab="security"><svg class="ui-icon" aria-hidden="true"><use href="#icon-shield"/></svg><span><strong>Segurança</strong><small>Senha, verificação e sessões</small></span><b aria-hidden="true">›</b></button>
@@ -844,7 +843,7 @@
           <summary><span><svg class="ui-icon" aria-hidden="true"><use href="#icon-income"/></svg>Alterar e-mail</span><small>Exige nova verificação</small></summary>
           <form id="changeEmailForm" class="auth-form security-form">
             <label><span>Novo e-mail</span><input id="newSecurityEmail" type="email" autocomplete="email" required /></label>
-            <p class="muted account-note">Um código de seis dígitos será solicitado quando o Supabase estiver conectado.</p>
+            <p class="muted account-note">A alteração exige uma nova verificação do endereço.</p>
             <button class="secondary-button" type="submit">Enviar verificação</button>
           </form>
         </details>
@@ -853,7 +852,7 @@
           <div class="session-item"><span class="session-device" aria-hidden="true">●</span><div><strong>Este navegador</strong><small>Sessão atual · ativa agora</small></div><em>Atual</em></div>
           <button id="logoutAllDemo" class="ghost-button full-width" type="button">Sair de todos os dispositivos</button>
         </div>
-        <p class="auth-security-note">Autenticação em dois fatores e exclusão definitiva da conta serão adicionadas após a integração segura com o Supabase.</p>
+        <p class="auth-security-note">Autenticação em dois fatores e exclusão definitiva da conta serão adicionadas em uma próxima etapa de segurança.</p>
       </section>
 
       <section id="authTermsView" class="auth-view hidden" data-auth-view="terms">
@@ -869,6 +868,10 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="supabase-client.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
+
