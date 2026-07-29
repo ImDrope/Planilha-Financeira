@@ -57,6 +57,20 @@ async function constantTimeEqual(left, right) {
   return difference === 0;
 }
 
+async function hmacSha1Hex(secret, value) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-1" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(value));
+  return Array.from(new Uint8Array(signature))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 function configuredToken(req, payload) {
   const authorization = req.headers.get("authorization") || "";
   const bearer = authorization.match(/^Bearer\s+(.+)$/i)?.[1] || "";
@@ -68,6 +82,20 @@ function configuredToken(req, payload) {
     url.searchParams.get("token"),
     payload.token,
   );
+}
+
+async function isAuthorized(req, payload, rawBody, expectedToken) {
+  const url = new URL(req.url);
+  const suppliedSignature = pick(url.searchParams.get("signature")).toLowerCase();
+
+  if (suppliedSignature) {
+    const expectedSignature = await hmacSha1Hex(expectedToken, rawBody);
+    return constantTimeEqual(suppliedSignature, expectedSignature);
+  }
+
+  const suppliedToken = configuredToken(req, payload);
+  return Boolean(suppliedToken) &&
+    await constantTimeEqual(suppliedToken, expectedToken);
 }
 
 function normalizeEvent(payload) {
@@ -118,8 +146,7 @@ Deno.serve(async (req) => {
     return json({ ok: false, error: "invalid_json" }, 400);
   }
 
-  const suppliedToken = configuredToken(req, payload);
-  if (!suppliedToken || !(await constantTimeEqual(suppliedToken, expectedToken))) {
+  if (!(await isAuthorized(req, payload, rawBody, expectedToken))) {
     return json({ ok: false, error: "unauthorized" }, 401);
   }
 
@@ -162,7 +189,7 @@ Deno.serve(async (req) => {
   }
 
   if (!allowedProducts.has(productId)) {
-    return json({ ok: false, error: "product_not_allowed" }, 403);
+    return json({ ok: true, ignored: true, reason: "product_not_allowed" });
   }
 
   const eventKey = Array.from(await digest(rawBody))
