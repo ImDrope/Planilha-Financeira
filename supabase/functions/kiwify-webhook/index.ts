@@ -189,6 +189,7 @@ Deno.serve(async (req) => {
   }
 
   if (!allowedProducts.has(productId)) {
+    console.warn("Blocked Kiwify product:", productId);
     return json({ ok: false, error: "product_not_allowed" }, 403);
   }
 
