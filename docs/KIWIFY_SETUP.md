@@ -30,10 +30,18 @@ Em **Supabase â†’ Edge Functions â†’ Secrets**, crie:
 - `KIWIFY_WEBHOOK_TOKEN`: uma senha aleatÃ³ria longa, exclusiva para o webhook.
 - `KIWIFY_ALLOWED_PRODUCT_IDS`: ID do produto vendido. Para mais de um produto,
   separe os IDs por vÃ­rgula.
+- `RESEND_API_KEY`: chave do Resend com permissÃ£o somente de envio e restrita ao
+  domÃ­nio `auth.despesamensal.com.br`.
 
 NÃ£o coloque esses valores no GitHub, no JavaScript do site ou em mensagens.
 `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` sÃ£o disponibilizados
 automaticamente Ã  Edge Function pelo Supabase.
+
+Quando uma compra Ã© aprovada, a funÃ§Ã£o envia ao comprador um e-mail transacional
+com o botÃ£o **Acessar meu dashboard**. O comprador deve criar a conta usando
+exatamente o mesmo e-mail informado no pagamento. O envio usa o ID do pedido
+como chave de idempotÃªncia para impedir mensagens duplicadas durante as
+tentativas automÃ¡ticas da Kiwify.
 
 ## 3. Implantar a funÃ§Ã£o
 
@@ -66,7 +74,9 @@ Use **Testar webhook** na Kiwify e depois confira:
 4. Um segundo envio idÃªntico deve retornar `duplicate=true`, sem duplicar acesso.
 5. Teste tambÃ©m reembolso ou chargeback e confirme que o acesso deixa de estar
    ativo sem apagar os dados financeiros.
+6. Em uma compra aprovada, confirme em **Resend â†’ Emails** que a mensagem
+   â€œSeu acesso ao Despesa Mensal estÃ¡ liberadoâ€ foi entregue. Reenvie o mesmo
+   webhook e confirme que o Resend nÃ£o criou uma segunda mensagem.
 
 Se houver erro, use **Ver logs** na Kiwify e os logs da Edge Function no
 Supabase. Nunca copie tokens ou chaves secretas para tickets, prints ou chats.
-

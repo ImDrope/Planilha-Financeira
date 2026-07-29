@@ -23,6 +23,9 @@ const EVENT_ALIASES = {
 };
 
 const encoder = new TextEncoder();
+const APP_URL = "https://app.despesamensal.com.br/";
+const ACCESS_EMAIL_FROM =
+  "Despesa Mensal <no-reply@auth.despesamensal.com.br>";
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -120,6 +123,105 @@ function nested(payload, key) {
     : {};
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function firstName(value) {
+  return text(value).split(/\s+/)[0] || "";
+}
+
+async function accessEmailIdempotencyKey(orderId) {
+  const orderHash = Array.from(await digest(orderId))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, 40);
+  return `kiwify-access-${orderHash}`;
+}
+
+async function sendAccessEmail({ apiKey, email, name, orderId }) {
+  const safeName = escapeHtml(firstName(name));
+  const greeting = safeName ? `Olá, ${safeName}!` : "Olá!";
+  const idempotencyKey = await accessEmailIdempotencyKey(orderId);
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${apiKey}`,
+      "content-type": "application/json",
+      "idempotency-key": idempotencyKey,
+    },
+    body: JSON.stringify({
+      from: ACCESS_EMAIL_FROM,
+      to: [email],
+      subject: "Seu acesso ao Despesa Mensal está liberado",
+      html: `<!doctype html>
+<html lang="pt-BR">
+  <body style="margin:0;background:#f2f6f3;font-family:Arial,sans-serif;color:#17221c">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f2f6f3;padding:32px 16px">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #dce7e0;border-radius:20px;overflow:hidden">
+            <tr>
+              <td style="background:#123b2d;padding:28px 32px;color:#ffffff">
+                <div style="font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#6dd0a7;font-weight:700">Despesa Mensal</div>
+                <h1 style="margin:8px 0 0;font-size:28px;line-height:1.2">Seu acesso está liberado</h1>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:32px">
+                <p style="margin:0 0 16px;font-size:17px;font-weight:700">${greeting}</p>
+                <p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:#526158">
+                  Sua compra foi aprovada e o acesso ao dashboard Despesa Mensal já está disponível.
+                </p>
+                <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#526158">
+                  Clique no botão abaixo, escolha <strong>Criar conta</strong> e use exatamente o mesmo e-mail informado na compra.
+                </p>
+                <table role="presentation" cellspacing="0" cellpadding="0">
+                  <tr>
+                    <td style="border-radius:12px;background:#2f9b76">
+                      <a href="${APP_URL}" style="display:inline-block;padding:14px 24px;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700">Acessar meu dashboard</a>
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:24px 0 0;font-size:13px;line-height:1.5;color:#75827a">
+                  Por segurança, não encaminhe este e-mail. Seu acesso está vinculado ao e-mail utilizado no pagamento.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`,
+      text: `${greeting}
+
+Sua compra foi aprovada e o acesso ao dashboard Despesa Mensal já está disponível.
+
+Acesse ${APP_URL}, escolha "Criar conta" e use exatamente o mesmo e-mail informado na compra.
+
+Por segurança, não encaminhe este e-mail. Seu acesso está vinculado ao e-mail utilizado no pagamento.`,
+      tags: [
+        { name: "email_type", value: "kiwify_access" },
+        { name: "provider", value: "kiwify" },
+      ],
+    }),
+  });
+
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const reason = text(result?.message) || `http_${response.status}`;
+    throw new Error(`resend_${reason.slice(0, 160)}`);
+  }
+
+  return text(result?.id);
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return json({ ok: false, error: "method_not_allowed" }, 405);
@@ -173,6 +275,11 @@ Deno.serve(async (req) => {
     subscription.subscription_id,
   );
   const email = pick(customer.email, payload.customer_email, payload.email).toLowerCase();
+  const customerName = pick(
+    customer.full_name,
+    customer.name,
+    payload.customer_name,
+  );
   const productId = pick(product.product_id, product.id, payload.product_id);
 
   if (!eventType || !orderId || !email || !productId) {
@@ -225,6 +332,43 @@ Deno.serve(async (req) => {
     return json({ ok: false, error: "processing_failed" }, 500);
   }
 
-  return json({ ok: true, result: data });
-});
+  let emailDelivery = null;
+  if (eventType === "compra_aprovada") {
+    const resendApiKey = Deno.env.get("RESEND_API_KEY") || "";
+    if (!resendApiKey) {
+      console.error("Resend API key is not configured.");
+      return json({
+        ok: false,
+        error: "access_email_not_configured",
+        result: data,
+      }, 503);
+    }
 
+    try {
+      emailDelivery = await sendAccessEmail({
+        apiKey: resendApiKey,
+        email,
+        name: customerName,
+        orderId,
+      });
+    } catch (emailError) {
+      console.error(
+        "Access email delivery failed:",
+        emailError instanceof Error ? emailError.message : "unknown_error",
+      );
+      return json({
+        ok: false,
+        error: "access_email_delivery_failed",
+        result: data,
+      }, 502);
+    }
+  }
+
+  return json({
+    ok: true,
+    result: data,
+    email_delivery: emailDelivery
+      ? { sent: true, provider_id: emailDelivery }
+      : { sent: false, reason: "event_does_not_require_access_email" },
+  });
+});
